@@ -1,0 +1,11 @@
+@msc_event { "entity":"User 1",  "label":"login info", "source":"1"}
+@msc_event { "entity":"Backend", "label":"login info", "sink":"1"}
+@msc_event { "entity":"Backend", "label":"Request actual pwd", "source":"2"}
+@msc_event { "entity":"Database","label":"Request actual pwd", "sink":"2"}
+@msc_event { "entity":"Database","label":"Return actual pwd", "source":"3"}
+@msc_event { "entity":"Backend", "label":"Return actual pwd", "sink":"3"}
+@msc_event { "entity":"Backend", "label":"Encrypt(entered pwd)"}
+@msc_event { "entity":"Backend", "label":"Compare(entered pwd, actual pwd)"}
+@msc_event { "entity":"Backend", "label":"Success", "source":"4"}
+@msc_event { "entity":"User 1",  "label":"Success", "sink":"4"}
+

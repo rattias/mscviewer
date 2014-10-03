@@ -1,0 +1,8 @@
+@msc_event { "entity":"producer", "label":"wakeup", "type":"Timer"}
+@msc_event { "entity":"producer", "label":"wait-for-timeout", "type":"LeaveState"}
+@msc_event { "entity":"producer", "label":"produce", "type":"TxMsg", "source":"1"}
+@msc_event { "entity":"producer", "label":"wait-for-timeout", "type":"EnterState"}
+@msc_event { "entity":"consumer", "label":"consume", "type":"RxMsg", "sink":"1"}
+@msc_event { "entity":"consumer", "label":"wait-for-msg", "type":"LState"}
+@msc_event { "entity":"consumer", "label":"wait-for-msg", "type":"EnterState"}
+

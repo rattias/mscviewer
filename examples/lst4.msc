@@ -1,0 +1,4 @@
+@msc_event { "time":"1s", "entity":"producer", "label":"start"}
+@msc_event { "time":"2000ms", "entity":"producer", "label":"produce", "source":"1"}
+@msc_event { "time":"3000000us", "entity":"consumer", "label":"consume", "sink":"1"}
+@msc_event { "time":"4000000000ns", "entity":"consumer", "label":"do something"}

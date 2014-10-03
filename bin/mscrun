@@ -1,0 +1,1 @@
+/usr/cisco/depot/subversion/bin/java -classpath /ws/rattias-sjc/rise/rise/tools/mscviewer:/ws/rattias-sjc/rise/rise/tools/mscviewer/classes:/ws/rattias-sjc/rise/rise/tools/mscviewer/third-parties//jython-standalone-2.5.4-rc1.jar -Dpypath=/ws/rattias-sjc/rise/rise/tools/mscviewer/test:/ws/rattias-sjc/rise/rise/tools/mscviewer/python com.cisco.mscviewer.Main $@

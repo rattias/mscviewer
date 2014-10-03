@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+
+
+<title>MSCViewer V0.8</title>
+</head><body>
+<h1><span>Welcome to MSCViewer V0.8</span></h1>
+
+Welcome to MSCViewer, a Message Sequence Chart Viewer.
+
+<h2><span>What Changed</span></h2>
+<table border=1">
+<tr>
+<td>V0.8a</td>
+<td>
+<ul>
+    <li> added Python integration. Python scripts can now be written to interact with the model and GUI.</li>
+    <li> implemented graph topology sorting. Upon loading, events are reordered to respect causality, even
+         when timestamps end up out-of-order.         
+    <li> added 'x' button to entity header for quick close</li>
+    <li> added "_" button to entity header to shrink columns</li>
+    <li> when a column is selected now the "+" and "-" keys increase/reduce the width of the selected column only</li>
+    <li> double-clicking on blue lines in the source view now causes the associated entity to be opened in the 
+         sequence diagram, if it wasn't already.</li>
+    <li> added list in bottom right corner showing opened entities. Entities can be closed by 
+         selecting and pressing return. Multiple entities can be selected using SHIFT (range)
+         or CTRL keys while clicking. Selection of entity in this list causes the
+         graph view to scroll to make the entity visible.</li> 
+    <li> Entities in entity tree not having any event are now shown in gray, and can't be
+         opened any longer.</li>                 
+    <li> added help menu and 'about' item</li>
+</td>
+</tr>
+</table>
+</body></html>

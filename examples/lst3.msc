@@ -1,0 +1,5 @@
+@msc_event { "entity":"producer", "label":"start"}
+@msc_event { "entity":"producer", "label":"back-in-time", "sink":"2"}
+@msc_event { "entity":"producer", "label":"produce", "source":"1"}
+@msc_event { "entity":"consumer", "label":"consume", "sink":"1"}
+@msc_event { "entity":"consumer", "label":"back-in-time", "source":"2"}

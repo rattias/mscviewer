@@ -1,0 +1,12 @@
+@msc_event { "entity":"User 1",  "label":"create VM", "source":"1"}
+@msc_event { "entity":"VM Manager",  "label":"create VM", "sink":"1"}
+@msc_event { "entity":"VM Manager", "label":"allocate disk/cpu/mem", "source":"2"}
+@msc_event { "entity":"VM Manager", "label":"retrieve image", "source":"4"}
+@msc_event { "entity":"Image Repo", "label":"retrieve image", "sink":"4"}
+@msc_event { "entity":"Resource Manager", "label":"allocate", "sink":"2"}
+@msc_event { "entity":"Resource Manager", "label":"return resources", "source":"3"}
+@msc_event { "entity":"VM Manager", "label":"return resources", "sink":"3"}
+@msc_event { "entity":"Image Repo", "label":"image", "source":"4"}
+@msc_event { "entity":"VM Manager", "label":"image", "sink":"4"}
+
+
