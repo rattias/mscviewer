@@ -7,6 +7,7 @@
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer.gui;
 
+import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.model.*;
 
 import java.awt.Color;
@@ -37,14 +38,14 @@ class LogListRenderer extends JPanel {
     private FontMetrics fm;
     private int line;
     private String text;
-    private final int cnt;
+    private MSCDataModel dm;
     private int numWidth;
     private boolean isSelected;
     private final Color numBackground = new Color(0xE0E0FF); 
     private final Color selBackground = new Color(0xD0D0FF);
 
-    public LogListRenderer(int cnt) {
-        this.cnt = cnt;
+    public LogListRenderer(MSCDataModel dm) {
+        this.dm = dm;
     }
 
     public void setText(String txt) {
@@ -58,10 +59,14 @@ class LogListRenderer extends JPanel {
     private void initFontInfo(Graphics g) {
         f = getFont();
         fm = g.getFontMetrics(f);
-        Rectangle2D r = fm.getStringBounds(""+cnt, g);
+        Rectangle2D r = fm.getStringBounds(""+dm.getData().size(), g);
         numWidth = (int)r.getWidth();
     }
 
+    public void invalidate() {
+        f = null;
+    }
+    
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -95,13 +100,18 @@ class LogListRenderer extends JPanel {
 class LogListCellRenderer implements ListCellRenderer<String> {
     protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
     private LogListRenderer r;
-
+    private MSCDataModel dm;
+    
+    public LogListCellRenderer(MSCDataModel dm) {
+        this.dm = dm;
+    }
+    
     public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
             boolean isSelected, boolean cellHasFocus) {
         if (r == null) {
             int sz = list.getModel().getSize();
             if (sz > 0) {
-                r = new LogListRenderer(sz);
+                r = new LogListRenderer(dm);
             }
         }
         String str = value;
@@ -113,6 +123,11 @@ class LogListCellRenderer implements ListCellRenderer<String> {
         r.setText(str);
         r.setSelected(isSelected);
         return r;
+    }
+    
+    public void invalidate() {
+        if (r != null)
+            r.invalidate();
     }
 }
 
@@ -140,17 +155,19 @@ class LogListModel extends  AbstractListModel<String> {
 }
 
 @SuppressWarnings("serial")
-public class LogList extends JList<String> implements SelectionListener, MSCDataModelListener{
+public class LogList extends JList<String> implements SelectionListener, MSCDataModelListener {
     //private MainPanel mp;
     private MSCDataModel dm;
     private ViewModel ehm;
-
+    private LogListCellRenderer cellRenderer;
+    
     public LogList(MSCDataModel m, ViewModel _ehm) {
         super(new LogListModel(m));
         dm = m;
         ehm = _ehm;
         dm.addListener(this);
-        setCellRenderer(new LogListCellRenderer());
+        cellRenderer = new LogListCellRenderer(dm);
+        setCellRenderer(cellRenderer);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -200,6 +217,8 @@ public class LogList extends JList<String> implements SelectionListener, MSCData
 
     @Override
     public void modelChanged(MSCDataModel mscDataModel) {
+        if (cellRenderer != null)
+            cellRenderer.invalidate();
         ((LogListModel)getModel()).fireContentsChanged();
     }
 

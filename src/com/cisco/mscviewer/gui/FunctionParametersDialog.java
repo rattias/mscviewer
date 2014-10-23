@@ -40,7 +40,7 @@ import javax.swing.text.PlainDocument;
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
 import com.cisco.mscviewer.util.Utils;
-import com.cisco.mscviewer.script.PyFunction;
+import com.cisco.mscviewer.script.PythonFunction;
 
 @SuppressWarnings("serial")
 class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {
@@ -165,9 +165,9 @@ class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {
         }    
     }
 
-    private final PyFunction fun;
+    private final PythonFunction fun;
 
-    public FunctionParametersDialog(PyFunction fun) {
+    public FunctionParametersDialog(PythonFunction fun) {
         super(MainFrame.getInstance(), true);
         this.fun = fun; 
     }

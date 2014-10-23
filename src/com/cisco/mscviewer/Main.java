@@ -8,17 +8,22 @@
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer;
 import com.cisco.mscviewer.gui.*;
-import com.cisco.mscviewer.gui.renderer.ImageRenderer;
 import com.cisco.mscviewer.io.LegacyLoader;
 import com.cisco.mscviewer.io.Loader;
 import com.cisco.mscviewer.model.*;
 import com.cisco.mscviewer.script.Python;
+import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
+
 import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import javax.script.ScriptException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -48,13 +53,14 @@ abstract class Opt {
  * @since   Jun 2012 
  */
 public class Main {
-    public static final String VERSION = "0.85"; // 03B2" = Beta
+    public static final String VERSION = "2.0B1";
+    public static final boolean WITH_BLOCKS = true;
     private static Loader loader;
     public static String[] pypath;
     public static MainFrame mf;
     public static boolean extra;
     public static String script;
-    public static String loaderClass = "JsonSyslogLoader";
+    public static String loaderClass = "JsonLoader";
     //    public static String loaderClass = "LegacyLoader";
     public static boolean batchMode = false;
     public static String batchFun = null;
@@ -85,7 +91,9 @@ public class Main {
         new Opt('p', "pypath", true, "specify a Python module search path") {
             @Override
             void found(String arg) {
+                //                System.out.println("SETTTING PYPATH TO "+arg);
                 System.setProperty("pypath", arg);
+                System.out.println("pypath = "+arg);
             }
         },
         new Opt('x', "extra", false, "enable some extra features") {
@@ -137,7 +145,7 @@ public class Main {
         final String fname = (idx<args.length) ? args[idx]: null;
         Class<?> cl = Class.forName("com.cisco.mscviewer.io."+loaderClass);
 
-        ImageRenderer.init(Main.plugins);
+        Resources.init(Main.plugins);
 
         loader = (Loader)cl.newInstance();
         dataModel = new MSCDataModel();
@@ -147,7 +155,6 @@ public class Main {
                 System.exit(1);
             }
             loader.load(fname, dataModel);
-
         } else {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -166,8 +173,10 @@ public class Main {
         }
         if (script != null) {
             loader.waitIfLoading();
-            Python p = new Python();
-            p.eval(new BufferedReader(new FileReader(script)));
+            MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
+            Python p = new Python(mp);
+            String text = new String(Files.readAllBytes(Paths.get(script)), StandardCharsets.UTF_8);
+            p.eval(text);
             if (batchFun != null) {
                 p.eval(batchFun);
             }
@@ -247,10 +256,8 @@ public class Main {
         UIManager.put("ToolBar.font", f);
         UIManager.put("ToolTip.font", f);
 
-        java.net.URL imgURL;
-        imgURL = ClassLoader.getSystemResource("com/cisco/mscviewer/resource/entity.gif");
-        if (imgURL != null) {
-            ImageIcon icon = new ImageIcon(imgURL, "Tree icon");
+        ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
+        if (icon != null) {
             UIManager.put("Tree.leafIcon", icon);
             UIManager.put("Tree.openIcon", icon);
             UIManager.put("Tree.closedIcon", icon);

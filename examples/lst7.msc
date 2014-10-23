@@ -1,0 +1,4 @@
+@msc_event { "time":"1s", "entity":"prod1", "label":"mcast", "src":[{"id":"1"}, {"id":"2"}]}
+@msc_event { "time":"2s", "entity":"cons1", "label":"rx",  "dst":"1"}
+@msc_event { "time":"3s", "entity":"cons2", "label":"rx", "dst":"2"}
+s

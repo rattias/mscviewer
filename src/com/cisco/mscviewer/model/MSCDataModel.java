@@ -13,8 +13,11 @@ package com.cisco.mscviewer.model;
 
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
-import com.cisco.mscviewer.graph.Graph;
-import com.cisco.mscviewer.graph.TopologyError;
+import com.cisco.mscviewer.graph.GraphData;
+import com.cisco.mscviewer.gui.graph.GraphPanel;
+import com.cisco.mscviewer.gui.graph.GraphWindow;
+import com.cisco.mscviewer.model.graph.TopologyGraph;
+import com.cisco.mscviewer.model.graph.TopologyError;
 import com.cisco.mscviewer.tree.AVLTreeNode;
 import com.cisco.mscviewer.tree.InOrderAVLTreeNodeIterator;
 import com.cisco.mscviewer.tree.Interval;
@@ -23,6 +26,7 @@ import com.cisco.mscviewer.tree.TreeIntegrityException;
 import com.cisco.mscviewer.tree.Visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -53,6 +57,7 @@ public final class MSCDataModel {
     private final ArrayList<Entity> rootEntities;
     private ArrayList<Event> events;
     private IntervalTree interactions;
+    private IntervalTree blocks;
     private EventTimestampComparator eventTimestampComparator;
     private final ArrayList<String> data;
     private final Vector<MSCDataModelListener> listeners;
@@ -60,6 +65,7 @@ public final class MSCDataModel {
     private String path;
     private boolean notificationEnabled;
     private String openPath;
+    private ArrayList<GraphData[]> graphs = new ArrayList<GraphData[]>(); 
     
     /**
      * Instantiate a data model
@@ -70,6 +76,7 @@ public final class MSCDataModel {
         this.rootEntities = new ArrayList<Entity>();
         this.data = new ArrayList<String>();
         this.interactions = new IntervalTree();
+        this.blocks = new IntervalTree();
 
         reset();
     }
@@ -82,6 +89,7 @@ public final class MSCDataModel {
         rootEntities.clear();
         events.clear();
         interactions = new IntervalTree();
+        blocks = new IntervalTree();
         notifyModelChanged();
         data.clear();
     }
@@ -277,6 +285,11 @@ public final class MSCDataModel {
         interactions.add(inter);
     }
     
+    public void addBlock(Interval block) {
+        blocks.add(block);        
+    }
+
+    
     /**
      * returns the number of interactions in this data model.
      * @return 
@@ -406,7 +419,13 @@ public final class MSCDataModel {
         return (ArrayList<Interaction>)al.clone();
     }
 
+    public ArrayList<Interval> getBlocksInInterval(int modelMinIdx, int modelMaxIdx) {
+        ArrayList<Interval> al = new ArrayList<Interval>();
+        blocks.getIntersectingIntervals(modelMinIdx, modelMaxIdx, al);
+        return al;
+    }
 
+    
     /**
      * adds a line of the input source file to the model.
      * @param line 
@@ -685,7 +704,7 @@ public final class MSCDataModel {
      */
     public void topoSort() {
         if (true) {
-        Graph graph = new Graph(this);
+        TopologyGraph graph = new TopologyGraph(this);
         IntervalTree.dbg = true;
         try {
             int sz = events.size();
@@ -800,5 +819,16 @@ public final class MSCDataModel {
     
     public void setOpenPath(String path) {
         openPath = path;
+    }
+
+    public GraphWindow addGraph(GraphData d[]) {
+        try {
+            graphs.add(d);
+            GraphWindow w = new GraphWindow(d);
+            return w;
+        }catch(Throwable t) {
+            t.printStackTrace();
+        }
+        return null;
     }
 }

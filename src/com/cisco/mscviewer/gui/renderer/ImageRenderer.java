@@ -28,88 +28,17 @@ import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 
+import com.cisco.mscviewer.Main;
+
 
 public class ImageRenderer extends EventRenderer {
-    private static HashMap<String, ImageRenderer> map = new HashMap<String, ImageRenderer>();
-    private static String DEFAULT_RENDERER = "com/cisco/mscviewer/resource/renderer";
-    
     private Image img;
     private Dimension dim = null;
     
-    private static void readDefaultRenderers() {
-        URL resourceURL = ClassLoader.getSystemResource(DEFAULT_RENDERER);
-        String urlStr = resourceURL.getPath(); 
-        int idx = urlStr.indexOf(".jar!"); 
-        try {
-            if (idx != -1) {
-                String jarPath = urlStr.substring(5, idx+4); // strip leading "file:" and trailing !....
-                URL jar;
-                jar = new File(jarPath).toURI().toURL();
-                ZipInputStream zip = new ZipInputStream(jar.openStream());
-                while(true) {
-                    ZipEntry e = zip.getNextEntry();
-                    if (e == null)
-                        break;
-                    String name = e.getName();
-                    if (name.startsWith(DEFAULT_RENDERER)) {
-                        int dotIdx = name.lastIndexOf('.');
-                        int l = DEFAULT_RENDERER.length()+1;
-                        String key = dotIdx >= 0 ? name.substring(l, dotIdx) : name.substring(l);                        
-                        ImageRenderer ir = new ImageRenderer();
-                        try {
-                            ir.img = ImageIO.read(ClassLoader.getSystemResource(name).openStream());
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        map.put(key, ir);
-                    }
-                }
-            } else {
-                File f = new File(resourceURL.toURI());
-                String[] files = f.list();
-                for(String img: files) {
-                    ImageRenderer ir = new ImageRenderer();
-                    File ff = new File(f, img);
-                    ir.img = ImageIO.read(ff);
-                    int dotIdx = img.lastIndexOf('.');
-                    String key = dotIdx >= 0 ? img.substring(0, dotIdx) : img;
-                    map.put(key, ir);
-                }
-            }
-        }catch(MalformedURLException ex) {            
-            ex.printStackTrace();
-        } catch (URISyntaxException ex) {
-            ex.printStackTrace();            
-        }catch(IOException ex) { 
-            ex.printStackTrace();
-        }
-    }
     
-    public static void init(String plugins) {
-        readDefaultRenderers();
-        if (plugins == null)
-            return;
-        for(String path: plugins.split(File.pathSeparator)) {
-            File f = new File(path+"/renderer");
-            String[] icons = f.list();
-            for(String s: icons) {
-                int dotIdx = s.lastIndexOf('.');
-                String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
-                ImageRenderer ir = new ImageRenderer();
-                try {
-                    ir.img = ImageIO.read(new File(f, s));
-                } catch (IOException ex) {
-                    Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                map.put(key, ir);
-            }
-        }
+    public ImageRenderer(Image img) {
+        this.img = img;
     }
-    
-    public static ImageRenderer get(String type) {
-        return map.get(type);
-    }
-    
 
     private void computeDimension(int h) {
         double scalingFactor = ((double)h)/img.getHeight(null);

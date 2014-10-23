@@ -131,8 +131,7 @@ public class AVLTreeNode {
                 right.add(tn);
             }
         } else 
-            throw new Error("Unexpected repeated value "+tn.data.getValue());
-        
+            System.err.println("Unexpected repeated value "+tn.data.getValue());        
         balance();
     }
  

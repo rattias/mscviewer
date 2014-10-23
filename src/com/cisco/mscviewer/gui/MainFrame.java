@@ -15,6 +15,7 @@ import com.cisco.mscviewer.expression.ParsedExpression;
 import com.cisco.mscviewer.io.*;
 import com.cisco.mscviewer.model.*;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
+import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 
 import java.awt.BorderLayout;
@@ -91,12 +92,11 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final ResultPanel results;
     private final DataPanel data;
     final private JFileChooser jfc;
-    private JToggleButton selectBtn, highlightBtn;
+    private JToggleButton selectBtn, highlightBtn, showBlocksBtn;
     private JSlider zoom;
     private Vector<Vector<String>> filters = new Vector<Vector<String>>();
     private final FilterPanel filterP;
     private Marker currentMarker = Marker.GREEN;
-    private static HashMap<String, ImageIcon> imgIcons;
     private final String progName;
     private String fname;
     private boolean isMarking;
@@ -398,64 +398,13 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         
     }
     
-    public static ImageIcon getImageIcon(String path, String description) {
-        return getImageIcon(path, description, -1, -1);
-    }
-    
-    public static ImageIcon getImageIcon(String path, String description, int width, int height) {
-        java.net.URL imgURL;
-        String actPath;
-        boolean shouldRescale = false;
-        
-        actPath = "com/cisco/mscviewer/resource/" + path;
-        ImageIcon im = imgIcons.get(actPath);
-        if (im == null) {
-            if (width >=0) {
-                int idx = actPath.lastIndexOf(".");
-                if (idx >= 0 )
-                    actPath = actPath.substring(0, idx)+width+"x"+height+actPath.substring(idx);
-                else
-                    actPath = actPath+width+"x"+height;
-            }
-            imgURL = ClassLoader.getSystemResource(actPath);
-            if (imgURL == null && width >= 0) {
-                shouldRescale = true;
-                imgURL = ClassLoader.getSystemResource("com/cisco/mscviewer/resource/" + path);
-            }
-            if (imgURL == null) {
-                System.err.println("Couldn't find file: " + actPath+" or  com/cisco/mscviewer/resource/" + path);
-                return null;
-            }
-            im = new ImageIcon(imgURL, description);
-            if (shouldRescale)
-                im.setImage(im.getImage().getScaledInstance(width, height, 0));
-            imgIcons.put(actPath, im);
-        }
-        return im;
-    }
-    
-    private void initIcons() {
-        int W = 25, H = 25;
-        getImageIcon(   "highlight_green.png"       , "green", W, H);
-        getImageIcon(   "highlight_green32x32.png"  , "green");
-        getImageIcon("highlight_yellow.png"     , "yellow", W, H);
-        getImageIcon("highlight_yellow32x32.png", "yellow");
-        getImageIcon("highlight_blue.png"       , "blue", W, H);
-        getImageIcon("highlight_blue32x32.png"  , "blue");
-        getImageIcon("highlight_red.png"        , "red", W, H);
-        getImageIcon("highlight_red.png"        , "red");
-        getImageIcon("select.png"               , "select", W, H);
-        getImageIcon("select32x32.png"      , "select");
-    }
     
     public MainFrame(int x, int y, int w, int h) {
-        imgIcons = new HashMap<String, ImageIcon>();
         MainFrame.mf = this;
         setName("MainFrame");
         setBounds(x, y, w, h);
         progName = "MSCViewer v"+Main.VERSION;
         updateTitle();
-        initIcons();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jfc = new JFileChooser();
         getContentPane().setLayout(new BorderLayout());
@@ -473,7 +422,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         viewModel.addListener(entityList);
         viewModel.setFilter(new CompactViewFilter(viewModel, null));
         
-        scriptTree = new PyScriptTree();
+        scriptTree = new PyScriptTree(mainPanel);
         JTabbedPane topLeft = new TopLeftPane(){
             @Override
             public void setSelectedIndex(int idx) {
@@ -756,7 +705,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         jmb.add(helpMenu);
         setJMenuBar(jmb);
         populateToolbar(toolBar);
-        setMainPanelCursor(getImageIcon("select.png", "", 32, 32).getImage(), 0, 0);
+        setMainPanelCursor(Resources.getImageIcon("select.png", "", 32, 32).getImage(), 0, 0);
 
     }
     
@@ -777,24 +726,24 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         int W = MSCRenderer.EVENT_HEIGHT;
         switch(currentMarker) {
             case YELLOW:
-                highlightBtn.setIcon(getImageIcon("highlight_yellow.png" ,"Yellow Highlighter", W, W ));
-                Image img = getImageIcon("highlight_yellow.png", "", 32, 32).getImage();
+                highlightBtn.setIcon(Resources.getImageIcon("highlight_yellow.png" ,"Yellow Highlighter", W, W ));
+                Image img = Resources.getImageIcon("highlight_yellow.png", "", 32, 32).getImage();
                 setMainPanelCursor(img, 0, img.getHeight(null)-1);
                 break;
             case BLUE:
-                highlightBtn.setIcon(getImageIcon("highlight_blue.png", "Blue Highlighter", W, W));
-                img = getImageIcon("highlight_blue.png", "", 32, 32).getImage();
+                highlightBtn.setIcon(Resources.getImageIcon("highlight_blue.png", "Blue Highlighter", W, W));
+                img = Resources.getImageIcon("highlight_blue.png", "", 32, 32).getImage();
                 setMainPanelCursor(img, 0, img.getHeight(null)-1);
                 break;
             case GREEN:
-                highlightBtn.setIcon(getImageIcon("highlight_green.png", "Highlighter", W, W));
-                img = getImageIcon("highlight_green.png", "", 32, 32).getImage();
+                highlightBtn.setIcon(Resources.getImageIcon("highlight_green.png", "Highlighter", W, W));
+                img = Resources.getImageIcon("highlight_green.png", "", 32, 32).getImage();
                 setMainPanelCursor(img, 0, img.getHeight(null)-1);
                 break;
             case ERROR:
             case RED:
-                highlightBtn.setIcon(getImageIcon("highlight_red.png", "Red Highlighter", W, W));
-                img = getImageIcon("highlight_red.png", "", 32, 32).getImage();
+                highlightBtn.setIcon(Resources.getImageIcon("highlight_red.png", "Red Highlighter", W, W));
+                img = Resources.getImageIcon("highlight_red.png", "", 32, 32).getImage();
                 setMainPanelCursor(img, 0, img.getHeight(null)-1);
                 break;
         }
@@ -802,20 +751,21 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
     
     private void populateToolbar(JToolBar bar){
-        int W = MSCRenderer.EVENT_HEIGHT;
+        int W = 32; //MSCRenderer.EVENT_HEIGHT;
         ButtonGroup bg = new ButtonGroup();
         
-        ImageIcon ii = getImageIcon("select.png", "select", W, W);
+        ImageIcon ii = Resources.getImageIcon("select.png", "select", W, W);
         selectBtn = new JToggleButton(ii);        
-        selectBtn.setMargin(new Insets(0, 0, 0, 0));        
+        selectBtn.setMargin(new Insets(1, 1, 1, 1));
+        //selectBtn.setBorder(BorderFactory.createRaisedBevelBorder());
         selectBtn.setToolTipText(ii.getDescription());
         bg.add(selectBtn);
         bar.add(selectBtn);
         selectBtn.setSelected(true);
         
-        ii = getImageIcon("highlight_green.png", "Green Highlighter", W, W);
+        ii = Resources.getImageIcon("highlight_green.png", "Green Highlighter", W, W);
         highlightBtn = new JToggleButton(ii);
-        highlightBtn.setMargin(new Insets(0, 0, 0, 0));        
+        highlightBtn.setMargin(new Insets(1, 1, 1, 1));        
         highlightBtn.setToolTipText(ii.getDescription());
         bg.add(highlightBtn);
         bar.add(highlightBtn);
@@ -824,7 +774,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (selectBtn.isSelected())
-                    setMainPanelCursor(getImageIcon("select.png", "", 32, 32).getImage(), 0, 0);                
+                    setMainPanelCursor(Resources.getImageIcon("select.png", "", 32, 32).getImage(), 0, 0);                
             }            
         });
         highlightBtn.addMouseListener(new MouseListener() {
@@ -922,16 +872,22 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             
         });
         bar.add(Box.createHorizontalStrut(100));
-        //		FindPanel findP = new FindPanel(mainPanel.getMSCRenderer());
-        //		//findP.setPreferredSize(new Dimension(500, 30));
-        //		findP.setMinimumSize(new Dimension(500, 30));
-        //		findP.setMaximumSize(new Dimension(500, 30));
-        //		bar.add(findP);
-        //		bar.add(Box.createHorizontalStrut(100));
-        //		filterP = new FilterPanel(this);
-        //		filterP.setMinimumSize(new Dimension(500, 30));
-        //		filterP.setMaximumSize(new Dimension(500, 30));
-        //		bar.add(filterP);
+
+        ii = Resources.getImageIcon("blocks.png", "show blocks", W, W);
+        if (ii == null)
+            throw new Error("missing blocks.png");
+        showBlocksBtn = new JToggleButton(ii);
+        bar.add(showBlocksBtn);
+        showBlocksBtn.setMargin(new Insets(1, 1, 1, 1));        
+        showBlocksBtn.setToolTipText(ii.getDescription());
+        showBlocksBtn.setSelected(true);
+        showBlocksBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainPanel.getMSCRenderer().setShowBlocks(showBlocksBtn.isSelected());
+                mainPanel.repaint();
+            }            
+        });
     }
     
     

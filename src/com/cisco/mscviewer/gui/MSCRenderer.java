@@ -10,11 +10,6 @@
  * @since  Jun 2011
  */
 package com.cisco.mscviewer.gui;
-import com.cisco.mscviewer.gui.renderer.EventRenderer;
-import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
-import com.cisco.mscviewer.gui.renderer.BlockInteractionRenderer;
-import com.cisco.mscviewer.gui.renderer.ErrorRenderer;
-import com.cisco.mscviewer.model.*;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,7 +24,23 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
+
 import javax.swing.ImageIcon;
+
+import com.cisco.mscviewer.gui.renderer.BlockInteractionRenderer;
+import com.cisco.mscviewer.gui.renderer.ErrorRenderer;
+import com.cisco.mscviewer.gui.renderer.EventRenderer;
+import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.InputUnit;
+import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.MSCDataModelEventFilter;
+import com.cisco.mscviewer.model.OutputUnit;
+import com.cisco.mscviewer.model.ViewModel;
+import com.cisco.mscviewer.tree.Interval;
+import com.cisco.mscviewer.util.Resources;
 
 public class MSCRenderer {
     private final static long NSEC_PER_USEC = 1000L;
@@ -48,6 +59,7 @@ public class MSCRenderer {
     private Interaction selectedInteraction = null;
     private int viewModelSelectedEventIndex = -1;
     private final boolean showTime = true;
+    private boolean showBlocks = true;
     private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
     private InputUnit deltaTimeUnit = InputUnit.NS; 
     //private InputUnit timestampUnit = InputUnit.NS;
@@ -92,7 +104,7 @@ public class MSCRenderer {
     public MSCRenderer(ViewModel eh) {
         viewModel = eh;
         dataModel = viewModel.getMSCDataModel();
-        infoIcon = MainFrame.getImageIcon("info.png", "Info icon", 16, 16);	
+        infoIcon = Resources.getImageIcon("info.png", "Info icon", 16, 16);	
     }
 
     //	public MSCRenderer() {
@@ -304,9 +316,36 @@ public class MSCRenderer {
         g2d.setFont(font);
         int ascent = g2d.getFontMetrics().getAscent();
         synchronized(dataModel) {
-            // render interactions first
+            // render blocks first
+            Dimension max = new Dimension(64, eventHeight);
             int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
             int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
+            if (showBlocks) {
+                for (Interval block: dataModel.getBlocksInInterval(modelMinIdx, modelMaxIdx)) {
+                    int beginIdx = block.getStart();
+                    int endIdx = block.getEnd();
+                    int beginViewIdx = viewModel.getViewIndexFromModelIndex(beginIdx);
+                    int endViewIdx = viewModel.getViewIndexFromModelIndex(endIdx);
+                    Event beginEv = dataModel.getEventAt(beginIdx);
+                    Event endEv = dataModel.getEventAt(endIdx);
+                    Entity entity = beginEv.getEntity();
+                    int entityIndex = viewModel.indexOf(entity);
+                    if (entityIndex < 0)
+                        continue;
+                    int x = viewModel.getEntityCenterX(entityIndex);
+                    int y0 = beginViewIdx*eventHeight+eventHeight/2;
+                    int y1 = endViewIdx*eventHeight+eventHeight/2;
+                    Rectangle rb = beginEv.getRenderer().getBoundingBox(max, x, y0, null);
+                    Rectangle re = endEv.getRenderer().getBoundingBox(max, x, y1, null);
+                    Rectangle r = rb.union(re);
+                    g2d.setColor(Color.lightGray);
+                    g2d.fillRect(r.x, r.y, r.width, r.height);
+                    g2d.setColor(Color.gray);
+                    g2d.drawRect(r.x, r.y, r.width, r.height);
+                }
+            }
+                
+            // render interactions 
             ArrayList<Interaction> inter = dataModel.getInteractionsInInterval(modelMinIdx, modelMaxIdx);
             Rectangle r1, r2;
             for(Interaction in: inter) {
@@ -337,7 +376,7 @@ public class MSCRenderer {
                 ir.render(r1, r2, g2d, in == selectedInteraction, m);
             }
             
-            // render events after
+            // render events last
             for(int i=viewMinIdx; i<=viewMaxIdx; i++) {
                 Event ev = viewModel.getEventAt(i);
                 Entity en = ev.getEntity();
@@ -783,6 +822,34 @@ public class MSCRenderer {
         return (int)Math.sqrt((x1-x)*(x1-x)+(y1-y)*(y1-y));
     }
 
+    public void setSelectedEvent(Event ev) {
+        selectedInteraction = null;
+        selectedEvent = ev;
+        int modelIdx = ev.getIndex();
+        viewModelSelectedEventIndex = selectedEvent != null ? viewModel.getViewIndexFromModelIndex(modelIdx) : -1;
+        for (SelectionListener selListener : selListeners) {
+            selListener.eventSelected(this, selectedEvent, viewModelSelectedEventIndex, modelIdx);
+        }
+    }
+    
+    public void setSelectedEventByModelIndex(int modelIdx) {
+        int currModelIndex = viewModel.getModelIndexFromViewIndex(viewModelSelectedEventIndex);
+        if (modelIdx == currModelIndex) {
+            return; 
+        }
+        if (modelIdx != -1) {
+            selectedInteraction = null;
+            selectedEvent = dataModel.getEventAt(modelIdx);
+            viewModelSelectedEventIndex = selectedEvent != null ? viewModel.getViewIndexFromModelIndex(modelIdx) : -1;
+        } else {         
+            selectedEvent = null;
+            viewModelSelectedEventIndex = -1;
+        }
+        for (SelectionListener selListener : selListeners) {
+            selListener.eventSelected(this, selectedEvent, viewModelSelectedEventIndex, modelIdx);
+        }
+    }
+    
     public void setSelectedEventByViewIndex(int idx) {
         if (idx == viewModelSelectedEventIndex) {
             return; 
@@ -791,7 +858,8 @@ public class MSCRenderer {
             selectedInteraction = null;
             selectedEvent = viewModel.getEventAt(idx);
             viewModelSelectedEventIndex =(selectedEvent != null)? idx: -1;
-        } else {            selectedEvent = null;
+        } else {         
+            selectedEvent = null;
             viewModelSelectedEventIndex = -1;
         }
         int modelIndex = viewModel.getModelIndexFromViewIndex(viewModelSelectedEventIndex);
@@ -1267,6 +1335,10 @@ public class MSCRenderer {
     public void setZoomFactor(int v) {
         zoomFactor  = v;
         eventHeight = EVENT_HEIGHT*v/100;
+    }
+
+    public void setShowBlocks(boolean show) {
+        showBlocks = show;
     }
 
 

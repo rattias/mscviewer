@@ -40,7 +40,7 @@ public class IntervalTreeNode extends AVLTreeNode {
     
 
     private void fixMinStart() {
-        Interaction in = (Interaction)data;
+        Interval in = (Interval)data;
         minStart = Integer.MAX_VALUE;
         if (left != null && minStart > ((IntervalTreeNode)left).minStart)
             minStart = ((IntervalTreeNode)left).minStart;

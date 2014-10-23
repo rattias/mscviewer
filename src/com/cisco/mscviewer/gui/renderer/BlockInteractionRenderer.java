@@ -11,6 +11,12 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.JSonObject;
+
 public class BlockInteractionRenderer extends RectangleInteractionRenderer {
+    public BlockInteractionRenderer() {
+        setup(null, null);
+    }
 
 }

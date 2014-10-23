@@ -19,7 +19,7 @@ import java.awt.Rectangle;
 
 
 public class DefaultEventRenderer extends EventRenderer {
-    private final int width = 7;
+    private final int width = 8;
 
     @Override
     public void setup(JSonObject props) {
@@ -29,8 +29,8 @@ public class DefaultEventRenderer extends EventRenderer {
 
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        g2d.setColor(Color.ORANGE);
-        g2d.fillRect(-width/2, -maxDim.height/2, width, maxDim.height-1);
+        g2d.setColor(Color.gray);
+        g2d.fillOval(-2, -2, 5, 5);
     }
 
 

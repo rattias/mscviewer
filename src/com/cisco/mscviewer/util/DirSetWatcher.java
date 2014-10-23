@@ -39,7 +39,6 @@ public class DirSetWatcher extends Thread {
     private Thread wt;
     
     public DirSetWatcher(String[] arr) {        
-        System.out.println("DIRSETWATCHER CREATED!!!!");
         paths = arr.clone();
         watchers = new Vector<Watcher>();
         FileSystem defaultFS = FileSystems.getDefault();
@@ -67,7 +66,6 @@ public class DirSetWatcher extends Thread {
         if (wt != null)
             throw new Error("Internal Error: second thread spawned");
         wt = Thread.currentThread();
-        System.out.println("Thread "+Thread.currentThread().getName()+" started");
         // loop forever to watch directories
         try {
             while(true) {

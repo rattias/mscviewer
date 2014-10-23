@@ -71,8 +71,6 @@ public class DefaultInteractionRenderer extends InteractionRenderer {
     }
 
     private void drawArrow(Graphics2D g2d, int x1, int y1, int x2, int y2, boolean self) {
-        if (x1==0 && x2==0)
-            System.out.println("!!!");
         double theta;
         if ((!self) || (straight)) {
             g2d.drawLine(x1, y1, x2, y2);

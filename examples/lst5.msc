@@ -1,4 +1,4 @@
 @msc_event { "time":"1s", "entity":"producer", "label":"start", "data":{"somekey":"somevalue", "anotherkey":"anothervalue"}}
-@msc_event { "time":"2s", "entity":"producer", "label":"produce", "data":{"bytes":[10,20,30]}, "source":"1"}
-@msc_event { "time":"3s", "entity":"consumer", "label":"consume", "data":{"foo":"bar", "subobj":{"some":"stuff", "someother":"stuff"}}, "sink":"1"}
+@msc_event { "time":"2s", "entity":"producer", "label":"produce", "data":{"bytes":[10,20,30]}, "src":"1"}
+@msc_event { "time":"3s", "entity":"consumer", "label":"consume", "data":{"foo":"bar", "subobj":{"some":"stuff", "someother":"stuff"}}, "dst":"1"}
 @msc_event { "time":"4s", "entity":"consumer", "label":"do something"}

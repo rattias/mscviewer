@@ -11,6 +11,7 @@
  */
 package com.cisco.mscviewer.gui;
 
+import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 import com.cisco.mscviewer.model.*;
 
@@ -450,7 +451,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 //                ehm.setEntityBounds(ehm.indexOf(en), p.getBounds());
 //            }
 //        });
-        JButton x = new JButton(MainFrame.getImageIcon("close1.png", "close"));
+        JButton x = new JButton(Resources.getImageIcon("close1.png", "close"));
         x.setBorderPainted(false);
         x.setMargin(new Insets(2, 0, 2, 0));
         class XActionListener implements ActionListener {
@@ -468,10 +469,10 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             }
         }
         x.addActionListener(new XActionListener(en));
-        JToggleButton y = new JToggleButton(MainFrame.getImageIcon("iconize.png", "iconize"));
+        JToggleButton y = new JToggleButton(Resources.getImageIcon("iconize.png", "iconize"));
         y.setFocusable(false);
         y.setName("iconize");
-        y.setSelectedIcon(MainFrame.getImageIcon("iconize1.png", "iconize"));
+        y.setSelectedIcon(Resources.getImageIcon("iconize1.png", "iconize"));
         y.setBorderPainted(false);
 
         y.setMargin(new Insets(2, 0, 2, 0));
