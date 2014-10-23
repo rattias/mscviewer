@@ -1,2 +1,4 @@
 /classes/
 *.class
+*.project
+*.pydevproject
