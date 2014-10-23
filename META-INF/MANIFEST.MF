@@ -1,5 +1,0 @@
-Manifest-Version: 1.1
-Class-Path: /jython-standalone-2.5.4-rc1.jar  /swingx-all-1.6.4.jar
-Created-By: Rattias
-Main-Class: com.cisco.mscviewer.Main
-
