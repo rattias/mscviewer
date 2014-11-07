@@ -22,21 +22,22 @@ import java.util.HashSet;
 public class AVLTree implements Cloneable {
     protected AVLTreeNode root;
 
+    private String name;
+    
+    public AVLTree(String name) {
+        this.name = name;
+    }
+
     public AVLTreeNode getRoot() {
         return root;
     }
 
-    public void add(Value p) {
+    public void add(Value p) {        
         AVLTreeNode tn = newNode(p);
         if (root == null)
             root = tn;
-        else
+        else {
             root.add(tn);
-        if (IntervalTree.dbg) {
-            //System.out.print("ADD: "+p.getValue());
-            //for (String el: pathsToValue(p.getValue())) {
-            //    System.out.println(el);
-            //}
         }
     }
 
@@ -69,8 +70,6 @@ public class AVLTree implements Cloneable {
                 curr = curr.right;
         }
         if (curr != null) {
-            if (IntervalTree.dbg)
-                System.out.println("!!!");
             res = curr.data;
             // node found, delete it
             // * 1. If node X is a leaf or has only one child, skip to step 5. (node Z will be node X)
@@ -144,8 +143,8 @@ public class AVLTree implements Cloneable {
         return al.toArray(new String[al.size()]);
     }
     
-    protected AVLTree newTree() {
-        return new AVLTree();
+    protected AVLTree newTree(String name) {
+        return new AVLTree(name);
     }
     
     protected AVLTreeNode newNode(Value d) {
@@ -153,11 +152,11 @@ public class AVLTree implements Cloneable {
     }
 
     @SuppressWarnings("unused")
-    private void verify(String msg) {
+    protected void verify(String msg) {
         if (root == null)
             return;
         HashSet<Object> hs = new HashSet<Object>();
-        root.verify(hs, msg);
+        root.verify(root, hs, msg, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
     
     

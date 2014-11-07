@@ -1,6 +1,8 @@
 package com.cisco.mscviewer.script;
+import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.gui.MainPanel;
+import com.cisco.mscviewer.script.PythonChangeListener;
 import com.cisco.mscviewer.util.DirSetWatcher;
 import com.cisco.mscviewer.util.ProgressReport;
 import com.cisco.mscviewer.util.Report;
@@ -16,8 +18,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.SwingWorker;
 
@@ -31,7 +31,9 @@ import org.python.core.*;
 public class Python  {
     private  PythonInterpreter interpreter;
     private  String[] pypath;
-    private final  HashMap<String, PythonFunction[]> module2funcs = new LinkedHashMap<String, PythonFunction[]>();
+    private final HashMap<String, PythonFunction[]> module2funcs = new LinkedHashMap<String, PythonFunction[]>();
+    private final HashMap<String, String> module2PyFile = new HashMap<String, String>();
+    private final ArrayList<PythonChangeListener> listeners = new ArrayList<PythonChangeListener>(); 
     private DirSetWatcher dw;
     private boolean scriptsChanged;
     
@@ -67,6 +69,7 @@ public class Python  {
         } else {
             if (isModule(f, fullpath)) {
                 String pkg = pathToName(fpath);
+                module2PyFile.put(pkg,fullpath);
                 module2funcs.put(pkg, new PythonFunction[0]);
                 interpreter.exec("import "+pkg);
                 interpreter.exec("from "+pkg+" import *");
@@ -84,6 +87,8 @@ public class Python  {
     
     
     public void init(MainPanel mp) {
+        module2funcs.clear();
+        module2PyFile.clear();
         String path = System.getProperty("pypath");
         if (path == null) { 
             throw new Error("-Dpypath=<path> missing");
@@ -106,7 +111,7 @@ public class Python  {
             interpreter.set("msc_main_panel", mp);
             int v=4;
             for(String pathEl: pypath) {
-                pr.progress("traversing path", v++);
+//                pr.progress("traversing path", v++);
                 traverse(pathEl, "", 0, dirs);
             }
             if (dw != null)
@@ -115,24 +120,28 @@ public class Python  {
             dw.add(new Watcher() {
                 @Override
                 public void event(String parentPath, WatchEvent<?> ev) {
+                    //System.out.println("Watcher Event cnt="+ev.count()+", ctx="+ev.context());
                     Path path = (Path)ev.context();
                     File  file = new File(parentPath, path.toString());
-                    System.out.println("-->"+file.toString());
-                    System.out.println("isFile: "+file.isFile());
-                    if (file.isFile() && path.toString().endsWith(".py")) {
+                    //System.out.println("-->"+file.toString());
+                    //System.out.println("isFile: "+file.isFile());
+                    if ((!file.isDirectory()) && path.toString().endsWith(".py")) {
+                        System.out.println("scripts Changed");
                         scriptsChanged = true;
+                        for(PythonChangeListener l: listeners)
+                            l.moduleChanged(file.getPath());
                     }
                 }
             });
             dw.start();
 
             for(String m: module2funcs.keySet()) {
-                System.out.println("traversing module "+m);
+//                System.out.println("traversing module "+m);
                 Object[] fnNames = ((PyList)interpreter.eval("msc_list_functions("+m+")")).toArray();
-                System.out.print("    found functions: ");
-                for(Object fn: fnNames)
-                    System.out.print(fn+" ");
-                System.out.println();
+//                System.out.print("    found functions: ");
+//                for(Object fn: fnNames)
+//                    System.out.print(fn+" ");
+//                System.out.println();
                 if (fnNames.length > 0) {
                     PythonFunction[] funcs = new PythonFunction[fnNames.length];
                     for(int i=0; i<fnNames.length; i++) {
@@ -142,6 +151,7 @@ public class Python  {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             Report.exception(e);
         }finally {
             pr.progressDone();
@@ -150,7 +160,7 @@ public class Python  {
 
     public String[] getPackages() {
         Set<String> s = module2funcs.keySet();
-        System.out.println("getPackages(): "+s.size()+" packages");
+        //System.out.println("getPackages(): "+s.size()+" packages");
         return s.toArray(new String[s.size()]);
     }
 
@@ -158,7 +168,20 @@ public class Python  {
         return module2funcs.get(pkg);
     }
 
+    public String getPyPathForFunction(PythonFunction f) {
+        for(String m: module2funcs.keySet()) {
+            PythonFunction[] funcs = getFunctions(m);
+            for(PythonFunction f1: funcs) {
+                if (f1 == f)
+                    return module2PyFile.get(m);
+            }
+        }
+        return null;
+    }
+    
     public void eval(final String cmd, final ScriptResult sc) {
+        if (Main.batchMode)
+            sc.setResult(interpreter.eval(cmd));
         SwingWorker<Object, Object> sw = new SwingWorker<Object, Object>() {
             @Override
             protected Object doInBackground() throws Exception {
@@ -170,10 +193,12 @@ public class Python  {
                 try {
                     @SuppressWarnings("unused")
                     Object res = get();
+                    sc.setResult(res);
                 }catch(InterruptedException ex){
                     // shouldn't happen
                 } catch(ExecutionException ex) {
                     Throwable ex1 = ex.getCause();
+                    System.err.println("exception while evaluating expression "+cmd);
                     Report.exception(ex1);
                 } catch(CancellationException ex) {
                     System.out.println("cancelled by user");
@@ -222,6 +247,10 @@ public class Python  {
     
     public PyObject get(String name) {
         return interpreter.get(name);
+    }
+
+    public void addChangeListener(PythonChangeListener l) {
+        listeners.add(l);        
     }
 
 }

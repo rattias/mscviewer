@@ -96,8 +96,13 @@ public class AVLTreeNode {
         
 
         
-    protected void verify(HashSet<Object> set, String msg) {
-        
+    protected void verify(AVLTreeNode root, HashSet<Object> set, String msg, int min, int max) {
+        if (data.getValue() < min || data.getValue() > max) {
+            ArrayList<String> al = new ArrayList<String>();
+            root.pathsToValue(data.getValue(), "", al);
+            System.err.println("Exception: current tree: ");
+            throw new Error(msg+":"+al.get(0)+": "+data.getValue()+" should be in range ("+min+","+max+")");
+        }
         if (set.contains(this))
             throw new Error("Circular Link: "+msg);
         set.add(this);
@@ -105,12 +110,10 @@ public class AVLTreeNode {
             throw new Error("Duplicated value: "+msg);
         set.add(data);
         if (left != null) {
-            assert(data.getValue() < left.data.getValue());
-            left.verify(set, msg);
+            left.verify(root, set, msg, min, data.getValue());
         }
         if (right != null) {
-            assert(data.getValue() > right.data.getValue());
-            right.verify(set, msg);
+            right.verify(root, set, msg, data.getValue(), max);
         }
     }
  
@@ -131,8 +134,14 @@ public class AVLTreeNode {
                 right.add(tn);
             }
         } else 
-            System.err.println("Unexpected repeated value "+tn.data.getValue());        
+            System.err.println("Unexpected repeated value "+tn.data.getValue());
+//        HashSet hs = new HashSet();
+//        verify(this, hs, "added "+tn.data.getValue()+", before balance", Integer.MIN_VALUE, Integer.MAX_VALUE);
+
         balance();
+        
+//        hs = new HashSet();
+//        verify(this, hs, "added "+tn.data.getValue()+", after balance", Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
  
     protected void balance() {
@@ -157,7 +166,6 @@ public class AVLTreeNode {
                 rotateRR();
             rh--;
         }
-        //verify("no rotate");
         height = Math.max(lh, rh) + 1;
     }
     
@@ -276,12 +284,13 @@ public class AVLTreeNode {
                 al.remove(al.size()-1);
             }
         }
-        al.remove(al.size()-1);
+        if (al.size() > 0 && al.get(al.size()-1).toString().endsWith("->"))
+            al.remove(al.size()-1);
         return false;
     }
 
 
-    protected void pathsToValue(int v, String currPath, ArrayList<String> paths) {
+    protected String pathsToValue(int v, String currPath, ArrayList<String> paths) {
         String np = currPath + this;
         if (data.getValue() == v) {
             paths.add(np);
@@ -292,6 +301,7 @@ public class AVLTreeNode {
         if (right  != null) {
             ((IntervalTreeNode)right).pathsToValue(v, np + "-R->", paths);
         }
+        return paths.size()>0 ? paths.get(0) : "<none>";
     }
     
     @SuppressWarnings("unused")
@@ -325,7 +335,7 @@ public class AVLTreeNode {
         AVLTree t;
         if (false) {
             int r = (int) (Math.random() * 100);
-            t = new AVLTree();
+            t = new AVLTree("test0");
             t.add(new Info(0, r));
             for(int i=0; i<32; i++) {
                 do {
@@ -335,7 +345,7 @@ public class AVLTreeNode {
             }
         } else {
             int[] vals = {1, 5, 20, 8, 7, 4, 10};
-            t = new AVLTree();
+            t = new AVLTree("test1");
             t.add(new Info(0, 9));
             for (int v : vals) {
                 t.add(new Info(0, v));

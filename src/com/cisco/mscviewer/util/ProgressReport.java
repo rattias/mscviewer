@@ -11,6 +11,7 @@
  */
 package com.cisco.mscviewer.util;
 
+import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.gui.MainFrame;
 
 import java.awt.AlphaComposite;
@@ -104,6 +105,8 @@ public class ProgressReport {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.shouldShow = shouldShow;
+        if (Main.batchMode)
+            return;
         try {
             if (SwingUtilities.isEventDispatchThread())
                 createProgressGUI(activity, msg, minValue, maxValue);
@@ -125,7 +128,7 @@ public class ProgressReport {
         ProgressReport child = new ProgressReport(activity, msg, this, percent, minValue, maxValue, show);
         if (children == null) {
             children = new ArrayList<ProgressReport>();
-            childrenBaseValue = getProgress();
+            childrenBaseValue = Main.batchMode ? 0 : getProgress();
         }
         children.add(child);
         return child;
@@ -156,46 +159,53 @@ public class ProgressReport {
 
     
     private void updateDialog(){
-        if (elements.isEmpty()) {
-            d.setVisible(false);
-            MainFrame.getInstance().setGlassPane(gpane);
-            gpane.setVisible(false);
-            return; 
-        }
-        if (!elementShowing) {
-            long t1 = System.currentTimeMillis();
-            if (t1-t0<500)
-                return;
-            if (maxValue >= 0) {
-                float velocity = ((float)pb.getValue())/(t1-t0);
-                long duration = (long)((maxValue-minValue)/velocity);
-                if (duration < 2000)
-                    return;
+        Runnable r = new Runnable() {
+            public void run() {
+                if (elements.isEmpty()) {
+                    d.setVisible(false);
+                    MainFrame mf = MainFrame.getInstance();
+                    if (mf != null) {
+                        mf.setGlassPane(gpane);
+                        gpane.setVisible(false);
+                    }
+                    return; 
+                }
+                if (!elementShowing) {
+                    d.setContentPane(new JOptionPane(
+                            elements.toArray(new Object[elements.size()]),
+                            JOptionPane.PLAIN_MESSAGE,
+                            JOptionPane.DEFAULT_OPTION,
+                            null,
+                            new String[]{"Cancel"}
+                            )
+                            );
+                    d.pack();
+                    JFrame f = MainFrame.getInstance();
+                    if (f != null) {
+                        Rectangle r = f.getBounds();
+                        r.x = r.x+(r.width-d.getWidth())/2;
+                        r.y = r.y+(r.height-d.getHeight())/2;
+                        d.setLocation(r.x, r.y);
+                    }
+                    MainFrame mf = MainFrame.getInstance();
+                    if (mf != null) {
+                        mf.setGlassPane(gpane);
+                        gpane.setVisible(true);
+                    }
+                    d.setVisible(true);
+                    elementShowing = true;
+                }
             }
-            d.setContentPane(new JOptionPane(
-                    elements.toArray(new Object[elements.size()]),
-                    JOptionPane.PLAIN_MESSAGE,
-                    JOptionPane.DEFAULT_OPTION,
-                    null,
-                    new String[]{"Cancel"}
-            )
-            );
-            d.pack();
-            JFrame f = MainFrame.getInstance();
-            if (f != null) {
-                Rectangle r = f.getBounds();
-                r.x = r.x+(r.width-d.getWidth())/2;
-                r.y = r.y+(r.height-d.getHeight())/2;
-                d.setLocation(r.x, r.y);
-            }
-            MainFrame.getInstance().setGlassPane(gpane);
-            gpane.setVisible(true);
-            d.setVisible(true);
-            elementShowing = true;
-        }
+        };
+        if (SwingUtilities.isEventDispatchThread())
+            r.run();
+        else
+            SwingUtilities.invokeLater(r);
     }
 
     public void progress(String msg, int v) {
+        if (Main.batchMode)
+            return;
         if (children != null && children.size()>0)
             throw new UnsupportedOperationException("updating progress for a ProgressReport when children are present is not allowed.");                    
         msgLabel.setText("<html>"+Utils.stringToHTML(msg)+"</html>");
@@ -203,6 +213,8 @@ public class ProgressReport {
     }
 
     public void progress(int v) {
+        if (Main.batchMode)
+            return;
         //System.out.println("progress("+activity+"): "+v);
         if (children != null && children.size()>0)
             throw new UnsupportedOperationException("updating progress for a ProgressReport when children are present is not allowed.");                    
@@ -210,6 +222,8 @@ public class ProgressReport {
     }
 
     private void progressInternal(int v) {
+        if (Main.batchMode)
+            return;
         if (! pb.isIndeterminate())
             pb.setValue(v);
         if (parent != null)

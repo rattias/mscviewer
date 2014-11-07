@@ -12,14 +12,17 @@ import com.cisco.mscviewer.io.LegacyLoader;
 import com.cisco.mscviewer.io.Loader;
 import com.cisco.mscviewer.model.*;
 import com.cisco.mscviewer.script.Python;
+import com.cisco.mscviewer.script.ScriptResult;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 
 import java.awt.Font;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -67,6 +70,15 @@ public class Main {
     private static MSCDataModel dataModel;
     public static ProgressMonitor pm;
 
+    private static final void appendToPyPath(String s) {
+        String v = System.getProperty("pypath");
+        if (v != null && v.length() > 0)
+            v += File.pathSeparator + s;
+        else
+            v = s;
+        System.setProperty("pypath", v);
+    }
+    
     private static final Opt[] opts = new Opt[] {
         new Opt('h', "help", true, "shows this help") {
             @Override
@@ -91,9 +103,7 @@ public class Main {
         new Opt('p', "pypath", true, "specify a Python module search path") {
             @Override
             void found(String arg) {
-                //                System.out.println("SETTTING PYPATH TO "+arg);
-                System.setProperty("pypath", arg);
-                System.out.println("pypath = "+arg);
+                appendToPyPath(arg);
             }
         },
         new Opt('x', "extra", false, "enable some extra features") {
@@ -114,10 +124,16 @@ public class Main {
                 Main.loaderClass = arg;
             }
         },
-        new Opt('d', "domain", true, "specify a path for domain-specific plugins") {
+        new Opt('r', "resource", true, "specify a path for domain-specific resources") {
             @Override
             void found(String arg) {
                 Main.plugins = arg;
+                System.out.println("resources="+arg);
+                for (String s : arg.split(File.pathSeparator)) {
+                    String dir = s+"/script";
+                    if (new File(dir).isDirectory())
+                        appendToPyPath(dir);
+                }
             }
         }
     };
@@ -137,11 +153,12 @@ public class Main {
     ClassNotFoundException, SecurityException, NoSuchMethodException,
     IllegalArgumentException, IllegalAccessException,
     InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
-        //Thread.sleep(20000);
-
+        System.setProperty("pypath", Main.getInstallDir()+"/resources/default/script");
+        
         setupUIDefaults();
         int idx = processOptions(args);
 
+        System.out.println("pypath="+System.getProperty("pypath"));
         final String fname = (idx<args.length) ? args[idx]: null;
         Class<?> cl = Class.forName("com.cisco.mscviewer.io."+loaderClass);
 
@@ -175,10 +192,11 @@ public class Main {
             loader.waitIfLoading();
             MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
             Python p = new Python(mp);
+            ScriptResult sr = new ScriptResult();
             String text = new String(Files.readAllBytes(Paths.get(script)), StandardCharsets.UTF_8);
-            p.eval(text);
+            p.exec(text);
             if (batchFun != null) {
-                p.eval(batchFun);
+                p.eval(batchFun, sr);
             }
         }
     }
@@ -365,5 +383,16 @@ public class Main {
         return dataModel;
     }
 
+    public static String getInstallDir() {
+        URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
+        String urlStr = resourceURL.getPath(); 
+        int idx = urlStr.indexOf("mscviewer.jar!");
+        if (idx < 0) {
+            return urlStr.substring(1,  urlStr.indexOf("classes"));
+        } else {
+            return urlStr.substring("file:/".length(),  idx);
+        }
+    }        
+    
 
 }

@@ -11,6 +11,8 @@
  */
 package com.cisco.mscviewer.tree;
 
+import com.cisco.mscviewer.Main;
+import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.model.Interaction;
 
 import java.io.FileWriter;
@@ -22,7 +24,6 @@ import java.util.ArrayList;
  * @author rattias
  */
 public class IntervalTreeNode extends AVLTreeNode {
-    public static boolean debugging = false;
     private int  minStart;
     
     public IntervalTreeNode(Interval el) {
@@ -114,12 +115,16 @@ public class IntervalTreeNode extends AVLTreeNode {
         Interval ite = (Interval)data;
         if (end < minStart)
             return;
-        if (start <= ite.getEnd() && end >= ite.getStart())
+        if (start <= ite.getEnd() && end >= ite.getStart()) {
             ret.add(ite);
-        if (left!= null && start <= ite.getEnd()) 
+        } else {
+        }
+        if (left!= null && start <= ite.getEnd()) { 
             ((IntervalTreeNode)left).getIntersectingIntervals(start, end, ret);
-        if (right != null) 
-            ((IntervalTreeNode)right).getIntersectingIntervals(start, end, ret);        
+        }
+        if (right != null) { 
+            ((IntervalTreeNode)right).getIntersectingIntervals(start, end, ret);
+        }
     }
     
 
@@ -220,7 +225,7 @@ public class IntervalTreeNode extends AVLTreeNode {
         
         int l = (int)(Math.random()*1000);
         int r = (int)(Math.random()*1000);
-        IntervalTree t = new IntervalTree();
+        IntervalTree t = new IntervalTree("test");
         t.add(new Info(l, l+r));
         long t1 = System.currentTimeMillis();
         int NUM_INTERVALS = 1000000;
@@ -310,7 +315,7 @@ public class IntervalTreeNode extends AVLTreeNode {
     
     public String toString() {
         Interval in = (Interval)data;
-        return "["+in.getStart()+","+in.getEnd()+", min="+minStart+", ("+((Interaction)in).getFromIndex()+", "+((Interaction)in).getToIndex()+")]";
+        return "["+in.getStart()+","+in.getEnd()+", min="+minStart+"]";
     }
 
 }

@@ -21,6 +21,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +65,8 @@ public class DirSetWatcher extends Thread {
     @Override
     public void run() {
         dirWatcherThread = Thread.currentThread();
+        HashMap<String, Long> modificationTime = new HashMap<String, Long>(); 
+
         if (wt != null)
             throw new Error("Internal Error: second thread spawned");
         wt = Thread.currentThread();
@@ -74,19 +78,29 @@ public class DirSetWatcher extends Thread {
                 }while(wk == null);
                             
                 long ts = System.currentTimeMillis();
-                System.out.println("watcher woke up");
-                if (exit)
+                if (exit) {
+                    System.out.println("Dir watcher exiting");
                     break;
+                }
                 if (wk != null) {
                     String parentPath = ((Path)wk.watchable()).toString();
                     int cnt = 0;
-                    for (WatchEvent<?> event : wk.pollEvents()) { 
+                    List<WatchEvent<?>> events = wk.pollEvents();
+                    for (WatchEvent<?> event : events) { 
+                        Path path = (Path)event.context();
+                        File  file = new File(parentPath, path.toString());
+                        System.out.println("file is "+file.getPath());
+                        Long mod = modificationTime.get(file.getPath());
+                        long lm = file.lastModified();
+                        if (mod != null && lm - mod < 100) {
+                            continue;
+                        }
+                        modificationTime.put(file.getPath(), lm);
                         for(Watcher w: watchers)
                             w.event(parentPath, event);
                         cnt++;
                         Kind<?> kind = event.kind();
-                        Path path = (Path)event.context();
-                        File  file = new File(parentPath, path.toString());
+                            
                         if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {
                             if (file.isDirectory()) {
                                 path.register(ws, 
@@ -94,16 +108,17 @@ public class DirSetWatcher extends Thread {
                                         StandardWatchEventKinds.ENTRY_MODIFY,
                                         StandardWatchEventKinds.ENTRY_DELETE);
                             }
-                            System.out.println(ts+": Entry created:" + file.getPath());
+                            //System.out.println(ts+": Entry created:" + file.getPath());
                         } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
                             System.out.println(ts+": Entry deleted:" + path);
                         } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
-                            System.out.println(ts+": ["+cnt+"] Entry modified:" + path);
+                            //System.out.println(ts+": ["+cnt+"] Entry modified:" + path);
                         }
                     }                    
                     if (!wk.reset())
                         break;
                 }
+                Thread.sleep(1000);
             }
         } catch (InterruptedException ex) {
         } catch (IOException ex) {

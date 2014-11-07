@@ -53,18 +53,12 @@ install: jar
 	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
 	@mkdir -p $(INSTALL_DIR)
 	@cp -rf bin batch examples doc third-parties $(INSTALL_DIR)
-	@cp -rf mscviewer.jar plugins $(INSTALL_DIR)
-	@echo $(JAVA) -jar\
-          "\"-Dpypath=$(INSTALL_DIR_N_FS)/examples$P" \
-                     "$(INSTALL_DIR_N_FS)/plugins\"" \
-                     "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-          '$$@' >$(INSTALL_DIR)/bin/mscviewer
+	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
+	@echo $(JAVA) -jar "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
+                          '$$@' >$(INSTALL_DIR)/bin/mscviewer
 	@echo $(JAVA)\
-          -jar \
-          "\"-Dpypath=$(INSTALL_DIR_N_FS)/examples$P" \
-                     "$(INSTALL_DIR_N_FS)/plugins\"" \
-                     "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-          '%*' >$(INSTALL_DIR)/bin/mscviewer.bat
+          -jar "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
+                       '%*' >$(INSTALL_DIR)/bin/mscviewer.bat
 
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(shell find $(INSTALL_DIR) -name '.*')

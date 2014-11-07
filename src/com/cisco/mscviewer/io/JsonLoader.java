@@ -421,12 +421,19 @@ public class JsonLoader implements Loader {
                         if (blk == null) {
                             blk = new SimpleInterval(evIdx, evIdx);
                             pendingBlocks.put(entityPath+"/block", blk);
-                            dm.addBlock(blk);
+                            // note: we can't add blocks to data model yet
+                            // because we later change the right bound, and this would
+                            // break the AVLTree sorted on right bound to which blocks
+                            // are added in the model
                         } else {
                             if (hasIncoming) {
+                                dm.addBlock(blk);
                                 blk = new SimpleInterval(evIdx, evIdx);
                                 pendingBlocks.put(entityPath+"/block", blk);
-                                dm.addBlock(blk);
+                                // note: we can't add blocks to data model yet
+                                // because we later change the right bound, and this would
+                                // break the AVLTree sorted on right bound to which blocks
+                                // are added in the model
                             } else {
                                 blk.setEnd(evIdx);
                             }
@@ -466,6 +473,10 @@ public class JsonLoader implements Loader {
                 }
                 for(Interaction inter: pendingSinked.values()) {
                     dm.addInteraction(inter);
+                }
+
+                for(Interval block: pendingBlocks.values()) {
+                    dm.addBlock(block);
                 }
                 // sort topologically
                 dm.topoSort();

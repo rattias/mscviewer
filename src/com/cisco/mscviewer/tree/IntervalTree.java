@@ -22,6 +22,10 @@ import com.cisco.mscviewer.model.SimpleInterval;
 public class IntervalTree extends AVLTree {
     public static boolean dbg = false;
     
+    public IntervalTree(String name) {
+        super(name);
+    }
+    
     public ArrayList<Interval> getIntervalsWithEndBound(int c) {
         ArrayList<Interval> els = new ArrayList<Interval>();
         getIntervalsWithEndBound(c, els);
@@ -51,6 +55,8 @@ public class IntervalTree extends AVLTree {
     public void getIntersectingIntervals(int start, int end, ArrayList<Interval> ret) {
         if (root != null)
             ((IntervalTreeNode)root).getIntersectingIntervals(start, end, ret);
+//        System.out.println("PATH TO 116:"+pathToStart(116));
+//        verify("???");
     }
     
     public void getIntervalsWithEndBound(int c, ArrayList<Interval> ret) {

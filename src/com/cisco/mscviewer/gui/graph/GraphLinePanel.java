@@ -6,6 +6,7 @@ import com.cisco.mscviewer.graph.GraphData;
 import com.cisco.mscviewer.graph.Point;
 import com.cisco.mscviewer.tree.Interval;
 
+@SuppressWarnings("serial")
 public class GraphLinePanel extends GraphPanel {    
     @Override
     public void paintGraph(Graphics2D g) {

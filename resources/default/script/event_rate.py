@@ -4,8 +4,7 @@ from com.cisco.mscviewer.graph import GraphData
 from mscviewer import *
 
     
-    
-@msc_fun
+@msc_fun  
 def event_rate_fn(window_ms=50):
     """
     Creates a set of graph representing rate of events, one for each entity of the

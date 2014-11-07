@@ -12,19 +12,24 @@
 package com.cisco.mscviewer.gui;
 
 import com.cisco.mscviewer.script.Python;
+import com.cisco.mscviewer.script.PythonChangeListener;
 import com.cisco.mscviewer.script.PythonFunction;
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
 
 import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 
 import javax.script.ScriptException;
+import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingWorker;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -68,8 +73,6 @@ class PyScriptTree extends JTree {
     }
 
     public void initTreeContent() {
-//        if (! SwingUtilities.isEventDispatchThread())
-//            throw new Error("Should be called in event dispatch thread, called by "+Thread.currentThread());
         if (updating)
             return;
         updating = true;
@@ -94,8 +97,25 @@ class PyScriptTree extends JTree {
         root.removeAllChildren();
         dtm.reload();
         if (py == null) {
-            System.out.println("Instantiating python");
+            //System.out.println("Instantiating python");
             py = new Python(mainPanel);
+            py.addChangeListener(new PythonChangeListener() {
+                @Override
+                public void moduleAdded(String module) {
+                    initTreeContent();                    
+                }
+
+                @Override
+                public void moduleRemoved(String module) {
+                    initTreeContent();                    
+                }
+
+                @Override
+                public void moduleChanged(String module) {
+                    initTreeContent();                    
+                }
+                
+            });
         } else
             py.init(mainPanel);
         try{
@@ -112,12 +132,39 @@ class PyScriptTree extends JTree {
                 }
             }
             dtm.reload();
-            //dtm.nodeStructureChanged(root);
         }catch(Throwable ex) {
+            ex.printStackTrace();
             Report.exception(ex);
         }
     }
 
+    private void handlePopupMenu(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            int x = e.getX();
+            int y = e.getY();
+            final TreePath path = getPathForLocation(x, y);
+            if (path != null) {
+                DefaultMutableTreeNode tn = (DefaultMutableTreeNode)path.getLastPathComponent();
+                if (tn.getUserObject() instanceof PythonFunction) {
+                    final PythonFunction fun = (PythonFunction)tn.getUserObject();
+
+                    JPopupMenu popup = new JPopupMenu();
+                    popup.add(new AbstractAction("Open in editor") { 
+                        public void actionPerformed(ActionEvent e) {
+                            Desktop dt = Desktop.getDesktop();
+                            try {
+                                dt.open(new File(py.getPyPathForFunction(fun)));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    });
+                    popup.show(PyScriptTree.this, x, y);
+                }
+            }
+        }
+    }
+    
     public PyScriptTree(MainPanel mp) {
         this.mainPanel = mp;
         DefaultTreeModel dtm = (DefaultTreeModel) getModel();
@@ -125,13 +172,20 @@ class PyScriptTree extends JTree {
         dtm.setRoot(root);
         javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
         setCellRenderer(new PyScriptTreeRenderer());
-        System.out.println("!!!");
         addMouseListener(new MouseAdapter() {
             @Override
+            public void mousePressed(MouseEvent e) {
+                handlePopupMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                handlePopupMenu(e);
+            }
+            
+            @Override
             public void mouseClicked(MouseEvent me) {
-                System.out.println("mouse clicked");
                 if (me.getClickCount() ==2) {
-                    System.out.println("mouse double clicked");
                     TreePath tp = getPathForLocation(me.getX(), me.getY());
                     if (tp == null)
                         return;
@@ -140,32 +194,21 @@ class PyScriptTree extends JTree {
                     if (o instanceof PythonFunction) {
                         PythonFunction fun = (PythonFunction)o;
                         boolean invokable = fun.canBeInvoked();
-                        System.out.println("fun is "+fun+", invokable ="+invokable);
                         if ((!invokable) || me.isShiftDown()) {
                             int res = new FunctionParametersDialog(fun).open();
                             if (res != FunctionParametersDialog.OK)
                                 return;
                         }
                         try {
-                            System.out.println("invoking");
                             fun.invoke();
                         } catch (ScriptException e) {
-                            Report.exception(e);
                             e.printStackTrace();
+                            Report.exception(e);
                         }
                     }                        
                 }
             }
 
-        });
-        addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                if (py != null && py.scriptsChanged()) {
-                    System.out.println("scripts changed, reloading tree");
-                    initTreeContent();
-                }
-            }
         });
     }
 }

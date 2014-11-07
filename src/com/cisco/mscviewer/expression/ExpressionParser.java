@@ -50,8 +50,8 @@ public class ExpressionParser {
         for (ScriptEngineFactory factory: factories) {
             String langName = factory.getLanguageName();
             String langVersion = factory.getLanguageVersion();
-            if (langName.equals("ECMAScript") && 
-                    langVersion.equals("1.6")) {
+            System.out.println(langName+" "+langVersion);
+            if (langName.equals("ECMAScript")) {
                 engine = factory.getScriptEngine();
                 break;	
             }
@@ -464,7 +464,6 @@ public class ExpressionParser {
             if (tt2 != null) {
                 try {
                     ps.next();
-                    System.out.println("aaa");
                 }catch(NoMoreTokensException ex) {
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);

@@ -75,8 +75,8 @@ public final class MSCDataModel {
         this.events = new ArrayList<Event>();
         this.rootEntities = new ArrayList<Entity>();
         this.data = new ArrayList<String>();
-        this.interactions = new IntervalTree();
-        this.blocks = new IntervalTree();
+        this.interactions = new IntervalTree("interactions");
+        this.blocks = new IntervalTree("blocks");
 
         reset();
     }
@@ -88,8 +88,8 @@ public final class MSCDataModel {
         entities.clear();
         rootEntities.clear();
         events.clear();
-        interactions = new IntervalTree();
-        blocks = new IntervalTree();
+        interactions = new IntervalTree("interactions");
+        blocks = new IntervalTree("blocks");
         notifyModelChanged();
         data.clear();
     }
@@ -420,8 +420,19 @@ public final class MSCDataModel {
     }
 
     public ArrayList<Interval> getBlocksInInterval(int modelMinIdx, int modelMaxIdx) {
+        boolean debug = true;
         ArrayList<Interval> al = new ArrayList<Interval>();
         blocks.getIntersectingIntervals(modelMinIdx, modelMaxIdx, al);
+        if (debug) {
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+            for(Interval in : al) {
+                if (in.getStart()<min)
+                    min = in.getStart();
+                if (in.getEnd()>max)
+                    max = in.getEnd();
+            }
+        }
         return al;
     }
 
@@ -750,7 +761,7 @@ public final class MSCDataModel {
                     return false;
                 }
             }
-            IntervalTree newTree = new IntervalTree();
+            IntervalTree newTree = new IntervalTree("tmptree");
             interactions.postorder(new NodeVisitor(newTree));
             interactions = newTree;
             

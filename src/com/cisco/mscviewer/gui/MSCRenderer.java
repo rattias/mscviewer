@@ -40,6 +40,7 @@ import com.cisco.mscviewer.model.MSCDataModelEventFilter;
 import com.cisco.mscviewer.model.OutputUnit;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.tree.Interval;
+import com.cisco.mscviewer.tree.IntervalTree;
 import com.cisco.mscviewer.util.Resources;
 
 public class MSCRenderer {
@@ -321,7 +322,10 @@ public class MSCRenderer {
             int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
             int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
             if (showBlocks) {
-                for (Interval block: dataModel.getBlocksInInterval(modelMinIdx, modelMaxIdx)) {
+                IntervalTree.dbg = true;
+                ArrayList<Interval> al = dataModel.getBlocksInInterval(modelMinIdx, modelMaxIdx); 
+                IntervalTree.dbg = false;
+                for (Interval block: al) {
                     int beginIdx = block.getStart();
                     int endIdx = block.getEnd();
                     int beginViewIdx = viewModel.getViewIndexFromModelIndex(beginIdx);

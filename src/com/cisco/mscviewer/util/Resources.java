@@ -45,16 +45,19 @@ public class Resources {
         imgRenderers = new HashMap<String, ImageRenderer>();
         for(String path: plugins.split(File.pathSeparator)) {
             File f = new File(path+"/renderer");
-            String[] icons = f.list();
-            for(String s: icons) {
-                int dotIdx = s.lastIndexOf('.');
-                String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
-
-                try {
-                    ImageRenderer ir = new ImageRenderer(ImageIO.read(new File(f, s)));
-                    imgRenderers.put(key, ir);
-                } catch (IOException ex) {
-                    Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
+            if (f.isDirectory()) {
+                System.out.println("init renderer at "+f.getPath());
+                String[] icons = f.list();
+                for(String s: icons) {
+                    int dotIdx = s.lastIndexOf('.');
+                    String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
+    
+                    try {
+                        ImageRenderer ir = new ImageRenderer(ImageIO.read(new File(f, s)));
+                        imgRenderers.put(key, ir);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
@@ -100,7 +103,6 @@ public class Resources {
         }
         return im;
     }
-
 
     private static void readDefaultRenderers() {
         if (imgRenderers == null)
@@ -156,5 +158,6 @@ public class Resources {
 
     public static EventRenderer getImageRenderer(String t) {
         return imgRenderers.get(t);
-    }    
+    }
+    
 }
