@@ -1,0 +1,8 @@
+How to Build
+============
+
+make INSTALL_PREFIX=<destination dir>
+
+
+
+
