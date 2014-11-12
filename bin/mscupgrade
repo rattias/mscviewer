@@ -6,3 +6,4 @@ if [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
 fi
 
 java -cp $BINDIR/../mscviewer.jar com.cisco.mscviewer.io.ConvertFormat $@
+

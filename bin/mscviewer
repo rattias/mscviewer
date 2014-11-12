@@ -5,4 +5,3 @@ fi
 
 java -jar $BINDIR/../mscviewer.jar $@
 
-
