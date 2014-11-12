@@ -29,49 +29,63 @@ endif
 JYTHON_JAR:=jython-standalone-2.5.4-rc1.jar
 SWINGX_JAR:=swingx-all-1.6.4.jar
 UNAME:=$(shell uname -s)
-TEMPFILE1:=$(shell mktemp)
-MSCVER = $(shell  cat src/com/cisco/mscviewer/Main.java | grep VERSION | cut -d\" -f2)
+MSCVER = $(shell cat src/com/cisco/mscviewer/Main.java |\
+           grep VERSION | cut -d\" -f2)
 
-INSTALL_DIR := $(INSTALL_PREFIX)/mscviewer_$(MSCVER)
 ifeq (,$(findstring CYGWIN,$(UNAME)))
   P:=:
-  TEMPFILE := $(TEMPFILE1)
-  INSTALL_DIR_N :=$(INSTALL_DIR)
-  INSTALL_DIR_N_QB := $(INSTALL_DIR)
 else
   P:=;
-  TEMPFILE := $(shell cygpath -m $(TEMPFILE1))
-  INSTALL_DIR_N := $(shell cygpath -w $(INSTALL_DIR))
-  INSTALL_DIR_N_FS := $(subst \,/,$(INSTALL_DIR_N))
 endif
+TEMPFILE1 := $(shell mktemp)
 THIRD_PARTIES_PATH=$(INSTALL_DIR_N_FS)/third-parties
 
 XJARS := $(THIRD_PARTIES_PATH)/$(JYTHON_JAR)$P$(THIRD_PARTIES_PATH)/$(SWINGX_JAR)
+VERSIONED_NAME := mscviewer_$(MSCVER)
+INSTALL_PREFIX := $(shell mktemp -d)
+INSTALL_DIR := $(INSTALL_PREFIX)/$(VERSIONED_NAME)
+ifeq (,$(findstring CYGWIN,$(UNAME)))
+  INSTALL_DIR_N := $(INSTALL_DIR)
+  INSTALL_DIR_N_FS := $(INSTALL_DIR)
+  TEMPFILE := $(TEMPFILE1)
+else
+  INSTALL_DIR_N := $(shell cygpath -w $(INSTALL_DIR))
+  INSTALL_DIR_N_FS := $(subst \,/,$(INSTALL_DIR_N))
+  TEMPFILE := $(shell cygpath -m $(TEMPFILE1))
+endif
 
-.PHONY: all clean install jar
-install: jar
+
+.PHONY: all clean install jar distrib
+
+distrib: jar
+	$(eval $(call setup_install_vars))
 	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
+	@echo "Install dir is $(INSTALL_DIR)"
 	@mkdir -p $(INSTALL_DIR)
 	@cp -rf bin batch examples doc third-parties $(INSTALL_DIR)
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
-	@echo $(JAVA) -jar "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-                          '$$@' >$(INSTALL_DIR)/bin/mscviewer
 	@echo $(JAVA)\
-          -jar "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-                       '%*' >$(INSTALL_DIR)/bin/mscviewer.bat
+	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
+          com.cisco.mscviewer.io.ConvertFormat \
+	  '$$@' >$(INSTALL_DIR)/bin/mscupgrade
 
+	@echo $(JAVA)\
+	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
+          com.cisco.mscviewer.io.ConvertFormat \
+          '%*' >$(INSTALL_DIR)/bin/mscupgrade.bat
+                        
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(shell find $(INSTALL_DIR) -name '.*')
-	@echo "Install competed"
  
+	tar cfz $(VERSIONED_NAME).tgz -C $(INSTALL_PREFIX) $(VERSIONED_NAME)
+	@echo "removing temporary dir $(INSTALL_DIR)"
+	@rm -rf $(INSTALL_DIR)
+    
 all:  
 	@echo "Building mscviewer code..."
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
 	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist
-	@mkdir -p bin
-	@echo "$(JAVA) -classpath $(CURDIR)$P$(CURDIR)/classes$P$(XJARS) -Dpypath=$(CURDIR)/plugin:$(CURDIR)/python com.cisco.mscviewer.Main '$$@' >$(CURDIR)/bin/mscviewer"i >bin/mscviewer
-	@chmod +x bin/mscviewer
 
 
 clean:
@@ -80,14 +94,15 @@ clean:
 	-@rm -f $(WS_TOOLS_DIR)/host_tools.$(TARGET).sentinel 
 
 jar: all
-	@echo "Manifest-Version: 1.1" >$(TEMPFILE1)
-	@echo "Created-By: Rattias" >>$(TEMPFILE1)
-	@echo "Class-Path: third-parties/$(JYTHON_JAR) third-parties/$(SWINGX_JAR)" >>$(TEMPFILE1)
-	@echo "Main-Class: com.cisco.mscviewer.Main" >>$(TEMPFILE1)
-	@echo >>$(TEMPFILE1)
-        
 	@echo "Packaging jar file..."
+	$(eval $(call create_temp_file))
+	@echo "Manifest-Version: 1.1" >$(TEMPFILE)
+	@echo "Created-By: Rattias" >>$(TEMPFILE)
+	@echo "Class-Path: third-parties/$(JYTHON_JAR) third-parties/$(SWINGX_JAR)" >>$(TEMPFILE)
+	@echo "Main-Class: com.cisco.mscviewer.Main" >>$(TEMPFILE1)
+	@echo >>$(TEMPFILE)
 	@$(JAR) cmf $(TEMPFILE) mscviewer.jar -C classes .
+	#@rm $(TEMPFILE)
     
 
 		

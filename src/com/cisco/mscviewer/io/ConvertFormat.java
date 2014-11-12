@@ -24,7 +24,7 @@ public class ConvertFormat {
         int fmt = 0;
 
         if (args.length != 2) {
-            System.err.println("Syntax: ConvertFormat <input file> <output file>");
+            System.err.println("Syntax: mscupgrade <input file> <output file>");
             System.exit(1);
         }
         

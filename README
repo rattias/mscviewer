@@ -1,20 +1,26 @@
 How to Build
 ============
 
-make INSTALL_PREFIX=<install-dir>
+make
 
-How to Run
+This produces a distribution archive named mscviewer_<ver>.tgz. The archive can be uncompressed where desired
+
+How to Run 
 ==========
 
-To run in gui mode:
-<install-dir>/bin/mscviewer [msc-file]
+Linux, MAC or Windows with Cygwin:
+    To run in gui mode:
+    <install-dir>/bin/mscviewer [msc-file]
 
-For example:
-<install-dir>/bin/mscviewer <install-dir>/examples/openstack.msc
+    For example:
+    <install-dir>/bin/mscviewer <install-dir>/examples/openstack.msc
 
 
-To run in batch mode:
-<install-dir>/bin/mscviewer -b <python script> msc-file
+    To run in batch mode:
+    <install-dir>/bin/mscviewer -b <python script> msc-file
+
+Windows, from DOS prompt:
+    same as previous case, but run mscviewer.bat instead of mscviewer.
 
 
 

@@ -1,8 +1,8 @@
+#!/bin/bash
 BINDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo $(expr substr $(uname -s) 1 9)
 if [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
     BINDIR=`cygpath -w $BINDIR`
 fi
 
-java -jar $BINDIR/../mscviewer.jar $@
-
-
+java -cp $BINDIR/../mscviewer.jar com.cisco.mscviewer.io.ConvertFormat $@
