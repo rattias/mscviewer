@@ -2,3 +2,5 @@
 *.class
 *.project
 *.pydevproject
+*.tgz
+mscviewer.jar
