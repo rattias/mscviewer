@@ -75,7 +75,6 @@ distrib: jar
                         
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(INSTALL_DIR)/.[a-z]*
-	@rm -f .gitignore .srclist .texlipse
 	tar cfz $(VERSIONED_NAME).tgz -C $(INSTALL_PREFIX) $(VERSIONED_NAME)
 	@echo "removing temporary dir $(INSTALL_DIR)"
 	@rm -rf $(INSTALL_DIR)
