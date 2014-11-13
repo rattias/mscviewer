@@ -5,7 +5,7 @@ from mscviewer import *
 
     
 @msc_fun  
-def event_rate_fn(window_ms=50):
+def event_rate_fn():
     """
     Creates a set of graph representing rate of events, one for each entity of the
     opened entities.

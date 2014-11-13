@@ -504,6 +504,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                         doLayout();
                     }
                 }
+                MainFrame.getInstance().repaint();
             }
         }
         JPanel p1 = new JPanel();

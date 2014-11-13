@@ -76,7 +76,7 @@ public class GraphData {
     }
 
     public Point point(int idx) {
-        return data.get(idx);
+        return idx < data.size() ? data.get(idx) : data.get(data.size()-1);
     }
 
 

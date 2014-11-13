@@ -252,7 +252,7 @@ abstract public class GraphPanel extends JPanel  {
 
       
     public void paintCursor(Graphics2D g) {
-        if (cursorIdx >= 0) {
+        if (cursorIdx >= 0 && cursorGraphIdx >= 0) {
             int cursorScreenX = screenX(graph.get(cursorGraphIdx).point(cursorIdx).x);
             g.setColor(cursorColor);
             g.drawLine(cursorScreenX, AXIS_OFFSET, cursorScreenX, AXIS_OFFSET+getHeight());

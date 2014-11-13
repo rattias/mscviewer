@@ -68,14 +68,16 @@ public class GraphCloudPanel extends GraphPanel {
     public void paintCursor(Graphics2D g2d) {
         super.paintCursor(g2d);
         GraphData cursorGraph = getCursorGraph();
-        if (cursorGraph != null) {
-            int cursorScreenX = screenX(cursorGraph.point(cursorIdx).x);
-            JLabel l = labels.get(cursorGraph);
-            Integer gy = l.getY()+l.getHeight()/2;
-            if (gy != null) {
-                g2d.drawOval(cursorScreenX-3, gy-BAR_HEIGHT/2, 6, BAR_HEIGHT);
-            }
-        }
+        if (cursorGraph == null)
+            return;
+        int cursorScreenX = screenX(cursorGraph.point(cursorIdx).x);
+        JLabel l = labels.get(cursorGraph);
+        if (l == null)
+            return;
+        Integer gy = l.getY()+l.getHeight()/2;
+        if (gy == null)
+            return;
+        g2d.drawOval(cursorScreenX-3, gy-BAR_HEIGHT/2, 6, BAR_HEIGHT);
     }
     
 }
