@@ -62,7 +62,6 @@ class JScriptPanel extends JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println("evaluating script");
                         try {
                             engine.eval(getScript());
                             errorTA.setText("");
@@ -73,7 +72,6 @@ class JScriptPanel extends JPanel {
                 });
             }
         };
-        System.out.println("enabling timer");
         t = new Timer();
         t.schedule(tt, 1000, 1000);		
     }	

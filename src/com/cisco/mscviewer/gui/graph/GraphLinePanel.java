@@ -13,7 +13,6 @@ public class GraphLinePanel extends GraphPanel {
         GraphData[] graphs = getGraphData();
         long minX = getMinX();
         long maxX = getMaxX();
-        System.err.println("minX = "+minX+", maxX="+maxX);
         for (GraphData d : graphs) {
             if (isEnabled(d)) {
                 Interval in = d.getInterval(minX, maxX);

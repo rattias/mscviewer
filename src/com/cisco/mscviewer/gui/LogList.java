@@ -225,6 +225,5 @@ public class LogList extends JList<String> implements SelectionListener, MSCData
     @Override
     public void eventsChanged(MSCDataModel mscDataModel) {
         //	((LogListModel)getModel()).fireContentsChanged();
-        //		System.out.println("eventChanged");
     }
 }

@@ -30,7 +30,6 @@ class HelpFrame extends JFrame {
         editorPane=new JEditorPane();  
         try {  
             URL url = ClassLoader.getSystemResource("com/cisco/mscviewer/doc/help_home.html");
-            System.out.println("URL: "+url);
             editorPane.setPage(url);  
         } catch (IOException e) {  
             e.printStackTrace();  

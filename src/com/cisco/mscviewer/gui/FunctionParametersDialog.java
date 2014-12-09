@@ -61,7 +61,6 @@ class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {
                 @Override
                 public Dimension getPreferredSize() {
                     Dimension d = super.getPreferredSize();
-                    System.out.println("PREF="+d);
                     return d;
                 }
             };
@@ -76,7 +75,6 @@ class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {
                 Box hbox = Box.createHorizontalBox();
                 final String argName = args[offset+i];
                 lab[i] = new JLabel(argName, JLabel.TRAILING);
-                System.out.println("creating "+lab[i]);
                 Dimension d = lab[i].getPreferredSize();
                 dimmax(maxLabelSize, d); 
                 final JTextField f = tfarr[offset+i] = new JTextField(20);
@@ -266,7 +264,6 @@ class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {
             int y = r.y + (r.height-getHeight())/2;
             setLocation(x, y);
             setVisible(true);
-            System.out.println("out of dialog!");
             if (value == CANCEL)
                 return value;
             for(int i=0; i<args.length; i++) {

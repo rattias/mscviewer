@@ -50,7 +50,6 @@ public class ExpressionParser {
         for (ScriptEngineFactory factory: factories) {
             String langName = factory.getLanguageName();
             String langVersion = factory.getLanguageVersion();
-            System.out.println(langName+" "+langVersion);
             if (langName.equals("ECMAScript")) {
                 engine = factory.getScriptEngine();
                 break;	
@@ -78,7 +77,6 @@ public class ExpressionParser {
     public static void main(String args[]) {
         ParserState ps = new ParserState(args[0]);
         ParsedExpression expr = new ExpressionParser().parse(ps);
-        System.out.println("accepted = "+(expr != null));
         if (expr != null) {
             expr.printRPN();
             System.out.println();
@@ -467,12 +465,9 @@ public class ExpressionParser {
                 }catch(NoMoreTokensException ex) {
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);
-                    System.out.println("bbb");
                     return null;
                 } 			
-                System.out.println("ccc");
                 if (ps.tok().type != Token.TT.CLOSE_SQUARE) {
-                    System.out.println("ddd");
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);
                     System.out.println("evterm(): missing ], pos = "+ps.getPos());

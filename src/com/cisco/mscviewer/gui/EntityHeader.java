@@ -595,50 +595,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         doLayout();
     }
 
-//    public void moveEntity(int oldIdx, int newIdx) {
-//        if (!SwingUtilities.isEventDispatchThread()) {
-//            throw new Error("should be in event dispatch thread!");
-//        }
-//        CustomButton b = getCBFromIndex(oldIdx);
-//        JPanel pp = b.getParent()
-////        Dimension d = b.getParent().getPreferredSize();
-////        remove(b.getEntity());
-////        Component c = add(b.getEntity(), newIdx);
-////        c.setPreferredSize(d);
-//        setComponentZOrder(pp, 0);
-//        doLayout();
-//    }
-//    public void addListener(EntityHeaderListener l) {
-//        listeners.add(l);
-//    }
-//
-//    public void removeListener(EntityHeaderListener l) {
-//        listeners.remove(l);
-//    }
-//    public void notifyLayoutChanged() {
-//        for (EntityHeaderListener listener : listeners) {
-//            System.out.println("NOTIFYING");
-//            listener.notifyLayoutChanged(this);
-//        }
-//    }
-//
-//    public void notifyEntityAdded(Entity en, int idx) {
-//        for (EntityHeaderListener listener : listeners) {
-//            listener.entityAdded(this, en, idx);
-//        }
-//    }
-//
-//    public void notifyEntityRemoved(Entity en, int idx) {
-//        for (EntityHeaderListener listener : listeners) {
-//            listener.entityRemoved(this, en, idx);
-//        }
-//    }
-//
-//    public void notifyEntitySelectionChanged(Entity en, int idx) {
-//        for (EntityHeaderListener listener : listeners) {
-//            listener.entitySelectionChanged(this, en, idx);
-//        }
-//    }
+
     public Entity getEntityAt(Point p) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");

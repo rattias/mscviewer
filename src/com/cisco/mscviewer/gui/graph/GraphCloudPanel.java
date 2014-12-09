@@ -24,7 +24,6 @@ public class GraphCloudPanel extends GraphPanel {
     public JPanel getYLabelsPanel() {
         JPanel p = new JPanel();
         Color b = getBackground();
-        System.out.println(b);
         p.setBackground(b);
         p.setOpaque(true);
         p.setLayout(new GridLayout(-1, 1));

@@ -128,7 +128,6 @@ public class Main {
             @Override
             void found(String arg) {
                 Main.plugins = arg;
-                System.out.println("resources="+arg);
                 for (String s : arg.split(File.pathSeparator)) {
                     String dir = s+"/script";
                     if (new File(dir).isDirectory())
@@ -158,7 +157,6 @@ public class Main {
         setupUIDefaults();
         int idx = processOptions(args);
 
-        System.out.println("pypath="+System.getProperty("pypath"));
         final String fname = (idx<args.length) ? args[idx]: null;
         Class<?> cl = Class.forName("com.cisco.mscviewer.io."+loaderClass);
 

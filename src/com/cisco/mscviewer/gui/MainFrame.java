@@ -294,7 +294,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             //mp.getMSCRenderer().selectClosest(me.getX(), me.getY(), rec.y, rec.height);
             Object obj = mp.getMSCRenderer().getClosest(me.getX(), me.getY(), rec.y, rec.height);
             if (obj != null) {
-                System.out.println("obj is "+obj.getClass().getName());
                 if (obj instanceof Event) {
                     Event ev = (Event)obj;
                     if (toggle) {
@@ -329,8 +328,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         }
                     }
                 }
-            } else
-                System.out.println("obj is null");
+            } else {
+            }
             repaint();
             return res;
         }
@@ -553,7 +552,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         File f = jfc.getSelectedFile();
                         try {
                             dm.reset();
-                            System.out.println("f is "+f);
                             Main.getLoader().load(f.getPath(), dm);
                         } catch (Exception e1) {
                             e1.printStackTrace();
@@ -599,7 +597,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         }
                         break;
                     case JFileChooser.CANCEL_OPTION:
-                        System.out.println("Cancel or the close-dialog icon was clicked");
                         break;
                     case JFileChooser.ERROR_OPTION:
                         System.out.println("Error");

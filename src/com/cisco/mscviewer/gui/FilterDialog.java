@@ -153,9 +153,6 @@ PropertyChangeListener {
     /** This method handles events for the input unit combo. */
     public void actionPerformed(ActionEvent e) {
         JRadioButton btn = (JRadioButton )e.getSource();
-        if (btn.isSelected())
-            System.out.println("selected "+btn.getText());
-
     }
 
     /** This method reacts to state changes in the option pane. */
