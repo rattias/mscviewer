@@ -84,6 +84,8 @@ all:
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
 	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist
+	@mkdir -p classes/com/cisco/mscviewer
+	-cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
 
 
 clean:
