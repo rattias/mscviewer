@@ -143,11 +143,11 @@ public class JSonParser {
             pos.v++;
             negative = true;
         }
-        if (str.charAt(pos.v) != '0') {
-            while (Character.isDigit(str.charAt(pos.v))) {
-                intPart = intPart * 10 + (str.charAt(pos.v) - '0');
-                pos.v++;
-            }
+        while (Character.isDigit(str.charAt(pos.v))) {
+            intPart = intPart * 10 + (str.charAt(pos.v) - '0');
+            pos.v++;
+            if (str.charAt(pos.v) == '0')
+                break;
         }
         if (negative) {
             intPart = -intPart;

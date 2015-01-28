@@ -3,5 +3,5 @@ if [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
     BINDIR=`cygpath -w $BINDIR`
 fi
 
-java -jar $BINDIR/../mscviewer.jar $@
+java -Xverify:none -jar $BINDIR/../mscviewer.jar $@
 

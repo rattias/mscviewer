@@ -44,6 +44,7 @@ public class JsonLoader implements Loader {
         SOURCE, SINK, LOCAL
     };
     private static final String MSC_EVENT = "@msc_event";
+    private static final String MSC_EVENT1 = "@event";
     private static final String MSC_ENTITY = "@msc_entity";
     private static final String MSC_KEY_SRC= "src";
     private static final String MSC_KEY_DST= "dst";
@@ -52,6 +53,12 @@ public class JsonLoader implements Loader {
     private static final String MSC_KEY_ENT_NAME= "name";
     private static final String MSC_KEY_INTER_TYPE = "type";
     private CountDownLatch latch;
+    private static SimpleDateFormat formatter[] = {
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS"),
+            new SimpleDateFormat("MMM d HH:mm:ss.SSS"),
+            new SimpleDateFormat("MMM d HH:mm:ss"),
+            new SimpleDateFormat("HH:mm:ss"),
+        };
 
     private static boolean isIdentifierStart(String str, int pos) {
         char c = str.charAt(pos);
@@ -165,16 +172,15 @@ public class JsonLoader implements Loader {
     }
 
     private static Date parseDate(String s) {
-        String formats[] = {
-            "MMM d HH:mm:ss.SSS",
-            "MMM d HH:mm:ss",
-            "HH:mm:ss",
-        };
         Date d = null;
-        for (String f: formats) {
-            SimpleDateFormat formatter = new SimpleDateFormat(f);
+        for (int i=0; i<formatter.length; i++) {
             try {
-                d = formatter.parse(s);
+                d = formatter[i].parse(s);
+                if (i > 0) {
+                    SimpleDateFormat f = formatter[i];
+                    formatter[i] = formatter[0];
+                    formatter[0] = f;
+                }
                 return d;
             }catch(ParseException ex){
             }
@@ -206,8 +212,13 @@ public class JsonLoader implements Loader {
                 }
                 lineNum++;
                 int start = line.indexOf(MSC_EVENT);
+                int eventlen = MSC_EVENT.length();
+                if (start < 0) {
+                    start = line.indexOf(MSC_EVENT1);
+                    eventlen = MSC_EVENT1.length();
+                }
                 if (start >= 0) {
-                    start += MSC_EVENT.length() + 1;
+                    start += eventlen + 1;
                     JSonObject jo;
                     try {
                         jo = JSonParser.parseObject(line.substring(start), fname, lineNum);
@@ -442,7 +453,7 @@ public class JsonLoader implements Loader {
                 } else {
                     start = line.indexOf(MSC_ENTITY);
                     if (start >= 0) {
-                        start += MSC_EVENT.length() + 1;
+                        start += eventlen + 1;
                         JSonObject jo;
                         try {
                             jo = JSonParser.parseObject(line.substring(start), fname, lineNum);

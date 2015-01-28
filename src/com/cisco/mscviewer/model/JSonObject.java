@@ -115,6 +115,7 @@ public class JSonObject extends Object {
     public void set(String key, Object value) {
         if (value instanceof String ||
             value instanceof Boolean ||
+            value instanceof Integer ||
             value instanceof ArrayList ||
             value instanceof JSonObject)
             map.put(key, value);
