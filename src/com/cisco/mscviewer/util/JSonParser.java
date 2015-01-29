@@ -71,6 +71,8 @@ public class JSonParser {
     }
 
     private static String parseString(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
+        if (lineNum == 94)
+            System.out.println("!!!");
         StringBuilder sb = new StringBuilder();
         expect(str, file, lineNum, pos, '"');
         while (true) {
@@ -79,28 +81,29 @@ public class JSonParser {
             if (c == '\\') {
                 switch (str.charAt(pos.v)) {
                     case '"':
-                        sb.append('"');
+                        sb.append('"'); pos.v++;
                         break;
                     case '\\':
-                        sb.append('\\');
+                        sb.append('\\'); pos.v++;
                         break;
                     case '/':
-                        sb.append('/');
+                        sb.append('/'); pos.v++;
                         break;
                     case 'b':
-                        sb.append('\b');
+                        sb.append('\b'); pos.v++;
                         break;
                     case 'n':
-                        sb.append('\n');
+                        sb.append('\n'); pos.v++;
                         break;
                     case 'r':
-                        sb.append('\r');
+                        sb.append('\r'); pos.v++;
                         break;
                     case 't':
-                        sb.append('\t');
+                        sb.append('\t'); pos.v++;
                         break;
                     case 'u':
                         sb.append((char) Integer.parseInt(str.substring(pos.v + 2, pos.v + 6), 16));
+                        pos.v += 6;
                         break;
                     default:
                         throw new JSonException("Invalid escape sequence");
