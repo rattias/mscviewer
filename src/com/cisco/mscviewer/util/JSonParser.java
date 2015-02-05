@@ -12,7 +12,12 @@
 package com.cisco.mscviewer.util;
 
 import com.cisco.mscviewer.io.JSonException;
+import com.cisco.mscviewer.model.JSonArrayValue;
+import com.cisco.mscviewer.model.JSonBooleanValue;
+import com.cisco.mscviewer.model.JSonNumberValue;
 import com.cisco.mscviewer.model.JSonObject;
+import com.cisco.mscviewer.model.JSonStringValue;
+import com.cisco.mscviewer.model.JSonValue;
 
 import java.util.ArrayList;
 
@@ -70,9 +75,7 @@ public class JSonParser {
         }
     }
 
-    private static String parseString(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
-        if (lineNum == 94)
-            System.out.println("!!!");
+    private static JSonStringValue parseString(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
         StringBuilder sb = new StringBuilder();
         expect(str, file, lineNum, pos, '"');
         while (true) {
@@ -109,36 +112,37 @@ public class JSonParser {
                         throw new JSonException("Invalid escape sequence");
                 }
             } else if (c == '"') {
-                return sb.toString();
+                return new JSonStringValue(sb.toString());
             } else {
                 sb.append(c);
             }
         }
     }
 
-    private static Object parseArray(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
-        ArrayList<Object> al = new ArrayList<Object>();
+    private static JSonArrayValue parseArray(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
+        JSonArrayValue jal = new JSonArrayValue();
+        ArrayList<JSonValue> al = jal.value();
         expect(str, file, lineNum, pos, '[');
         while (true) {
             try {
-                Object value = parseValue(str, file, lineNum, pos);
+                JSonValue value = parseValue(str, file, lineNum, pos);
                 al.add(value);
                 char res = expectOneOf(str, file, lineNum, pos, ",]");
                 if (res == ']') {
-                    return al;
+                    return jal;
                 }
             } catch (JSonException ex) {
                 // here either we  got a ] without any value, or
                 // something went wrong. In the first case, it's ok, it
                 // was an empty array. we check for that
                 if (al.isEmpty() && str.charAt(pos.v) == ']')
-                    return al;
+                    return jal;
                 throw ex;
             }
         }
     }
 
-    private static Number parseNumber(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
+    private static JSonNumberValue parseNumber(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
         int intPart = 0;
         boolean negative = false;
         // parse int
@@ -163,7 +167,7 @@ public class JSonParser {
                     d = d + (str.charAt(pos.v) - '0') / div;
                     pos.v++;
                 }
-                return d;
+                return new JSonNumberValue(d);
             case 'e':
             case 'E':
                 negative = false;
@@ -180,14 +184,14 @@ public class JSonParser {
                 }
                 if (negative)
                     exp = -exp;
-                return intPart * Math.pow(10, exp);
+                return new JSonNumberValue(intPart * Math.pow(10, exp));
             default:
                 pos.v--;
-                return intPart;
+                return new JSonNumberValue(intPart);
         }
     }
 
-    private static Object parseValue(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
+    private static JSonValue parseValue(String str, String file, int lineNum, MutableInteger pos) throws JSonException {
         while (Character.isSpaceChar(str.charAt(pos.v))) {
             pos.v++;
         }
@@ -204,10 +208,10 @@ public class JSonParser {
                     return parseNumber(str, file, lineNum, pos);
                 } else if (str.startsWith("true", pos.v)) {
                     pos.v += 4;
-                    return Boolean.TRUE;
+                    return JSonBooleanValue.TRUE;
                 } else if (str.startsWith("false", pos.v)) {
                     pos.v += 5;
-                    return Boolean.FALSE;
+                    return JSonBooleanValue.FALSE;
                 } else if (str.startsWith("null", pos.v)) {
                     pos.v += 4;
                     return null;
@@ -237,9 +241,9 @@ public class JSonParser {
         } catch (JSonException ex) {
         }
         while (true) {
-            String key = parseString(str, file, lineNum, pos);
+            String key = parseString(str, file, lineNum, pos).toString();
             expect(str, file, lineNum, pos, ':');
-            Object value = parseValue(str, file, lineNum, pos);
+            JSonValue value = (JSonValue)parseValue(str, file, lineNum, pos);
             o.set(key, value);
             char res = expectOneOf(str, file, lineNum, pos, ",}");
             if (res == '}') {

@@ -12,20 +12,21 @@
 package com.cisco.mscviewer.gui.renderer;
 
 import com.cisco.mscviewer.model.JSonObject;
-
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.JSonStringValue;
+import com.cisco.mscviewer.model.JSonValue;
 
 public class TransitionRenderer extends DefaultInteractionRenderer {
     public void setup(JSonObject props, Event ev) {
         JSonObject p = new JSonObject();
-        String v = (String)props.get("color");
-        p.set("color", (v != null) ? v : "00AA00");
+        JSonValue v = props.get("color");
+        p.set("color", new JSonStringValue((v != null) ? v.toString() : "00AA00"));
 
-        v = (String)props.get("stroke_width");
-        p.set("stroke_width", (v != null) ? v : "2.0");
+        v = props.get("stroke_width");
+        p.set("stroke_width", new JSonStringValue((v != null) ? v.toString() : "2.0"));
 
-        p.set("draw_tip", "false");
-        p.set("straight", "true");
+        p.set("draw_tip", new JSonStringValue("false"));
+        p.set("straight", new JSonStringValue("true"));
         super.setup(p, ev);
     }
 

@@ -9,9 +9,12 @@ package com.cisco.mscviewer.gui;
 import com.cisco.mscviewer.io.JSonException;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.JSonArrayValue;
 import com.cisco.mscviewer.model.JSonObject;
+import com.cisco.mscviewer.model.JSonValue;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +42,7 @@ class TreeTableNodeModel {
 class TreeTableModel extends AbstractTreeTableModel {
     private final static String[] COLUMN_NAMES = {"Key", "Value"};
     
-    public TreeTableModel(JSonObject obj) {
+    public TreeTableModel(JSonValue obj) {
         super(new TreeTableNodeModel("ROOT", obj));
     }
     
@@ -60,8 +63,8 @@ class TreeTableModel extends AbstractTreeTableModel {
     
     @Override
     public boolean isLeaf(Object node) {
-        boolean b = ! (((TreeTableNodeModel)node).value instanceof JSonObject);
-        return b;
+        Object value = ((TreeTableNodeModel)node).value; 
+        return !(value instanceof JSonObject || value instanceof JSonArrayValue);
     }
     
     @Override
@@ -70,6 +73,8 @@ class TreeTableModel extends AbstractTreeTableModel {
         TreeTableNodeModel o = (TreeTableNodeModel)node;
         if (o.value instanceof JSonObject)
             c = ((JSonObject)o.value).getFieldCount();
+        else if (o.value instanceof JSonArrayValue)
+            c = ((JSonArrayValue)o.value).value().size();
         else
             c = 0;
         return c;
@@ -81,7 +86,12 @@ class TreeTableModel extends AbstractTreeTableModel {
         Object res = null;
         if (o.value instanceof JSonObject) {
             String k = ((JSonObject)o.value).getKeys()[index];
-            Object v = ((JSonObject)o.value).get(k);
+            JSonValue v = ((JSonObject)o.value).get(k);
+            res = new TreeTableNodeModel(k, v);
+        } else if (o.value instanceof JSonArrayValue) {
+            ArrayList<JSonValue> arr = ((JSonArrayValue)o.value).value();
+            String k = "["+index+"]";
+            JSonValue v = arr.get(index);
             res = new TreeTableNodeModel(k, v);
         }
         return res;
@@ -111,7 +121,9 @@ class TreeTableModel extends AbstractTreeTableModel {
                 return o.fieldName;
             case 1:
                 if (o.value instanceof JSonObject)
-                    return "";
+                    return "{...}";
+                else if (o.value instanceof JSonArrayValue)
+                    return "[...]";
                 else
                     return o.value.toString();
         }
@@ -144,7 +156,7 @@ public class DataPanel extends JPanel implements SelectionListener {
         }
     }
     
-    public void setModel(JSonObject obj) {
+    public void setModel(JSonValue obj) {
         TreeTableModel ttm = new TreeTableModel(obj);
         tree.setTreeTableModel(ttm);
         
@@ -152,7 +164,7 @@ public class DataPanel extends JPanel implements SelectionListener {
 
     @Override
     public void eventSelected(MSCRenderer renderer, Event selectedEvent, int viewEventIndex, int modelEventIndex) {
-        JSonObject o = (selectedEvent != null)? selectedEvent.getData() : null;
+        JSonValue o = (selectedEvent != null)? selectedEvent.getData() : null;
         tree.setTreeTableModel(new TreeTableModel(o));
     }
 

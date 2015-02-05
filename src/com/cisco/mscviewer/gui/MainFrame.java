@@ -11,6 +11,7 @@
  */
 package com.cisco.mscviewer.gui;
 import com.cisco.mscviewer.*;
+
 import com.cisco.mscviewer.expression.ParsedExpression;
 import com.cisco.mscviewer.io.*;
 import com.cisco.mscviewer.model.*;
@@ -35,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
@@ -539,7 +541,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         rightVerticalSplitPane.setResizeWeight(1.0);
         JMenuBar jmb = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
-        fileMenu.add(new JMenuItem(new AbstractAction("Open...") {
+        JMenuItem mi = new JMenuItem(new AbstractAction("Load...") {
             public void actionPerformed(ActionEvent e) {
                 MSCDataModel dm = Main.getDataModel();
                 String curDir = dm.getOpenPath();
@@ -562,9 +564,26 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     case JFileChooser.ERROR_OPTION:
                         System.out.println("Error");
                 }
-            }}));
+            }});
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
         
-        fileMenu.add(new JMenuItem(new AbstractAction("Export PNG...") {
+        mi = new JMenuItem(new AbstractAction("Reload") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MSCDataModel dm = Main.getDataModel();
+                try {
+                    dm.reset();
+                    Main.getLoader().load(dm.getFilePath(), dm);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }            
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
+
+        mi = new JMenuItem(new AbstractAction("Export PNG...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Object[] choices = {"Highlighted Elements", "Open Entities", "Entire Model"};
@@ -602,8 +621,11 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         System.out.println("Error");
                 }
             }
-        }));
-        fileMenu.add(new JMenuItem(new AbstractAction("Print...") {
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
+        
+        mi = new JMenuItem(new AbstractAction("Print...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PrinterJob pj = PrinterJob.getPrinterJob();
@@ -615,16 +637,23 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     }
                 }
             }
-        }));
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
+        
+                
         JMenu editMenu = new JMenu("Edit");
-        editMenu.add(new JMenuItem(new AbstractAction("Find...") {
+        mi = new JMenuItem(new AbstractAction("Find...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FindDialog fd = new FindDialog(MainFrame.this);
                 fd.setVisible(true);
             }
-        }));
-        editMenu.add(new JMenuItem(new AbstractAction("Clear Highlights") {
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.ALT_MASK));
+        editMenu.add(mi);
+        
+        mi = new JMenuItem(new AbstractAction("Clear Highlights") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int res = JOptionPane.showConfirmDialog(MainFrame.this, "Are you sure you want to remove all highlights?", "Clear Highlights", JOptionPane.YES_NO_OPTION);
@@ -634,9 +663,12 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     repaint();
                 }
             }
-        }));
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK));
+        editMenu.add(mi);
+
         JMenu viewMenu = new JMenu("View");
-        viewMenu.add(new JMenuItem(new AbstractAction("Preferences...") {
+        mi = new JMenuItem(new AbstractAction("Preferences...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MSCRenderer r = mainPanel.getMSCRenderer();
@@ -661,7 +693,10 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     mainPanel.updateView();
                 }
             }
-        }));
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
+        viewMenu.add(mi);
+        
         viewMenu.add(new JMenuItem(new AbstractAction("Filters...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -669,10 +704,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 d.setVisible(true);
                 if (d.approved()) {
                     filters = d.getFilters();
-//                    String curSel = (String)filterCB.getSelectedItem();
-//                    filterCB.removeAllItems();
-//                    initFilterCB();
-//                    filterCB.setSelectedItem(curSel);
                 }
             }
         }));

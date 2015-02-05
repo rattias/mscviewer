@@ -28,7 +28,7 @@ public class StopRenderer extends EventRenderer {
     @Override
     public void setup(JSonObject props) {
         super.setup(props);		
-        String col = (String)props.get("color");
+        String col = props.get("color").toString();
         if (col != null) {
             int c = Integer.parseInt(col, 16);
             color = new Color(c);

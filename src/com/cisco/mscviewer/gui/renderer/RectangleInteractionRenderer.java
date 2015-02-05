@@ -37,13 +37,13 @@ public class RectangleInteractionRenderer extends InteractionRenderer {
     public void setup(JSonObject props, Event ev) {
         float strokeWidth = 1.0f;
         if (props != null) {
-            Integer stroke = (Integer)props.get("stroke_width");
+            JSonNumberValue stroke = (JSonNumberValue)props.get("stroke_width");
             if (stroke != null)
-                strokeWidth = stroke;
-            Boolean ds = (Boolean)props.get("dashed");
-            if (ds)
+                strokeWidth = stroke.floatValue();
+            JSonBooleanValue ds = (JSonBooleanValue)props.get("dashed");
+            if (ds != null && ds.value())
                 dashed = true;
-            String col = (String)props.get("color");
+            String col = props.get("color").toString();
             if (col != null) {
                 int c = Integer.parseInt(col, 16);
                 color = new Color(c);

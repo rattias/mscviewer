@@ -25,10 +25,10 @@ public class CircleEventRenderer extends EventRenderer {
     @Override
     public void setup(JSonObject props) {
         super.setup(props);
-        String rad = (String)props.get("radius");
+        String rad = props.get("radius").toString();
         if (rad != null)
             factor = Float.parseFloat(rad);
-        String col = (String)props.get("color");
+        String col = props.get("color").toString();
         if (col != null) {
             int c = Integer.parseInt(col, 16);
             color = new Color(c);

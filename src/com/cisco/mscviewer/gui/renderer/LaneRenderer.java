@@ -44,9 +44,9 @@ public class LaneRenderer extends InteractionRenderer {
     public void setup(JSonObject props, Event ev) {
         float strokeWidth = 1.0f;
         if (props != null) {
-            Integer stroke = (Integer)props.get("stroke_width");
+            JSonNumberValue stroke = ((JSonNumberValue)props.get("stroke_width"));
             if (stroke != null)
-                strokeWidth = stroke;
+                strokeWidth = stroke.floatValue();
         }
         basic = new BasicStroke(strokeWidth);
         basic2 = new BasicStroke(strokeWidth+2);
@@ -60,18 +60,21 @@ public class LaneRenderer extends InteractionRenderer {
                 hm.put(en,lanes);
             }
             if (props != null) {
-                String pairingId = (String)props.get("pairing_id");
-                for(int i=0; i<MAX_LANES; i++) {
-                    if (lanes[i] == null || lanes[i].equals(pairingId)) {
-                        lanes[i] = pairingId;
-                        lane = i;
-                        if (lane > MAX_LANES/10)
-                            System.err.println("WARNING: Entity "+en.getPath()+"  using more than "+lane+" lanes.");
-                        return;
+                JSonValue jpairingId = props.get("pairing_id");
+                if (jpairingId != null) {
+                    String pairingId = jpairingId.toString();
+                    for(int i=0; i<MAX_LANES; i++) {
+                        if (lanes[i] == null || lanes[i].equals(pairingId)) {
+                            lanes[i] = pairingId;
+                            lane = i;
+                            if (lane > MAX_LANES/10)
+                                System.err.println("WARNING: Entity "+en.getPath()+"  using more than "+lane+" lanes.");
+                            return;
+                        }
                     }
+                    throw new Error(MAX_LANES+" lanes already taken!");
                 }
             }
-            throw new Error(MAX_LANES+" lanes already taken!");
         } else {
             Entity en = ev.getEntity();
             String lanes[] = hm.get(en);

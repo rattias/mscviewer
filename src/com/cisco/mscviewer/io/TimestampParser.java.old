@@ -1,0 +1,57 @@
+import java.uttil.regex;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+abstract public class TimestampParser {
+    private static String RX_NUMBER_UNIT = "[1-9][0-9]*[nms]?";
+
+    public static TimestampParser getParser(String ts) {
+        if (Pattern.compile(RX_NUMBER_UNIT).matches(ts))
+            return NumberTimestampMatcher(
+
+
+    abstract public long parse(String ts);
+
+}
+
+class NumberTimestampParser extends TimestampParser {
+    public NumberTimestampParser() {}
+
+    public long parse(String ts) {
+       int l = ts.length()-1;
+       if (Character.isDigit(ts.charAt(l) {
+           return Long.parseLong(ts);
+       } else {
+           long v = Long.parseLong(ts.substring(0, l));
+           switch(ts.charAt(l)) {
+             case 's': return v*1000000000;
+             case 'm': 
+       }
+    }
+}
+
+class NumberTimestampParserWithUnit extends TimestampParser {
+    long multiplier;
+
+    public NumberTimestampParser(long m) {
+        multiplier = m;
+    }
+
+    public long parse(String ts) {
+       return Long.parseLong(ts.substring(0, ts.length()-1);
+    }
+}
+
+class FormattedDateParser extends TimestampParser {
+    SimpleDateFormat formatter;
+
+    public FormattedDateParser(String fmt) {
+        formattter = new SimpleDateFormat(fmt);
+    }
+
+    public long parse(String ts) {
+        return formatter.format(ts).getTime();
+    }
+}
+

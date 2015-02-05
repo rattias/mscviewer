@@ -78,7 +78,7 @@ public class Main {
             v = s;
         System.setProperty("pypath", v);
     }
-    
+
     private static final Opt[] opts = new Opt[] {
         new Opt('h', "help", true, "shows this help") {
             @Override
@@ -153,7 +153,7 @@ public class Main {
     IllegalArgumentException, IllegalAccessException,
     InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
         System.setProperty("pypath", Main.getInstallDir()+"/resources/default/script");
-        
+
         setupUIDefaults();
         int idx = processOptions(args);
 
@@ -175,7 +175,8 @@ public class Main {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) {
                 // If Nimbus is not available, you can set the GUI to another look and feel.
-            }               SwingUtilities.invokeAndWait(new Runnable(){
+            }
+            SwingUtilities.invokeAndWait(new Runnable(){
                 @Override
                 public void run() {
                     mf = new MainFrame(10, 10, 1024, 600);
@@ -391,6 +392,6 @@ public class Main {
             return urlStr.substring("file:/".length(),  idx);
         }
     }        
-    
+
 
 }

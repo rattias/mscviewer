@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -52,6 +53,9 @@ public class JsonLoader implements Loader {
     private static final String MSC_KEY_ENT_ID= "id";
     private static final String MSC_KEY_ENT_NAME= "name";
     private static final String MSC_KEY_INTER_TYPE = "type";
+    private static final String MSC_KEY_BLOCK = "block";
+    private static final String MSC_KEY_BLOCK_BEGIN = "begin";
+    
     private CountDownLatch latch;
     private static SimpleDateFormat formatter[] = {
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS"),
@@ -59,7 +63,7 @@ public class JsonLoader implements Loader {
             new SimpleDateFormat("MMM d HH:mm:ss"),
             new SimpleDateFormat("HH:mm:ss"),
         };
-
+    
     private static boolean isIdentifierStart(String str, int pos) {
         char c = str.charAt(pos);
         return Character.isLetter(c) || c == '_';
@@ -144,7 +148,7 @@ public class JsonLoader implements Loader {
     private static Interaction createInteraction(MSCDataModel dm, String pairingId, JSonObject props, Event ev,
             TypeEn type, int index, String fname, int lineNum) throws IOException {
         Interaction inter;
-        String t = (props != null) ? (String) props.get("type") : "DefaultInteraction";
+        String t = (props != null) ? props.get("type").toString() : "DefaultInteraction";
         InteractionRenderer irenderer;
         if (t == null) {
             irenderer = new DefaultInteractionRenderer();
@@ -175,6 +179,7 @@ public class JsonLoader implements Loader {
         Date d = null;
         for (int i=0; i<formatter.length; i++) {
             try {
+                formatter[i].setTimeZone(TimeZone.getDefault());
                 d = formatter[i].parse(s);
                 if (i > 0) {
                     SimpleDateFormat f = formatter[i];
@@ -195,6 +200,7 @@ public class JsonLoader implements Loader {
         HashMap<String, Interval> pendingBlocks = new HashMap<String, Interval>();
         File file = new File(fname);
         int flen = (int) file.length();
+        dm.setFilePath(fname);
         dm.enableNotification(false);
         BufferedReader fr = new BufferedReader(new FileReader(file));
         String line;
@@ -225,18 +231,21 @@ public class JsonLoader implements Loader {
                     }catch(JSonException ex) {
                         throw new IOException(ex);
                     }
-                    String entityPath = (String)jo.get("entity");
+                    String entityPath = jo.get("entity").toString();
                     Entity entity = dm.addEntity(entityPath, null);
                     Entity parentEntity = entity.getParentEntity();
 
-                    String label = (String)jo.get("label");
-                    if (label == null) {
+                    JSonValue jlabel = jo.get("label");
+                    String label;
+                    if (jlabel == null) {
                         label = "";
-                    }
+                    } else
+                        label = jlabel.toString();
 
                     long ts = -1;
-                    String time = (String)jo.get("time");
-                    if (time != null) {
+                    JSonValue tm = jo.get("time");
+                    if (tm != null) {
+                        String time = tm.toString();
                         if (time.endsWith("s")) {
                             int len = time.length();
                             char pre = time.charAt(len - 2);
@@ -274,9 +283,10 @@ public class JsonLoader implements Loader {
                         if (d != null)
                             ts = d.getTime()*1000000;
                     }
-                    String t = (String)jo.get("type");
+                    JSonValue tt = jo.get("type");
                     EventRenderer renderer = null;
-                    if (t != null) {
+                    if (tt != null) {
+                        String t = tt.toString();
                         renderer = Resources.getImageRenderer(t);
                         if (renderer == null) {
                             Class<?> c = null;
@@ -301,11 +311,11 @@ public class JsonLoader implements Loader {
                             }
                         }
                     }
-                    String pushSourceVal = (String)jo.get("push_source");
+                    JSonValue pushSourceVal = jo.get("push_source");
                     if (pushSourceVal != null && parentEntity != null) {
                         parentEntity.pushSourceEntityForFromEvents(entity);
                     }
-                    String popSourceVal = (String)jo.get("pop_source");
+                    JSonValue popSourceVal = jo.get("pop_source");
                     if (popSourceVal != null && parentEntity != null) {
                         parentEntity.popSourceEntityForFromEvents();
                     }
@@ -313,31 +323,41 @@ public class JsonLoader implements Loader {
                     Event ev = new Event(dm, ts, entity, label, lineNum, renderer, jo);
                     int evIdx = dm.addEvent(ev);
                     
-                    JSonObject data = (JSonObject)jo.get("data");
+                    JSonValue data = jo.get("data");
                     if (data != null) {
                         ev.setData(data);
                     }
+                    
+                    JSonValue block = jo.get(MSC_KEY_BLOCK);
+                    if (block != null) {
+                        if (block.toString().equals(MSC_KEY_BLOCK_BEGIN))
+                            ev.setBlockBegin();
+                        else
+                            ev.setBlockEnd();
+                    }
+                    
                     // HANDLE "source" KEY
                     try {
                         Interaction inter = null;
                         ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
                         ArrayList<String> sourcePairingId = new ArrayList<String>();
-                        Object sourceValue = jo.getValueByPath(MSC_KEY_SRC);
-                        if (sourceValue instanceof String) {
+                        JSonValue sourceValue = jo.getValueByPath(MSC_KEY_SRC);
+                        if (sourceValue instanceof JSonStringValue) {
                             // this event is source for an interaction with default
                             // attributes
-                            sourcePairingId.add((String)sourceValue);
+                            sourcePairingId.add(sourceValue.toString());
                             interAttrs.add(null);
                         } else if (sourceValue instanceof JSonObject) {
                             // this event is source for an interaction with 
                             // non-default attributes
                             interAttrs.add((JSonObject)sourceValue);                        
-                            sourcePairingId.add((String)((JSonObject)sourceValue).get(MSC_KEY_INTER_ID));
-                        } else if (sourceValue instanceof ArrayList) {
+                            sourcePairingId.add(((JSonObject)sourceValue).get(MSC_KEY_INTER_ID).toString());
+                        } else if (sourceValue instanceof JSonArrayValue) {
                             // this event is source for multiple interactions
-                            for(JSonObject j : (ArrayList<JSonObject>)sourceValue) {
-                                interAttrs.add(j);                        
-                                sourcePairingId.add((String)j.get(MSC_KEY_INTER_ID));      
+                            ArrayList<JSonValue> al = ((JSonArrayValue)sourceValue).value();
+                            for(JSonValue j : al) {
+                                interAttrs.add((JSonObject)j);                        
+                                sourcePairingId.add(((JSonObject)j).get(MSC_KEY_INTER_ID).toString());      
                             }
                         }
 
@@ -375,28 +395,28 @@ public class JsonLoader implements Loader {
                         ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
                         ArrayList<String> sinkPairingId = new ArrayList<String>();
                         // next line will throw exception if no such field 
-                        Object sinkValue = jo.getValueByPath("dst");
-                        if (sinkValue instanceof String) {
+                        JSonValue sinkValue = jo.getValueByPath(MSC_KEY_DST);
+                        if (sinkValue instanceof JSonStringValue) {
                             // this event is sink for an interaction with default
                             // attributes
-                            sinkPairingId.add((String)sinkValue);
+                            sinkPairingId.add(((JSonStringValue)sinkValue).toString());
                             hasIncoming = true;
                             interAttrs.add(null);
                         } else if (sinkValue instanceof JSonObject) {
                             // this event is sink for an interaction with 
                             // non-default attributes
                             JSonObject jo1 = (JSonObject)sinkValue;
-                            sinkPairingId.add((String)jo1.get(MSC_KEY_INTER_ID));
-                            String type = (String)jo1.get(MSC_KEY_INTER_TYPE);
+                            sinkPairingId.add(jo1.get(MSC_KEY_INTER_ID).toString());
+                            String type = jo1.get(MSC_KEY_INTER_TYPE).toString();
                             if (! "Transition".equals(type))
                                 hasIncoming = true;
                             interAttrs.add((JSonObject)sinkValue);                        
-                        } else if (sinkValue instanceof ArrayList) {
+                        } else if (sinkValue instanceof JSonArrayValue) {
                             // this event is sink for multiple interactions
                             for(JSonObject j : (ArrayList<JSonObject>)sinkValue) {
-                                sinkPairingId.add((String)j.get("id"));                                
+                                sinkPairingId.add(j.get("id").toString());                                
                                 interAttrs.add(j);                        
-                                String type = (String)j.get(MSC_KEY_INTER_TYPE);
+                                String type = j.get(MSC_KEY_INTER_TYPE).toString();
                                 if (! "Transition".equals(type))
                                     hasIncoming = true;
                             }                            
@@ -426,45 +446,21 @@ public class JsonLoader implements Loader {
                         }
                     }catch(NoSuchFieldError ex) {
                     }
-                    if (Main.WITH_BLOCKS) {
-                        String blkPath = entityPath+"/block";
-                        SimpleInterval blk = (SimpleInterval)pendingBlocks.get(blkPath);
-                        if (blk == null) {
-                            blk = new SimpleInterval(evIdx, evIdx);
-                            pendingBlocks.put(entityPath+"/block", blk);
-                            // note: we can't add blocks to data model yet
-                            // because we later change the right bound, and this would
-                            // break the AVLTree sorted on right bound to which blocks
-                            // are added in the model
-                        } else {
-                            if (hasIncoming) {
-                                dm.addBlock(blk);
-                                blk = new SimpleInterval(evIdx, evIdx);
-                                pendingBlocks.put(entityPath+"/block", blk);
-                                // note: we can't add blocks to data model yet
-                                // because we later change the right bound, and this would
-                                // break the AVLTree sorted on right bound to which blocks
-                                // are added in the model
-                            } else {
-                                blk.setEnd(evIdx);
-                            }
-                        }
-                    }
                 } else {
                     start = line.indexOf(MSC_ENTITY);
                     if (start >= 0) {
-                        start += eventlen + 1;
+                        start += MSC_ENTITY.length() + 1;
                         JSonObject jo;
                         try {
                             jo = JSonParser.parseObject(line.substring(start), fname, lineNum);
                         }catch(JSonException ex) {
                             throw new IOException(ex);
                         }
-                        String id = (String)jo.get(MSC_KEY_ENT_ID);
+                        String id = jo.get(MSC_KEY_ENT_ID).toString();
                         if (id == null)
                             throw new IllegalArgumentException(fname + ":" + lineNum + ":Missing \"id\" key");
 
-                        String name = (String)jo.get(MSC_KEY_ENT_NAME);
+                        String name = jo.get(MSC_KEY_ENT_NAME).toString();
                         if (name == null)
                             throw new IllegalArgumentException(fname + ":" + lineNum + ":Missing \"name\" key");
                         Entity en = dm.getEntity(id);
@@ -486,11 +482,30 @@ public class JsonLoader implements Loader {
                     dm.addInteraction(inter);
                 }
 
-                for(Interval block: pendingBlocks.values()) {
-                    dm.addBlock(block);
-                }
                 // sort topologically
                 dm.topoSort();
+                if (Main.WITH_BLOCKS) {
+                    for(int i=0; i<dm.getEventCount(); i++) {
+                        Event ev = dm.getEventAt(i);
+                        Entity en = ev.getEntity();
+                        String entityPath = en.getPath();
+                        String blkPath = entityPath+"/block";
+                        SimpleInterval blk = (SimpleInterval)pendingBlocks.get(blkPath);
+                        if (ev.getIncomingInteractions().length > 0|| ev.isBlockBegin()) {
+                            if (blk != null) {
+                                dm.addBlock(blk);
+                            }
+                            blk = new SimpleInterval(i, i);
+                            pendingBlocks.put(entityPath+"/block", blk);
+                        } else if (blk != null){
+                            blk.setEnd(i);
+                        }
+                    }
+                    for(Interval inter: pendingBlocks.values()) {
+                        dm.addBlock(inter);
+                    }
+                }
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -13,6 +13,8 @@ package com.cisco.mscviewer.gui.renderer;
 
 import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.JSonStringValue;
+import com.cisco.mscviewer.model.JSonValue;
 
 
 public class BirthInteractionRenderer extends DefaultInteractionRenderer {
@@ -24,10 +26,10 @@ public class BirthInteractionRenderer extends DefaultInteractionRenderer {
      */
     public void setup(JSonObject props, Event ev) {
         props.clear();
-        props.set("color", "000000");
-        props.set("dashed", "true");
-        props.set("draw_tip", "false");
-        props.set("stroke_width", "2.0");
+        props.set("color", new JSonStringValue("000000"));
+        props.set("dashed", new JSonStringValue("true"));
+        props.set("draw_tip", new JSonStringValue("false"));
+        props.set("stroke_width", new JSonStringValue("2.0"));
         super.setup(props, ev);
     }
 }

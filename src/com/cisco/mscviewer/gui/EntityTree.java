@@ -271,8 +271,10 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 TreePath tp[] = EntityTree.this.getSelectionPaths();
-                for (TreePath tp1 : tp) {
-                    flipNodeState(tp1);
+                if (tp != null) {
+                    for (TreePath tp1 : tp) {
+                        flipNodeState(tp1);
+                    }
                 }
             }			
         });

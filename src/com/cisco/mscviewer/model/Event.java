@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------
- * Copyright (c) 2014 Cisco Systems
+* Copyright (c) 2014 Cisco Systems
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ package com.cisco.mscviewer.model;
 import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.gui.renderer.DefaultEventRenderer;
 import com.cisco.mscviewer.gui.renderer.EventRenderer;
+import com.cisco.mscviewer.gui.renderer.ImageRenderer;
 
 /**
  * An <code>Event</code> represents an occurence of relevance for an {@link Entity} within
@@ -35,7 +36,8 @@ public class Event {
     private EventRenderer renderer; /** renderer object associated to this event */
     private String label;     /** label for the Event */
     private String note;      /** note associated to the Event */
-    private JSonObject data;  /** some data */
+    private JSonValue data;  /** some data */
+    private boolean blockBegin;
 
     /**
      * Instantiates an Event with the specified parameters.
@@ -61,6 +63,7 @@ public class Event {
         else
             this.renderer = renderer;
         this.renderer.initialize(props);
+        this.blockBegin = false;
     }
 
     /**
@@ -141,8 +144,13 @@ public class Event {
      * @return 
      */
     public String getType() {
-        String clName = getRenderer().getClass().getName();
-        return clName.substring(clName.lastIndexOf('.')+1, clName.indexOf("Renderer"));
+        EventRenderer r = getRenderer(); 
+        if (r instanceof ImageRenderer) {
+            return ((ImageRenderer)r).getName();
+        } else {
+            String clName = getRenderer().getClass().getName();
+            return clName.substring(clName.lastIndexOf('.')+1, clName.indexOf("Renderer"));
+        }
     }
 
     @Override
@@ -176,7 +184,7 @@ public class Event {
      * Could be used to store, for example, a JSON object.
      * @param data 
      */
-    public void setData(JSonObject data) {
+    public void setData(JSonValue data) {
         this.data = data;
     }
     
@@ -184,7 +192,7 @@ public class Event {
      * returns the data associated to this event
      * @return 
      */
-    public JSonObject getData() {
+    public JSonValue getData() {
 //        try {
 //            JSonObject o = new JSonObject("{\"key\":\"value\", \"foo\":[1, 2], \"bar\":{\"x\":\"vx\", \"y\":true}}");
 //            return o;
@@ -245,4 +253,16 @@ public class Event {
         }
         return null;
     }
+
+    public void setBlockBegin() {
+        blockBegin = true;
+    }
+
+    public void setBlockEnd() {
+        blockBegin = false;
+    }
+    
+    public boolean isBlockBegin() {
+        return blockBegin;
+    }    
 }

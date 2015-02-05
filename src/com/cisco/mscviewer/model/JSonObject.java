@@ -28,12 +28,12 @@ import java.util.Set;
  * 
  * @author rattias
  */
-public class JSonObject extends Object {
+public class JSonObject implements JSonValue {
 
-    private HashMap<String, Object> map;
+    private HashMap<String, JSonValue> map;
 
     public JSonObject() {
-        map = new LinkedHashMap<String, Object>();
+        map = new LinkedHashMap<String, JSonValue>();
     }
 
     public JSonObject(String str) throws JSonException {
@@ -63,13 +63,13 @@ public class JSonObject extends Object {
             sb.append(k);
             sb.append('"');
             sb.append(':');
-            Object value = map.get(k);
+            JSonValue value = map.get(k);
             if (value instanceof JSonObject) {
                 JSonObject v = (JSonObject) value;
                 sb.append(v.toStringInternal(pretty, indent + 1));
-            } else if (value instanceof String) {
+            } else if (value instanceof JSonStringValue) {
                 sb.append('"');
-                sb.append(value);
+                sb.append(value.toString());
                 sb.append('"');
             } else {
                 sb.append(value.toString());
@@ -98,7 +98,7 @@ public class JSonObject extends Object {
         return toStringInternal(true, 0);
     }
 
-    public Object get(String key) {
+    public JSonValue get(String key) {
         return map.get(key);
     }
     
@@ -107,20 +107,13 @@ public class JSonObject extends Object {
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayList<Object> getArray(String key) {
-        return (ArrayList<Object>)map.get(key);
+    public JSonArrayValue getArray(String key) {
+        return (JSonArrayValue)map.get(key);
     }
 
     
-    public void set(String key, Object value) {
-        if (value instanceof String ||
-            value instanceof Boolean ||
-            value instanceof Integer ||
-            value instanceof ArrayList ||
-            value instanceof JSonObject)
-            map.put(key, value);
-        else
-            throw new Error("value of type "+value.getClass().getName()+" not supported");
+    public void set(String key, JSonValue value) {
+        map.put(key, value);
     }
 
     public void remove(String key) {
@@ -156,9 +149,9 @@ public class JSonObject extends Object {
         System.out.print("o1.equals(o2):"+o1.equals(o2));
     }
 
-    public Object getValueByPath(String path) {
+    public JSonValue getValueByPath(String path) {
         String [] toks = path.split("/");
-        Object o = this;
+        JSonValue o = this;
         String tmp = "";
         for(String t: toks) {
             if (! (o instanceof JSonObject))
@@ -175,9 +168,9 @@ public class JSonObject extends Object {
         Set<String> s = map.keySet();
         return s.toArray(new String[s.size()]);
     }
-    public Object[] getValues() {
-        Collection<Object> s = map.values();
-        return s.toArray(new Object[s.size()]);
+    public JSonValue[] getValues() {
+        Collection<JSonValue> s = map.values();
+        return s.toArray(new JSonValue[s.size()]);
     }
 
     public int getFieldCount() {

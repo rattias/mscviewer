@@ -33,11 +33,17 @@ import com.cisco.mscviewer.Main;
 
 public class ImageRenderer extends EventRenderer {
     private Image img;
+    private String name;
     private Dimension dim = null;
     
     
-    public ImageRenderer(Image img) {
+    public ImageRenderer(String name, Image img) {
+        this.name = name;
         this.img = img;
+    }
+    
+    public String getName() {
+        return name;
     }
 
     private void computeDimension(int h) {

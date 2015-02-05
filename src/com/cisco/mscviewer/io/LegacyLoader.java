@@ -15,11 +15,8 @@ import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.util.ProgressReport;
 import com.cisco.mscviewer.gui.renderer.*;
-import com.cisco.mscviewer.gui.renderer.EventRenderer;
-import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
-
 import com.cisco.mscviewer.model.*;
-import com.cisco.mscviewer.model.JSonObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -27,6 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
@@ -78,14 +76,14 @@ public class LegacyLoader implements Loader {
                     //event properties
                     JSonObject props = new JSonObject();
                     start = parseProps(fname, lineNum, line, start, end, props);
-                    String entityPath = (String)props.get("id");
+                    String entityPath = props.get("id").toString();
                     if (entityPath == null) {
                         throw new IOException(fname + ":" + lineNum + ":Missing entity_id specification.");
                     }
 
-                    String displayName = (String)props.get("display_name");
+                    String displayName = props.get("display_name").toString();
                     Entity en = dm.addEntity(entityPath, displayName);
-                    String descr = (String)props.get("description");
+                    String descr = props.get("description").toString();
                     if (descr != null) {
                         en.setDescription(descr);
                     }
@@ -103,7 +101,7 @@ public class LegacyLoader implements Loader {
                         JSonObject props = new JSonObject();
                         start = parseProps(fname, lineNum, line, start, end, props);
 
-                        String entityPath = (String)props.get("entity_id");
+                        String entityPath = props.get("entity_id").toString();
                         if (entityPath == null) {
                             throw new IOException(fname + ":" + lineNum + ":Missing entity specification.");
                         }
@@ -111,14 +109,14 @@ public class LegacyLoader implements Loader {
                         Entity entity = dm.addEntity(entityPath, null);
                         Entity parentEntity = entity.getParentEntity();
 
-                        String label = (String)props.get("label");
+                        String label = props.get("label").toString();
                         if (label == null) {
                             label = "";
                         }
                         props.remove("label");
 
                         long ts = -1;
-                        String time = (String)props.get("time");
+                        String time = props.get("time").toString();
                         if (time != null) {
                             props.remove("time");
                             if (time.endsWith("s")) {
@@ -146,7 +144,7 @@ public class LegacyLoader implements Loader {
                             }
                         }
 
-                        String t = (String)props.get("type");
+                        String t = props.get("type").toString();
                         EventRenderer renderer = null;
                         if (t != null) {
                             props.remove("type");
@@ -169,40 +167,40 @@ public class LegacyLoader implements Loader {
                                 throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + rendererName + ".", e);
                             }
                         }
-                        String pushSourceVal = (String)props.get("push_source");
+                        String pushSourceVal = props.get("push_source").toString();
                         if (pushSourceVal != null && parentEntity != null) {
                             parentEntity.pushSourceEntityForFromEvents(entity);
                         }
-                        String popSourceVal = (String)props.get("pop_source");
+                        String popSourceVal = props.get("pop_source").toString();
                         if (popSourceVal != null && parentEntity != null) {
                             parentEntity.popSourceEntityForFromEvents();
                         }
                         entity = entity.getSourceEntityForFromEvents();
                         Event ev = new Event(dm, ts, entity, label, lineNum, renderer, props);
                         int evIndex = dm.addEvent(ev);
-                        String note = (String)props.get("note");
+                        String note = props.get("note").toString();
                         if (note != null) {
                             ev.setNote(note);
                             props.remove("note");
                         }
-                        String begb = (String)props.get("begin");
+                        String begb = props.get("begin").toString();
                         if (begb != null) {
 //                            ev.setBegin(true);
                             JSonObject ps = new JSonObject();
-                            ps.set("type", "BlockInteraction");
-                            ps.set("color", "000000");
+                            ps.set("type", new JSonStringValue("BlockInteraction"));
+                            ps.set("color", new JSonStringValue("000000"));
                             String pairingId = entity.getId() + "/block";
                             Interaction inter = createInteraction(dm, pairingId, ps, ev, TypeEn.SOURCE, evIndex, fname, lineNum);
                             pending.put(pairingId, inter);
                         }
-                        String endb = (String)props.get("end");
+                        String endb = props.get("end").toString();
                         if (endb != null) {
                             String pairingId = entity.getId() + "/block";
                             Interaction inter = pending.remove(pairingId);
                             if (inter == null) {
                                 JSonObject ps = new JSonObject();
-                                ps.set("type", "BlockInteraction");
-                                ps.set("color", "000000");
+                                ps.set("type", new JSonStringValue("BlockInteraction"));
+                                ps.set("color", new JSonStringValue("000000"));
                                 inter = createInteraction(dm, pairingId, ps, ev, TypeEn.SINK, evIndex, fname, lineNum);
                                 dm.addInteraction(inter);
                             } else {
@@ -230,7 +228,7 @@ public class LegacyLoader implements Loader {
 
                             props = new JSonObject();
                             start = parseProps(fname, lineNum, line, start, end, props);
-                            String pairingId = (String)props.get("pairing_id");
+                            String pairingId = props.get("pairing_id").toString();
                             if (pairingId == null) {
                                 throw new IOException(fname + ":" + lineNum + ":error: missing pairing_id in source/sink definition");
                             }
@@ -358,7 +356,7 @@ public class LegacyLoader implements Loader {
     private static Interaction createInteraction(MSCDataModel dm, String pairingId, JSonObject props, Event ev,
             TypeEn type, int index, String fname, int lineNum) throws IOException {
         Interaction inter;
-        String t = (String) props.get("type");
+        String t = props.get("type").toString();
         InteractionRenderer irenderer;
         if (t == null) {
             irenderer = new DefaultInteractionRenderer();
@@ -421,7 +419,7 @@ public class LegacyLoader implements Loader {
                 throw new IllegalArgumentException(fname + ":" + lineNum + ":missing '\"' after value '" + bb.toString() + "' in string " + str.substring(start, stop));
             }
             String value = bb.toString();
-            prop.set(key, value);
+            prop.set(key, new JSonStringValue(value));
             start = i + 1;
         }
     }

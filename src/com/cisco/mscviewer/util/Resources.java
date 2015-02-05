@@ -53,7 +53,7 @@ public class Resources {
                     String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
     
                     try {
-                        ImageRenderer ir = new ImageRenderer(ImageIO.read(new File(f, s)));
+                        ImageRenderer ir = new ImageRenderer(key, ImageIO.read(new File(f, s)));
                         imgRenderers.put(key, ir);
                     } catch (IOException ex) {
                         Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
@@ -127,7 +127,7 @@ public class Resources {
                         int l = RENDERER_PATH.length()+1;
                         String key = dotIdx >= 0 ? name.substring(l, dotIdx) : name.substring(l);                        
                         try {
-                            ImageRenderer ir = new ImageRenderer(ImageIO.read(ClassLoader.getSystemResource(name).openStream()));                            
+                            ImageRenderer ir = new ImageRenderer(key, ImageIO.read(ClassLoader.getSystemResource(name).openStream()));                            
                             imgRenderers.put(key, ir);
                         } catch (IOException ex) {
                             Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
@@ -139,9 +139,9 @@ public class Resources {
                 String[] files = f.list();
                 for(String img: files) {
                     File ff = new File(f, img);
-                    ImageRenderer ir = new ImageRenderer(ImageIO.read(ff));
                     int dotIdx = img.lastIndexOf('.');
                     String key = dotIdx >= 0 ? img.substring(0, dotIdx) : img;
+                    ImageRenderer ir = new ImageRenderer(key, ImageIO.read(ff));
                     imgRenderers.put(key, ir);
                 }
             }

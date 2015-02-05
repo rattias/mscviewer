@@ -23,6 +23,7 @@ import java.awt.geom.AffineTransform;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
@@ -184,118 +185,119 @@ public class MSCRenderer {
         StringBuilder sb = new StringBuilder();
         long t, h, m, ss, ms=-1, us=-1, ns, d;
         t = timestamp;
-        if (absTimeUnit != OutputUnit.T) {		
-            d = t/NSEC_PER_DAY;
-            if (showDate) {
-                calendar.setTimeInMillis(d*(24*60*60*1000));
-                sb.append(dateFormat.format(calendar.getTime()));
-            }
-            t -= d*NSEC_PER_DAY;
-            if (absTimeUnit.contains("h")) {
-                h = t/NSEC_PER_HOUR;
-                if ((showz || h!=0)) {
-                    showz = true;
-                    if (h<10)
-                        sb.append('0');
-                    sb.append(h);
-                    if (showUnits)
-                        sb.append('h');
-                    sb.append(':');
-                    t -= h*NSEC_PER_HOUR;
-                }
-            }
-            if (absTimeUnit.contains("m")) {
-                m = t/NSEC_PER_MIN;
-                if (showz || m!=0) {
-                    showz = true;
-                    if (m<10)
-                        sb.append('0');
-                    sb.append(m);
-                    if (showUnits)
-                        sb.append('m');
-                    sb.append(':');
-                    t -= m*NSEC_PER_MIN;
-                }
-            }
-            if (absTimeUnit.contains("s")) {
-                ss = t/NSEC_PER_SEC;
-                if (showz || ss!=0) {
-                    showz = true;
-                    if (ss<10)
-                        sb.append('0');
-                    sb.append(ss);
-                    if (showUnits)
-                        sb.append('s');
-                    sb.append(':');
-                    t -= ss*NSEC_PER_SEC;
-                }
-            }
-            if (absTimeUnit.contains("ms")) {
-                ms = t/NSEC_PER_MSEC;
-                if (showz || ms!=0) {
-                    showz = true;
-                    if (ms<10)       sb.append("00");
-                    else if (ms<100) sb.append('0');
-                    sb.append(ms);
-                    if (showUnits)
-                        sb.append("ms");
-                    sb.append(':');
-                    t -= ms*NSEC_PER_MSEC;
-                }
-            }
-            if (absTimeUnit.contains("us")) {
-                us = t/NSEC_PER_USEC;
-                if (showz || us!=0) {
-                    if (ms != -1) {
-                        if (us<10)       sb.append("00");
-                        else if (us<100) sb.append("0");
-                    } else {
-                        if (us<10)      sb.append("00000");
-                        else if (us<100) sb.append("0000");					
-                        else if (us<1000) sb.append("000");					
-                        else if (us<10000) sb.append("00");					
-                        else if (us<100000) sb.append("0");					
-                    }
-                    sb.append(us);
-                    if (showUnits)
-                        sb.append("us");
-                    sb.append(':');
-                    t -= us*NSEC_PER_USEC;
-                }
-            }
-            if (absTimeUnit.contains("ns")) {
-                ns = t;
-                if (ns!=0) {
-                    if (us != -1) {
-                        if (ns<10)       sb.append("00");
-                        else if (ns<100) sb.append("0");
-                    } else if (ms != -1) {
-                        if (ns<10)      sb.append("00000");
-                        else if (ns<100) sb.append("0000");					
-                        else if (ns<1000) sb.append("000");					
-                        else if (ns<10000) sb.append("00");					
-                        else if (ns<100000) sb.append("0");					
-                    } else {
-                        if (ns<10)      sb.append("00000000");
-                        else if (ns<100) sb.append("0000000");					
-                        else if (ns<1000) sb.append("000000");					
-                        else if (ns<10000) sb.append("00000");					
-                        else if (ns<100000) sb.append("0000");					
-                        else if (ns<1000000) sb.append("000");					
-                        else if (ns<10000000) sb.append("00");					
-                        else if (ns<100000000) sb.append("0");					
-                    }					
-                    sb.append(ns);
-                    if (showUnits)
-                        sb.append("ns");
-                }
-            }
-            if (sb.length()==0)
-                sb.append('0');
-        } else {
-            sb.append(timestamp);
-        }
-        return sb.toString();
+        return absTimeUnit.format(t);
+//        if (absTimeUnit != OutputUnit.T) {		
+//            d = t/NSEC_PER_DAY;
+//            if (showDate) {
+//                calendar.setTimeInMillis(d*(24*60*60*1000));
+//                sb.append(dateFormat.format(calendar.getTime()));
+//            }
+//            t -= d*NSEC_PER_DAY;
+//            if (absTimeUnit.contains("h")) {
+//                h = t/NSEC_PER_HOUR;
+//                if ((showz || h!=0)) {
+//                    showz = true;
+//                    if (h<10)
+//                        sb.append('0');
+//                    sb.append(h);
+//                    if (showUnits)
+//                        sb.append('h');
+//                    sb.append(':');
+//                    t -= h*NSEC_PER_HOUR;
+//                }
+//            }
+//            if (absTimeUnit.contains("m")) {
+//                m = t/NSEC_PER_MIN;
+//                if (showz || m!=0) {
+//                    showz = true;
+//                    if (m<10)
+//                        sb.append('0');
+//                    sb.append(m);
+//                    if (showUnits)
+//                        sb.append('m');
+//                    sb.append(':');
+//                    t -= m*NSEC_PER_MIN;
+//                }
+//            }
+//            if (absTimeUnit.contains("s")) {
+//                ss = t/NSEC_PER_SEC;
+//                if (showz || ss!=0) {
+//                    showz = true;
+//                    if (ss<10)
+//                        sb.append('0');
+//                    sb.append(ss);
+//                    if (showUnits)
+//                        sb.append('s');
+//                    sb.append(':');
+//                    t -= ss*NSEC_PER_SEC;
+//                }
+//            }
+//            if (absTimeUnit.contains("ms")) {
+//                ms = t/NSEC_PER_MSEC;
+//                if (showz || ms!=0) {
+//                    showz = true;
+//                    if (ms<10)       sb.append("00");
+//                    else if (ms<100) sb.append('0');
+//                    sb.append(ms);
+//                    if (showUnits)
+//                        sb.append("ms");
+//                    sb.append(':');
+//                    t -= ms*NSEC_PER_MSEC;
+//                }
+//            }
+//            if (absTimeUnit.contains("us")) {
+//                us = t/NSEC_PER_USEC;
+//                if (showz || us!=0) {
+//                    if (ms != -1) {
+//                        if (us<10)       sb.append("00");
+//                        else if (us<100) sb.append("0");
+//                    } else {
+//                        if (us<10)      sb.append("00000");
+//                        else if (us<100) sb.append("0000");					
+//                        else if (us<1000) sb.append("000");					
+//                        else if (us<10000) sb.append("00");					
+//                        else if (us<100000) sb.append("0");					
+//                    }
+//                    sb.append(us);
+//                    if (showUnits)
+//                        sb.append("us");
+//                    sb.append(':');
+//                    t -= us*NSEC_PER_USEC;
+//                }
+//            }
+//            if (absTimeUnit.contains("ns")) {
+//                ns = t;
+//                if (ns!=0) {
+//                    if (us != -1) {
+//                        if (ns<10)       sb.append("00");
+//                        else if (ns<100) sb.append("0");
+//                    } else if (ms != -1) {
+//                        if (ns<10)      sb.append("00000");
+//                        else if (ns<100) sb.append("0000");					
+//                        else if (ns<1000) sb.append("000");					
+//                        else if (ns<10000) sb.append("00");					
+//                        else if (ns<100000) sb.append("0");					
+//                    } else {
+//                        if (ns<10)      sb.append("00000000");
+//                        else if (ns<100) sb.append("0000000");					
+//                        else if (ns<1000) sb.append("000000");					
+//                        else if (ns<10000) sb.append("00000");					
+//                        else if (ns<100000) sb.append("0000");					
+//                        else if (ns<1000000) sb.append("000");					
+//                        else if (ns<10000000) sb.append("00");					
+//                        else if (ns<100000000) sb.append("0");					
+//                    }					
+//                    sb.append(ns);
+//                    if (showUnits)
+//                        sb.append("ns");
+//                }
+//            }
+//            if (sb.length()==0)
+//                sb.append('0');
+//        } else {
+//            sb.append(timestamp);
+//        }
+//        return sb.toString();
     }
     public void updateForTimeUnitChanges() {
         synchronized(dataModel) {
@@ -342,10 +344,11 @@ public class MSCRenderer {
                     Rectangle rb = beginEv.getRenderer().getBoundingBox(max, x, y0, null);
                     Rectangle re = endEv.getRenderer().getBoundingBox(max, x, y1, null);
                     Rectangle r = rb.union(re);
+                    System.out.println("!!!");
                     g2d.setColor(Color.lightGray);
-                    g2d.fillRect(r.x, r.y, r.width, r.height);
+                    g2d.fillRect(x-3, r.y, 7, r.height-4);
                     g2d.setColor(Color.gray);
-                    g2d.drawRect(r.x, r.y, r.width, r.height);
+                    g2d.drawRect(x-3, r.y, 7, r.height-4);
                 }
             }
                 
@@ -393,6 +396,8 @@ public class MSCRenderer {
                 if (entityIndex >=0) {
                     int x = viewModel.getEntityCenterX(entityIndex);
                     int y = i*eventHeight+eventHeight/2;
+                    //g2d.drawString("ev_"+i, 0, y);
+                    //g2d.drawString(ev.getType(), 0, y);
                     AffineTransform t = g2d.getTransform();
                     g2d.translate(x, y);
                     boolean scaled = r.scaleSource();

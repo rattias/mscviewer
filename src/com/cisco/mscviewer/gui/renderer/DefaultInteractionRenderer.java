@@ -47,14 +47,14 @@ public class DefaultInteractionRenderer extends InteractionRenderer {
         float strokeWidth = 1.0f;
         if (props != null) {
             straight = "true".equals(props.get("straight")); 
-            String stroke = (String)props.get("stroke_width");
+            JSonValue stroke = props.get("stroke_width");
             if (stroke != null)
-                strokeWidth = Float.parseFloat(stroke);
+                strokeWidth = Float.parseFloat(stroke.toString());
             drawTip = ! "false".equals(props.get("draw_tip"));
             dashed  = "true".equals(props.get("dashed"));
-            String col = (String)props.get("color");
+            JSonValue col = props.get("color");
             if (col != null) {
-                int c = Integer.parseInt(col, 16);
+                int c = Integer.parseInt(col.toString(), 16);
                 color = new Color(c);
             }
         }
