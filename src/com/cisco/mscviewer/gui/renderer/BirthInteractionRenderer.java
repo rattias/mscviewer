@@ -14,7 +14,6 @@ package com.cisco.mscviewer.gui.renderer;
 import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.JSonStringValue;
-import com.cisco.mscviewer.model.JSonValue;
 
 
 public class BirthInteractionRenderer extends DefaultInteractionRenderer {

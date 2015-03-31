@@ -380,7 +380,7 @@ SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
     }
 
     @Override
-    public void entityRemoved(ViewModel eh, Entity en, int idx) {
+    public void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx) {
         updateView();
     }
 

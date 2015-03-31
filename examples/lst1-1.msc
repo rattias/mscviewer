@@ -1,0 +1,5 @@
+2015-03-21 5:21:12,140 @event {"entity":"1940","label":"start"}
+2015-03-21 5:21:12,150 @event {"entity":"1940","label":"produce", "src":"1"}
+2015-03-21 5:21:15,010 @event {"entity":"1942","label":"consume", "dst":"1"}
+@entity {"id":"1940", "name":"producer"}
+@entity {"id":"1942", "name":"consumer"}

@@ -13,8 +13,6 @@ package com.cisco.mscviewer.script;
 
 import javax.script.ScriptException;
 
-import org.python.core.PyDictionary;
-import org.python.core.PyFunction;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.python.core.PyString;
@@ -28,12 +26,10 @@ public class PythonFunction {
     private String doc;
     private boolean wasSet;
     private Python python;
-    private PyFunction pf;
     
     public PythonFunction(Python p, String pkg, String name) {
         this.name = name;
         python = p;
-        pf = (PyFunction)p.get(name);
         PyObject args = p.eval("inspect.getargspec("+name+")");
         PyTuple t = (PyTuple) args;
         PyObject[] objs = ((PyList) t.get(0)).getArray();

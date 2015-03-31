@@ -9,8 +9,8 @@ import com.cisco.mscviewer.tree.Interval;
 
 public class GraphData {
     private ArrayList<Point> data = new ArrayList<Point>();
-    private float miny = Float.MAX_VALUE;
-    private float maxy = Float.MIN_VALUE;
+    private double miny = Float.MAX_VALUE;
+    private double maxy = Float.MIN_VALUE;
     private String xType = "", yType = "";
     private String name;
     
@@ -22,11 +22,11 @@ public class GraphData {
         return name;
     }
     
-    public void add(int x, float y) {
+    public void add(int x, double y) {
         add(x, y, null);
     }
 
-    public void add(long x, float y, Object o) {
+    public void add(long x, double y, Object o) {
         data.add(new Point(x, y, o));
         if (y < miny)
             miny = y;
@@ -61,7 +61,7 @@ public class GraphData {
         return data.size() != 0 ? data.get(0).x : 0;
     }
 
-    public float minY() {
+    public double minY() {
         return miny;
     }
 
@@ -71,7 +71,7 @@ public class GraphData {
         return data.get(data.size()-1).x;
     }
 
-    public float maxY() {
+    public double maxY() {
         return maxy;
     }
 
@@ -131,9 +131,9 @@ public class GraphData {
         }    
     }
 
-    public float y(long x) throws IllegalArgumentException {
-        int i = xToIndex(x);
-        return data.get(i).y;
-    }
+//    public float y(long x) throws IllegalArgumentException {
+//        int i = xToIndex(x);
+//        return data.get(i).y;
+//    }
 
 }

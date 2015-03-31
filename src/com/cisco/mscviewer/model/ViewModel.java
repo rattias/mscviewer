@@ -164,7 +164,7 @@ public class ViewModel implements MSCDataModelListener {
             // dm.updateFilteredEvents();
             updateEvents();
         }
-        notifyEntityRemoved(ei.en, idx);
+        notifyEntityRemoved(ei.en.getParentEntity(), ei.en, idx);
     }
 
     public void reset() {
@@ -247,12 +247,12 @@ public class ViewModel implements MSCDataModelListener {
         });        
     }
     
-    public void notifyEntityRemoved(final Entity en, final int idx) {
+    public void notifyEntityRemoved(final Entity parentEn, final Entity en, final int idx) {
         Utils.dispatchOnAWTThreadLater(new Runnable() {
             @Override
             public void run() {
                 for (EntityHeaderModelListener listener : listeners) {
-                    listener.entityRemoved(ViewModel.this, en, idx);
+                    listener.entityRemoved(ViewModel.this, parentEn, en, idx);
                 }
             }
         });

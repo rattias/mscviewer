@@ -7,19 +7,8 @@
  *
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer;
-import com.cisco.mscviewer.gui.*;
-import com.cisco.mscviewer.io.LegacyLoader;
-import com.cisco.mscviewer.io.Loader;
-import com.cisco.mscviewer.model.*;
-import com.cisco.mscviewer.script.Python;
-import com.cisco.mscviewer.script.ScriptResult;
-import com.cisco.mscviewer.util.Resources;
-import com.cisco.mscviewer.util.Utils;
-
 import java.awt.Font;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -33,6 +22,20 @@ import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import com.cisco.mscviewer.gui.MainFrame;
+import com.cisco.mscviewer.gui.MainPanel;
+import com.cisco.mscviewer.io.LegacyLoader;
+import com.cisco.mscviewer.io.Loader;
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.ViewModel;
+import com.cisco.mscviewer.script.Python;
+import com.cisco.mscviewer.script.ScriptResult;
+import com.cisco.mscviewer.util.Resources;
+import com.cisco.mscviewer.util.Utils;
 
 abstract class Opt {
     char shortName;
@@ -153,7 +156,7 @@ public class Main {
     IllegalArgumentException, IllegalAccessException,
     InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
         System.setProperty("pypath", Main.getInstallDir()+"/resources/default/script");
-
+        
         setupUIDefaults();
         int idx = processOptions(args);
 
@@ -273,14 +276,14 @@ public class Main {
         UIManager.put("ToolBar.font", f);
         UIManager.put("ToolTip.font", f);
 
-        ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
-        if (icon != null) {
-            UIManager.put("Tree.leafIcon", icon);
-            UIManager.put("Tree.openIcon", icon);
-            UIManager.put("Tree.closedIcon", icon);
-        } else {
-            throw new Error("Couldn't find file entity.gif");
-        }
+//        ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
+//        if (icon != null) {
+//            UIManager.put("Tree.leafIcon", icon);
+//            UIManager.put("Tree.openIcon", icon);
+//            UIManager.put("Tree.closedIcon", icon);
+//        } else {
+//            throw new Error("Couldn't find file entity.gif");
+//        }
     }
 
 

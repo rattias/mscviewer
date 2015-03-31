@@ -20,10 +20,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
@@ -45,14 +42,6 @@ import com.cisco.mscviewer.tree.IntervalTree;
 import com.cisco.mscviewer.util.Resources;
 
 public class MSCRenderer {
-    private final static long NSEC_PER_USEC = 1000L;
-    private final static long NSEC_PER_MSEC = NSEC_PER_USEC*1000L;
-    private final static long NSEC_PER_SEC =  NSEC_PER_MSEC*1000L;
-    private final static long NSEC_PER_MIN =  NSEC_PER_SEC*60L;
-    private final static long NSEC_PER_HOUR = NSEC_PER_MIN*60L;
-    private final static long NSEC_PER_DAY =  NSEC_PER_HOUR*24L;
-    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy-");
-    private final static Calendar calendar = Calendar.getInstance();
     public final static int EVENT_HEIGHT = 20;
     private int eventHeight = EVENT_HEIGHT;
     private final MSCDataModel dataModel;
@@ -60,7 +49,7 @@ public class MSCRenderer {
     private Event selectedEvent = null;
     private Interaction selectedInteraction = null;
     private int viewModelSelectedEventIndex = -1;
-    private final boolean showTime = true;
+    private boolean showTime = true;
     private boolean showBlocks = true;
     private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
     private InputUnit deltaTimeUnit = InputUnit.NS; 
@@ -106,7 +95,7 @@ public class MSCRenderer {
     public MSCRenderer(ViewModel eh) {
         viewModel = eh;
         dataModel = viewModel.getMSCDataModel();
-        infoIcon = Resources.getImageIcon("info.png", "Info icon", 16, 16);	
+        infoIcon = Resources.getImageIcon("32x32/info.png", "Info icon");	
     }
 
     //	public MSCRenderer() {
@@ -181,124 +170,9 @@ public class MSCRenderer {
     }
 
     public String getTimeRepr(long timestamp) {
-        boolean showz = showLeadingZeroes;
-        StringBuilder sb = new StringBuilder();
-        long t, h, m, ss, ms=-1, us=-1, ns, d;
-        t = timestamp;
-        return absTimeUnit.format(t);
-//        if (absTimeUnit != OutputUnit.T) {		
-//            d = t/NSEC_PER_DAY;
-//            if (showDate) {
-//                calendar.setTimeInMillis(d*(24*60*60*1000));
-//                sb.append(dateFormat.format(calendar.getTime()));
-//            }
-//            t -= d*NSEC_PER_DAY;
-//            if (absTimeUnit.contains("h")) {
-//                h = t/NSEC_PER_HOUR;
-//                if ((showz || h!=0)) {
-//                    showz = true;
-//                    if (h<10)
-//                        sb.append('0');
-//                    sb.append(h);
-//                    if (showUnits)
-//                        sb.append('h');
-//                    sb.append(':');
-//                    t -= h*NSEC_PER_HOUR;
-//                }
-//            }
-//            if (absTimeUnit.contains("m")) {
-//                m = t/NSEC_PER_MIN;
-//                if (showz || m!=0) {
-//                    showz = true;
-//                    if (m<10)
-//                        sb.append('0');
-//                    sb.append(m);
-//                    if (showUnits)
-//                        sb.append('m');
-//                    sb.append(':');
-//                    t -= m*NSEC_PER_MIN;
-//                }
-//            }
-//            if (absTimeUnit.contains("s")) {
-//                ss = t/NSEC_PER_SEC;
-//                if (showz || ss!=0) {
-//                    showz = true;
-//                    if (ss<10)
-//                        sb.append('0');
-//                    sb.append(ss);
-//                    if (showUnits)
-//                        sb.append('s');
-//                    sb.append(':');
-//                    t -= ss*NSEC_PER_SEC;
-//                }
-//            }
-//            if (absTimeUnit.contains("ms")) {
-//                ms = t/NSEC_PER_MSEC;
-//                if (showz || ms!=0) {
-//                    showz = true;
-//                    if (ms<10)       sb.append("00");
-//                    else if (ms<100) sb.append('0');
-//                    sb.append(ms);
-//                    if (showUnits)
-//                        sb.append("ms");
-//                    sb.append(':');
-//                    t -= ms*NSEC_PER_MSEC;
-//                }
-//            }
-//            if (absTimeUnit.contains("us")) {
-//                us = t/NSEC_PER_USEC;
-//                if (showz || us!=0) {
-//                    if (ms != -1) {
-//                        if (us<10)       sb.append("00");
-//                        else if (us<100) sb.append("0");
-//                    } else {
-//                        if (us<10)      sb.append("00000");
-//                        else if (us<100) sb.append("0000");					
-//                        else if (us<1000) sb.append("000");					
-//                        else if (us<10000) sb.append("00");					
-//                        else if (us<100000) sb.append("0");					
-//                    }
-//                    sb.append(us);
-//                    if (showUnits)
-//                        sb.append("us");
-//                    sb.append(':');
-//                    t -= us*NSEC_PER_USEC;
-//                }
-//            }
-//            if (absTimeUnit.contains("ns")) {
-//                ns = t;
-//                if (ns!=0) {
-//                    if (us != -1) {
-//                        if (ns<10)       sb.append("00");
-//                        else if (ns<100) sb.append("0");
-//                    } else if (ms != -1) {
-//                        if (ns<10)      sb.append("00000");
-//                        else if (ns<100) sb.append("0000");					
-//                        else if (ns<1000) sb.append("000");					
-//                        else if (ns<10000) sb.append("00");					
-//                        else if (ns<100000) sb.append("0");					
-//                    } else {
-//                        if (ns<10)      sb.append("00000000");
-//                        else if (ns<100) sb.append("0000000");					
-//                        else if (ns<1000) sb.append("000000");					
-//                        else if (ns<10000) sb.append("00000");					
-//                        else if (ns<100000) sb.append("0000");					
-//                        else if (ns<1000000) sb.append("000");					
-//                        else if (ns<10000000) sb.append("00");					
-//                        else if (ns<100000000) sb.append("0");					
-//                    }					
-//                    sb.append(ns);
-//                    if (showUnits)
-//                        sb.append("ns");
-//                }
-//            }
-//            if (sb.length()==0)
-//                sb.append('0');
-//        } else {
-//            sb.append(timestamp);
-//        }
-//        return sb.toString();
+        return absTimeUnit.format(timestamp);
     }
+    
     public void updateForTimeUnitChanges() {
         synchronized(dataModel) {
             int cnt = dataModel.getEventCount();
@@ -344,7 +218,6 @@ public class MSCRenderer {
                     Rectangle rb = beginEv.getRenderer().getBoundingBox(max, x, y0, null);
                     Rectangle re = endEv.getRenderer().getBoundingBox(max, x, y1, null);
                     Rectangle r = rb.union(re);
-                    System.out.println("!!!");
                     g2d.setColor(Color.lightGray);
                     g2d.fillRect(x-3, r.y, 7, r.height-4);
                     g2d.setColor(Color.gray);
@@ -717,8 +590,13 @@ public class MSCRenderer {
         return -1;
     }
 
-
     private Interaction selectClosestInteraction(int x, int y, int viewMinIdx, int viewMaxIdx) {
+        Interaction inter = getClosestInteraction(x, y, viewMinIdx, viewMaxIdx);
+        setSelectedInteraction(inter);
+        return inter;
+    }
+    
+    private Interaction getClosestInteraction(int x, int y, int viewMinIdx, int viewMaxIdx) {
         int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
         int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
         ArrayList<Interaction> al = dataModel.getInteractionsInInterval(modelMinIdx, modelMaxIdx);
@@ -754,7 +632,6 @@ public class MSCRenderer {
                     getEventBoundingBox(ev2, viewModel.getViewIndexFromModelIndex(ev2.getIndex()), maxDim2)
                     : new Rectangle(-1, -1, 0, 0);
             if (ir.inSelectionArea(r1, r2, x, y, en1 == en2)) {
-                setSelectedInteraction(in);
                 return in;					
             }
         } 
@@ -782,14 +659,12 @@ public class MSCRenderer {
                     return ev;
                 }
             }
-            Interaction in = selectClosestInteraction(x, y, minIdx, maxIdx);
-            if (in == null)
-                setSelectedInteraction(null);
+            Interaction in = getClosestInteraction(x, y, minIdx, maxIdx);
             return in;
         }
     }
     
-    public void selectClosest(int x, int y, int viewY, int viewHeight) {
+    public int getClosestEventViewIndex(int x, int y, int viewY, int viewHeight) {
         synchronized(dataModel) {
             int evCount = viewModel.getEventCount();
             int minIdx = viewY/eventHeight;
@@ -807,13 +682,30 @@ public class MSCRenderer {
                 if (p == null) 
                     continue;
                 if (ev.getRenderer().inSelectionArea(p.x, p.y,  maxDim, x, y)) {
-                    setSelectedEventByViewIndex(i);
-                    return;
+                    return i;
                 }
             }
-            if (selectClosestInteraction(x, y, minIdx, maxIdx) == null)
-                setSelectedInteraction(null);
+            return -1;        
         }
+    }
+    
+    public int getClosestEventModelIndex(int x, int y, int viewY, int viewHeight) {
+        return viewModel.getModelIndexFromViewIndex(getClosestEventViewIndex(x, y, viewY, viewHeight));
+    }
+    
+    public void selectClosest(int x, int y, int viewY, int viewHeight) {
+        int idx = getClosestEventViewIndex(x, y, viewY, viewHeight);
+        if (idx >= 0) {
+            setSelectedEventByViewIndex(idx);
+            return;
+        }
+        int evCount = viewModel.getEventCount();
+        int minIdx = viewY/eventHeight;
+        int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
+        if (maxIdx > evCount-1)
+            maxIdx = evCount-1;
+        if (selectClosestInteraction(x, y, minIdx, maxIdx) == null)
+            setSelectedInteraction(null);
     }
 
     @SuppressWarnings("unused")
@@ -1290,6 +1182,12 @@ public class MSCRenderer {
         return showDate;
     }
 
+    public void setShowTime(boolean sd) {
+        showTime = sd;
+    }
+    public boolean sShowTime() {
+        return showTime;
+    }
 
 
     public void setShowLeadingZeroes(boolean showLeadingZeroes) {

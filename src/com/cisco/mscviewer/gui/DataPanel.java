@@ -63,18 +63,22 @@ class TreeTableModel extends AbstractTreeTableModel {
     
     @Override
     public boolean isLeaf(Object node) {
-        Object value = ((TreeTableNodeModel)node).value; 
-        return !(value instanceof JSonObject || value instanceof JSonArrayValue);
+        Object value = ((TreeTableNodeModel)node).value;
+        if (value instanceof JSonObject && ((JSonObject)value).getFieldCount() > 0)
+            return false;
+        if (value instanceof JSonArrayValue && ((JSonArrayValue)value).size() > 0)
+            return false;
+        return true;
     }
     
     @Override
     public int getChildCount(Object node) {
         int c;
         TreeTableNodeModel o = (TreeTableNodeModel)node;
-        if (o.value instanceof JSonObject)
+        if (o.value instanceof JSonObject && ((JSonObject)o.value).getFieldCount() > 0)
             c = ((JSonObject)o.value).getFieldCount();
-        else if (o.value instanceof JSonArrayValue)
-            c = ((JSonArrayValue)o.value).value().size();
+        else if (o.value instanceof JSonArrayValue && ((JSonArrayValue)o.value).size() > 0)
+            c = ((JSonArrayValue)o.value).size();
         else
             c = 0;
         return c;
@@ -120,11 +124,22 @@ class TreeTableModel extends AbstractTreeTableModel {
             case 0:
                 return o.fieldName;
             case 1:
-                if (o.value instanceof JSonObject)
-                    return "{...}";
-                else if (o.value instanceof JSonArrayValue)
-                    return "[...]";
-                else
+                if (o.value instanceof JSonObject) {
+                    JSonObject jo = ((JSonObject)o.value);
+                    int count = jo.getFieldCount();
+                    if (count == 0)
+                        return "{} (empty)";
+                    else
+                        return "{...} ("+count+" elements)";
+                } else if (o.value instanceof JSonArrayValue) {
+                    JSonArrayValue v = (JSonArrayValue)o.value;
+                    if (v.size() == 0)
+                        return "[] (empty)";
+                    else
+                        return "[...] ("+v.size()+" elements)";
+                } else if (o == null || o.value == null) 
+                    return "null";
+                else                            
                     return o.value.toString();
         }
         return null;

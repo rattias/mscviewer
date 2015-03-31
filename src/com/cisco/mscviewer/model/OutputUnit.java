@@ -13,6 +13,7 @@ package com.cisco.mscviewer.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public enum OutputUnit {
     H_M_S(new SimpleDateFormat("HH:mm:ss")),
@@ -30,25 +31,25 @@ public enum OutputUnit {
     }
 
     public String format(long nsSinceEpoch) {
-        long msSinceEpoch = nsSinceEpoch/1000000;
-        String s = fmt.format(new Date(msSinceEpoch));
-        long leftoverNs = nsSinceEpoch - msSinceEpoch*1000000;
+        long msSinceEpoch = TimeUnit.NANOSECONDS.toMillis(nsSinceEpoch);
+        String prefix = fmt.format(new Date(msSinceEpoch));
+        long leftoverNs = nsSinceEpoch - TimeUnit.MILLISECONDS.toNanos(msSinceEpoch);
         switch(this) {
             case H_M_S_MS_US:
-                long us = leftoverNs/1000;
-                return s + ":" + us;
+                long us = TimeUnit.NANOSECONDS.toMicros(leftoverNs);
+                return String.format("%s:%.3d", prefix , us);
             case H_M_S_MS_US_NS:
-                us = leftoverNs/1000;
-                long ns = leftoverNs - us*1000;
-                return s + ":" + us + ":" + ns;
+                us = TimeUnit.NANOSECONDS.toMicros(leftoverNs);
+                long ns = leftoverNs - TimeUnit.MICROSECONDS.toNanos(us);
+                return String.format("%s:%.3:%.3", prefix, us, ns);
             case H_M_S_US:
-                long sSinceEpoch = nsSinceEpoch/1000000000;
-                long leftoverUs = nsSinceEpoch - sSinceEpoch*1000000000;
-                return s + ":" + leftoverUs;
+                us = TimeUnit.NANOSECONDS.toMicros(leftoverNs);
+                return String.format("%s:%.6d", prefix, us);
             case H_M_S_NS:
-                return s + ":" + leftoverNs;
+                return String.format("%s:%.9d", prefix, leftoverNs);
+        default:
+            return prefix;
         }
-        return s;
     }
     
 //    public boolean contains(String el) {

@@ -123,6 +123,13 @@ public class JSonParser {
         JSonArrayValue jal = new JSonArrayValue();
         ArrayList<JSonValue> al = jal.value();
         expect(str, file, lineNum, pos, '[');
+        try {
+            // test empty array case first
+            expect(str, file, lineNum, pos, ']');
+            return jal;
+        }catch(JSonException ex) {
+            // ok, array is not empty
+        }
         while (true) {
             try {
                 JSonValue value = parseValue(str, file, lineNum, pos);
@@ -150,12 +157,13 @@ public class JSonParser {
             pos.v++;
             negative = true;
         }
-        while (Character.isDigit(str.charAt(pos.v))) {
-            intPart = intPart * 10 + (str.charAt(pos.v) - '0');
+        if (str.charAt(pos.v) != '0') {
+            while (Character.isDigit(str.charAt(pos.v))) {
+                intPart = intPart * 10 + (str.charAt(pos.v) - '0');
+                pos.v++;
+            }
+        } else
             pos.v++;
-            if (str.charAt(pos.v) == '0')
-                break;
-        }
         if (negative) {
             intPart = -intPart;
         }
@@ -243,7 +251,7 @@ public class JSonParser {
         while (true) {
             String key = parseString(str, file, lineNum, pos).toString();
             expect(str, file, lineNum, pos, ':');
-            JSonValue value = (JSonValue)parseValue(str, file, lineNum, pos);
+            JSonValue value = parseValue(str, file, lineNum, pos);
             o.set(key, value);
             char res = expectOneOf(str, file, lineNum, pos, ",}");
             if (res == '}') {

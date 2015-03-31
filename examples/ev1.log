@@ -1,0 +1,79 @@
+2015-01-29 17:30:21,823:INFO:@event {"entity": "DCI Server", "type": "Birth", "label": "DCI Server started"}
+2015-01-29 17:30:27,775:INFO:@event {"src": "DCI Server_0", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 1, "DCIRoutingFailedStr": "No route to host"}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-01-29 17:30:27,776:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "request_reply timer expired"}
+2015-01-29 17:30:27,776:INFO:@event {"src": "DCI Server_1", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-01-29 17:30:27,778:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "failure: Connection was refused by other side: 111: Connection refused."}
+2015-01-29 17:30:28,505:INFO:@event {"entity": "Route Compute", "type": "Birth", "label": "rc started"}
+2015-01-29 17:30:28,656:INFO:@event {"entity": "Distr.Layer", "type": "Birth", "label": "Distr.Layer started"}
+2015-01-29 17:30:28,662:INFO:@event {"src": "Distr.Layer_0", "entity": "Distr.Layer", "label": "POST http://127.0.0.1:80/VTS/default/API/SBreplay"}
+2015-01-29 17:30:28,775:INFO:@event {"dst": "Distr.Layer_0", "entity": "Route Compute", "label": "POST /VTS/default/API/SBreplay"}
+2015-01-29 17:30:28,783:INFO:@event {"src": "Route Compute_0", "entity": "Route Compute", "label": ""}
+2015-01-29 17:30:28,785:INFO:@event {"dst": "Route Compute_0", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:30:42,780:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "request_reply timer expired"}
+2015-01-29 17:30:42,780:INFO:@event {"src": "DCI Server_2", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-01-29 17:30:42,781:INFO:@event {"dst": "DCI Server_2", "entity": "Route Compute", "label": "POST /VTS/default/API/DCIRtgReplay"}
+2015-01-29 17:30:42,784:INFO:@event {"src": "Route Compute_1", "entity": "Route Compute", "label": ""}
+2015-01-29 17:30:42,785:INFO:@event {"dst": "Route Compute_1", "entity": "DCI Server", "label": "success"}
+2015-01-29 17:31:34,821:INFO:@event {"entity": "VTF", "label": "VPFA started"}
+2015-01-29 17:31:46,408:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VpefGateway": ["10.6.65.1"], "VpefName": ["10.6.65.240"], "VpefTrunkIfMac": ["00:50:56:00:00:FF"], "VpefUnderlayIp": ["10.6.65.240/24"], "VpefBGPNhop": ["169.254.10.101"], "VpefID": ["101"], "VpefUnderlayIfMac": ["00:0c:29:83:a2:0b"]}, "label": "POST /VTS/default/API/Vpef/"}
+2015-01-29 17:31:46,416:INFO:@event {"src": "Route Compute_2", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:46,421:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"LocalAS": ["100"], "DCIUnderlay": ["1.1.10.161"], "DCIRouterID": ["2.1.10.251"]}, "label": "POST /VTS/default/API/DCI/"}
+2015-01-29 17:31:46,431:INFO:@event {"src": "Route Compute_3", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:46,437:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"LocalAS": ["100"], "DCIUnderlay": ["1.1.10.161"], "DCIRouterID": ["2.1.10.252"]}, "label": "POST /VTS/default/API/DCI/"}
+2015-01-29 17:31:46,444:INFO:@event {"src": "Route Compute_4", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:46,449:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VRFRT": ["100:100"], "NetworkDhcpServer": ["1.60.30.172"], "VRFName": ["Tenant1"], "VRFRD": ["100:100"], "SubnetCIDR": ["11.75.1.0/24"], "SubnetGateway": ["11.75.1.1"]}, "label": "POST /VTS/default/API/Network/"}
+2015-01-29 17:31:47,441:INFO:@event {"src": "Route Compute_5", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:47,447:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VRFRT": ["100:200"], "NetworkDhcpServer": ["1.60.30.172"], "VRFName": ["Tenant2"], "VRFRD": ["100:200"], "SubnetCIDR": ["12.75.1.0/24"], "SubnetGateway": ["12.75.1.1"]}, "label": "POST /VTS/default/API/Network/"}
+2015-01-29 17:31:47,734:INFO:@event {"src": "Route Compute_6", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:47,740:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"SubnetID": ["Tenant1sub1"], "CIDR": ["211.75.1.0/24"], "VRFName": ["Tenant1"], "Gateway": ["211.75.1.1"]}, "label": "POST /VTS/default/API/Subnet/"}
+2015-01-29 17:31:47,748:INFO:@event {"src": "Route Compute_7", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:47,753:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"SubnetID": ["Tenant2sub1"], "CIDR": ["212.75.1.0/24"], "VRFName": ["Tenant2"], "Gateway": ["212.75.1.1"]}, "label": "POST /VTS/default/API/Subnet/"}
+2015-01-29 17:31:47,760:INFO:@event {"src": "Route Compute_8", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:47,765:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:0c:29:83:a2:0b"], "VRFName": ["Tenant1"], "Interface": ["1001"], "IP": ["10.6.65.240"], "VMID": ["VM01"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-29 17:31:47,779:INFO:@event {"src": "Route Compute_9", "entity": "Route Compute", "label": ""}
+2015-01-29 17:31:47,785:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "label": "POST /VTS/default/API/EndOfReplay"}
+2015-01-29 17:31:47,791:INFO:@event {"src": "Route Compute_10", "entity": "Route Compute", "label": ""}
+2015-01-29 17:32:01,412:INFO:@event {"entity": "Route Compute", "type": "Timer", "label": "bulk timeout"}
+2015-01-29 17:32:01,412:INFO:@event {"src": "1", "entity": "Route Compute", "label": "sending bulk"}
+2015-01-29 17:32:01,416:INFO:@event {"dst": "1", "entity": "Distr.Layer", "label": "bulk_received"}
+2015-01-29 17:32:05,973:INFO:@event {"dst": "Distr.Layer_1", "entity": "VTF", "label": "POST /yang-api/datastore/sync"}
+2015-01-29 17:32:05,974:INFO:@event {"src": "VTF_0", "entity": "VTF", "label": ""}
+2015-01-29 17:32:05,976:INFO:@event {"dst": "Distr.Layer_2", "entity": "VTF", "label": "PUT /yang-api/datastore/sync/sync-state"}
+2015-01-29 17:32:05,977:INFO:@event {"src": "VTF_1", "entity": "VTF", "label": "{\"sync-state\": \"sync-start\"}"}
+2015-01-29 17:32:05,983:INFO:@event {"dst": "Distr.Layer_3", "entity": "VTF", "label": "PATCH /yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:05,992:INFO:@event {"src": "VTF_2", "entity": "VTF", "label": "Success"}
+2015-01-29 17:32:05,994:INFO:@event {"dst": "Distr.Layer_4", "entity": "VTF", "label": "PATCH /yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:06,008:INFO:@event {"src": "VTF_3", "entity": "VTF", "label": "Success"}
+2015-01-29 17:32:06,010:INFO:@event {"dst": "Distr.Layer_5", "entity": "VTF", "label": "PATCH /yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:06,023:INFO:@event {"src": "VTF_4", "entity": "VTF", "label": "Success"}
+2015-01-29 17:32:06,025:INFO:@event {"dst": "Distr.Layer_6", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-01-29 17:32:06,027:INFO:@event {"src": "VTF_5", "entity": "VTF", "label": "[\n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:50:56:00:00:FF.1001\", \n        \"ifindex\": \"None\", \n        \"parent\": \"00:50:56:00:00:FF\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"None\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"complete, in-fib\", \n        \"key\": \"loop_Tenant1_0xb4b0100\", \n        \"ifindex\": \"8\", \n        \"platf_flags\": \"admin_down, link_down, link_down\", \n        \"loop_num\": 1, \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"table_set, prefix_set\", \n            \"address\": \"11.75.1.1/24\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:0c:29:83:a2:0b\", \n        \"ifindex\": \"None\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"10.6.65.240/24\", \n            \"table\": \"global-v4\"\n        }\n    }, \n    {\n        \"flags\": \"complete, in-fib\", \n        \"key\": \"loop_Tenant1_0xd34b0100\", \n        \"ifindex\": \"7\", \n        \"platf_flags\": \"admin_down, link_down, link_down\", \n        \"loop_num\": 0, \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"complete, in-fib\", \n            \"platf_flags\": \"table_set, prefix_set\", \n            \"address\": \"211.75.1.1/24\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:50:56:00:00:FF\", \n        \"ifindex\": \"None\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"None\"\n        }\n    }\n]"}
+2015-01-29 17:32:06,413:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "label": "sync timer expired"}
+2015-01-29 17:32:06,414:INFO:@event {"src": "Distr.Layer_1", "entity": "Distr.Layer", "label": "POST http://10.6.65.240:21345/yang-api/datastore/sync"}
+2015-01-29 17:32:06,416:INFO:@event {"src": "Distr.Layer_2", "entity": "Distr.Layer", "label": "PUT http://10.6.65.240:21345/yang-api/datastore/sync/sync-state"}
+2015-01-29 17:32:06,421:INFO:@event {"dst": "VTF_0", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:06,423:INFO:@event {"dst": "VTF_1", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:06,425:INFO:@event {"src": "Distr.Layer_3", "entity": "Distr.Layer", "label": "PATCH http://10.6.65.240:21345/yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:06,425:INFO:@event {"src": "Distr.Layer_4", "entity": "Distr.Layer", "label": "PATCH http://10.6.65.240:21345/yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:06,426:INFO:@event {"src": "Distr.Layer_5", "entity": "Distr.Layer", "label": "PATCH http://10.6.65.240:21345/yang-api/datastore/prop-bulk"}
+2015-01-29 17:32:06,426:INFO:@event {"src": "Distr.Layer_6", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-01-29 17:32:06,428:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "label": "PUT /VTS/default/API/Vpef"}
+2015-01-29 17:32:06,438:INFO:@event {"dst": "VTF_2", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:06,439:INFO:@event {"src": "Route Compute_11", "entity": "Route Compute", "label": ""}
+2015-01-29 17:32:06,454:INFO:@event {"dst": "VTF_3", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:06,469:INFO:@event {"dst": "VTF_4", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:06,473:INFO:@event {"dst": "VTF_5", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:08,219:INFO:@event {"dst": "Distr.Layer_7", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-01-29 17:32:08,220:INFO:@event {"src": "VTF_6", "entity": "VTF", "label": "[\n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:50:56:00:00:FF.1001\", \n        \"ifindex\": \"None\", \n        \"parent\": \"00:50:56:00:00:FF\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"None\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"complete, in-fib\", \n        \"key\": \"loop_Tenant1_0xb4b0100\", \n        \"ifindex\": \"8\", \n        \"platf_flags\": \"admin_down, link_down, link_down\", \n        \"loop_num\": 1, \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"complete, in-fib\", \n            \"platf_flags\": \"table_set, prefix_set\", \n            \"address\": \"11.75.1.1/24\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:0c:29:83:a2:0b\", \n        \"ifindex\": \"None\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"10.6.65.240/24\", \n            \"table\": \"global-v4\"\n        }\n    }, \n    {\n        \"flags\": \"complete, in-fib\", \n        \"key\": \"loop_Tenant1_0xd34b0100\", \n        \"ifindex\": \"7\", \n        \"platf_flags\": \"admin_down, link_down, link_down\", \n        \"loop_num\": 0, \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"complete, in-fib\", \n            \"platf_flags\": \"table_set, prefix_set\", \n            \"address\": \"211.75.1.1/24\", \n            \"table\": \"Tenant1::Tenant1\"\n        }\n    }, \n    {\n        \"flags\": \"incomplete, not-in-ifib\", \n        \"key\": \"00:50:56:00:00:FF\", \n        \"ifindex\": \"None\", \n        \"IPV4-EXTENSION\": {\n            \"flags\": \"incomplete, not-in-ifib\", \n            \"platf_flags\": \"\", \n            \"address\": \"None\"\n        }\n    }\n]"}
+2015-01-29 17:32:08,663:INFO:@event {"src": "Distr.Layer_7", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-01-29 17:32:08,667:INFO:@event {"dst": "VTF_6", "entity": "Distr.Layer", "label": "success"}
+2015-01-29 17:32:11,416:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "label": "sync timer expired"}
+2015-01-29 17:32:16,423:INFO:@event {"entity": "Route Compute", "type": "Timer", "label": "bulk timeout"}
+2015-01-29 17:32:16,423:INFO:@event {"src": "1", "entity": "Route Compute", "label": "sending bulk"}
+2015-01-29 17:32:16,428:INFO:@event {"src": "DCI Server_3", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 0, "DCIRoutingFailedStr": ""}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-01-29 17:32:16,429:INFO:@event {"dst": "1", "entity": "DCI Server", "label": "bulk_received"}
+2015-01-29 17:32:16,430:INFO:@event {"dst": "DCI Server_3", "entity": "Route Compute", "label": "PUT /VTS/default/API/DCIRouting"}
+2015-01-29 17:32:16,431:INFO:@event {"src": "Route Compute_12", "entity": "Route Compute", "label": "Missing Arguments\n"}
+2015-01-29 17:32:16,432:INFO:@event {"dst": "Route Compute_12", "entity": "DCI Server", "label": "http://127.0.0.1:80/VTS/default/API/DCIRouting: success"}
+2015-01-29 17:32:18,665:INFO:@event {"src": "Distr.Layer_8", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-01-29 17:32:18,669:INFO:@event {"dst": "VTF_7", "entity": "Distr.Layer", "label": "success"}

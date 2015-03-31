@@ -14,7 +14,6 @@ import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.gui.renderer.EventRenderer;
 import com.cisco.mscviewer.gui.renderer.ImageRenderer;
 
@@ -26,18 +25,14 @@ public class Resources {
     private static HashMap<String, ImageRenderer> imgRenderers;
 
     public static void init(String plugins) {
-        int W = 25, H = 25;
-        getImageIcon("highlight_green.png"       , "green", W, H);
-        getImageIcon("highlight_green32x32.png"  , "green");
-        getImageIcon("highlight_yellow.png"     , "yellow", W, H);
-        getImageIcon("highlight_yellow32x32.png", "yellow");
-        getImageIcon("highlight_blue.png"       , "blue", W, H);
-        getImageIcon("highlight_blue32x32.png"  , "blue");
-        getImageIcon("highlight_red.png"        , "red", W, H);
-        getImageIcon("highlight_red.png"        , "red");
-        getImageIcon("select.png"               , "select", W, H);
-        getImageIcon("select32x32.png"      , "select");
-        getImageIcon("blocks32x32.png"      , "blocks");
+        String sz = "/32x32/";
+        getImageIcon(sz+"highlight_green.png"       , "green");
+        getImageIcon(sz+"highlight_yellow.png"     , "yellow");
+        getImageIcon(sz+"highlight_blue.png"       , "blue");
+        getImageIcon(sz+"highlight_red.png"        , "red");
+        getImageIcon(sz+"select.png"               , "select");
+        getImageIcon(sz+"select.png"      , "select");
+        getImageIcon(sz+"blocks.png"      , "blocks");
 
         readDefaultRenderers();
         if (plugins == null)
@@ -67,39 +62,22 @@ public class Resources {
 
 
     public static ImageIcon getImageIcon(String path, String description) {
-        return getImageIcon(path, description, -1, -1);
-    }
-
-    public static ImageIcon getImageIcon(String path, String description, int width, int height) {
         java.net.URL imgURL;
         String filePath;
-        boolean shouldRescale = false;
         if (imgIcons == null)
             imgIcons = new HashMap<String, ImageIcon>();
-        filePath = RESOURCE_PATH + "/icons/" + path;
-        ImageIcon im = imgIcons.get(filePath);
+        ImageIcon im = imgIcons.get(RESOURCE_PATH + path);
         if (im == null) {
-            if (width >=0) {
-                int idx = filePath.lastIndexOf(".");
-                if (idx >= 0 )
-                    filePath = filePath.substring(0, idx)+width+"x"+height+filePath.substring(idx);
-                else
-                    filePath = filePath+width+"x"+height;
-            }
-            imgURL = ClassLoader.getSystemResource(filePath);
-            if (imgURL == null && width >= 0) {
-                shouldRescale = true;
-                filePath = path;
-                imgURL = ClassLoader.getSystemResource(ICON_PATH + "/" + filePath);
+            imgURL = ClassLoader.getSystemResource(RESOURCE_PATH + path);
+            if (imgURL == null) {
+                imgURL = ClassLoader.getSystemResource(ICON_PATH + "/" + path);
             }
             if (imgURL == null) {
-                System.err.println("Couldn't find file: " + filePath+" (width = "+width+", height = "+height+")");
+                System.err.println("Couldn't find image icon " + path);
                 return null;
             }
             im = new ImageIcon(imgURL, description);
-            if (shouldRescale)
-                im.setImage(im.getImage().getScaledInstance(width, height, 0));
-            imgIcons.put(filePath, im);
+            imgIcons.put(path, im);
         }
         return im;
     }

@@ -140,6 +140,9 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 throw new Error("should be in event dispatch thread!");
             }
             dragging = null;
+            // the following line is important to make sure regular preferred size
+            // is used when adding/removing components
+            preferredSize = null;
             ehm.moveEntity(((CustomButton) e.getSource()).getEntity(), draggingProspectiveIndex);
             draggingProspectiveIndex = -1;
         }
@@ -304,21 +307,36 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
+//            int count = ehm.entityCount();
+//            if (count == 1)
+//                // in case only one entity is shown we can't shrink
+//                return;
+//            CustomButton b = (CustomButton) e.getSource();
+//            int idx = ehm.indexOf(b.getEntity());
+//            Dimension d = ehm.getEntityPreferredSize(idx);
+//            d.width -= 6;
+//            ehm.setEntityPreferredSize(idx, d);
+//            if (ehm.getEntityPreferredSize(idx).width == d.width) {
+//                int nidx = idx < count-1 ? idx+1: idx-1;
+//                d = ehm.getEntityPreferredSize(nidx);
+//                d.width += 6;
+//                ehm.setEntityPreferredSize(nidx, d);
+//            }
             int count = ehm.entityCount();
-            if (count == 1)
-                // in case only one entity is shown we can't shrink
+            int totalW = getWidth();
+            JViewport jvp = (JViewport)getParent();
+            Rectangle rec = jvp.getViewRect();
+            int visibleW = (int)rec.getWidth();
+            int delta = 6;
+            if (totalW == visibleW)
                 return;
+            if (totalW-delta < visibleW)
+                delta = totalW - visibleW;
             CustomButton b = (CustomButton) e.getSource();
             int idx = ehm.indexOf(b.getEntity());
             Dimension d = ehm.getEntityPreferredSize(idx);
-            d.width -= 6;
-            ehm.setEntityPreferredSize(idx, d);
-            if (ehm.getEntityPreferredSize(idx).width == d.width) {
-                int nidx = idx < count-1 ? idx+1: idx-1;
-                d = ehm.getEntityPreferredSize(nidx);
-                d.width += 6;
-                ehm.setEntityPreferredSize(nidx, d);
-            }
+            d.width -= delta;
+            ehm.setEntityPreferredSize(idx, d);            
         }
     };
 
@@ -451,7 +469,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 //                ehm.setEntityBounds(ehm.indexOf(en), p.getBounds());
 //            }
 //        });
-        JButton x = new JButton(Resources.getImageIcon("close1.png", "close"));
+        JButton x = new JButton(Resources.getImageIcon("16x16/close1.png", "close"));
         x.setBorderPainted(false);
         x.setMargin(new Insets(2, 0, 2, 0));
         class XActionListener implements ActionListener {
@@ -469,10 +487,10 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             }
         }
         x.addActionListener(new XActionListener(en));
-        JToggleButton y = new JToggleButton(Resources.getImageIcon("iconize.png", "iconize"));
+        JToggleButton y = new JToggleButton(Resources.getImageIcon("16x16/iconize.png", "iconize"));
         y.setFocusable(false);
         y.setName("iconize");
-        y.setSelectedIcon(Resources.getImageIcon("iconize1.png", "iconize"));
+        y.setSelectedIcon(Resources.getImageIcon("16x16/iconize1.png", "iconize"));
         y.setBorderPainted(false);
 
         y.setMargin(new Insets(2, 0, 2, 0));
@@ -534,6 +552,11 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         return pn.getViewport();
     }
 
+    public void setSize(Dimension d) {
+        super.setSize(d);        
+    }
+    
+    
     @Override
     public void doLayout() {
         if (dragging != null) {
@@ -572,8 +595,8 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             setMinimumSize(newDim);
             setPreferredSize(newDim);
         }
-        revalidate();
-        repaint();
+//        revalidate();
+//        repaint();
     }
 
     public void flipIconizedState(Entity en) {
@@ -639,7 +662,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
     }
 
     @Override
-    public void entityRemoved(ViewModel eh, Entity en, int idx) {
+    public void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }

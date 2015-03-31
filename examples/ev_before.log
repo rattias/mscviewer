@@ -1,0 +1,270 @@
+2015-02-06 14:19:17,861:INFO:@event {"entity": "DCI Server", "type": "Birth", "block": "begin", "label": "DCI Server started"}
+2015-02-06 14:19:23,473:INFO:@event {"src": "DCI Server_0", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 1, "DCIRoutingFailedStr": "No route to host"}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-02-06 14:19:23,475:INFO:@event {"entity": "DCI Server", "type": "Timer", "block": "begin", "label": "request_reply timer expired"}
+2015-02-06 14:19:23,475:INFO:@event {"src": "DCI Server_1", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-02-06 14:19:23,476:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "failure: Connection was refused by other side: 111: Connection refused."}
+2015-02-06 14:19:24,195:INFO:@event {"entity": "Distr.Layer", "type": "Birth", "block": "begin", "label": "Distr.Layer started"}
+2015-02-06 14:19:24,207:INFO:@event {"src": "Distr.Layer_0", "entity": "Distr.Layer", "label": "POST http://127.0.0.1:80/VTS/default/API/SBreplay"}
+2015-02-06 14:19:24,208:INFO:@event {"entity": "Distr.Layer", "type": "Error", "label": "failure: Connection was refused by other side: 111: Connection refused."}
+2015-02-06 14:19:24,227:INFO:@event {"entity": "Route Compute", "type": "Birth", "block": "begin", "label": "rc started"}
+2015-02-06 14:19:29,209:INFO:@event {"src": "Distr.Layer_1", "entity": "Distr.Layer", "label": "POST http://127.0.0.1:80/VTS/default/API/SBreplay"}
+2015-02-06 14:19:29,211:INFO:@event {"dst": "Distr.Layer_1", "entity": "Route Compute", "data": {}, "src-ip": "127.0.0.1", "label": "POST /VTS/default/API/SBreplay"}
+2015-02-06 14:19:29,221:INFO:@event {"src": "Route Compute_0", "entity": "Route Compute", "label": ""}
+2015-02-06 14:19:29,223:INFO:@event {"dst": "Route Compute_0", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:19:34,205:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:19:38,477:INFO:@event {"entity": "DCI Server", "type": "Timer", "block": "begin", "label": "request_reply timer expired"}
+2015-02-06 14:19:38,478:INFO:@event {"src": "DCI Server_2", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-02-06 14:19:38,479:INFO:@event {"dst": "DCI Server_2", "entity": "Route Compute", "data": {}, "src-ip": "127.0.0.1", "label": "POST /VTS/default/API/DCIRtgReplay"}
+2015-02-06 14:19:38,482:INFO:@event {"src": "Route Compute_1", "entity": "Route Compute", "label": ""}
+2015-02-06 14:19:38,483:INFO:@event {"dst": "Route Compute_1", "entity": "DCI Server", "label": "success (200)"}
+2015-02-06 14:19:44,205:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:19:54,206:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:04,207:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:14,186:INFO:@event {"entity": "VTF", "type": "Birth", "block": "begin", "label": "VPFA started"}
+2015-02-06 14:20:14,208:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:19,624:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VpefName": "10.6.65.240", "VpefBGPNhop": "169.254.10.101", "VpefGateway": "1.1.10.161", "VpefUnderlayIfMac": "00:50:56:00:11:65", "VpefUnderlayIp": "1.1.10.201/24", "VpefTrunkIfMac": "00:50:56:00:00:FF", "VpefID": "101"}, "src-ip": "127.0.0.1", "label": "POST /VTS/default/API/Vpef/"}
+2015-02-06 14:20:19,630:INFO:@event {"src": "Route Compute_2", "entity": "Route Compute", "label": ""}
+2015-02-06 14:20:23,475:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "timer expired: connecting to XRVR..."}
+2015-02-06 14:20:24,208:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:26,472:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "connection failed, attempt 1"}
+2015-02-06 14:20:34,209:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:34,625:INFO:@event {"entity": "Route Compute", "type": "Timer", "block": "begin", "label": "bulk timeout"}
+2015-02-06 14:20:34,626:INFO:@event {"src": "1", "entity": "Route Compute", "label": "sending bulk"}
+2015-02-06 14:20:34,628:INFO:@event {"dst": "1", "entity": "Distr.Layer", "label": "bulk_received"}
+2015-02-06 14:20:39,627:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "sync timer expired"}
+2015-02-06 14:20:39,627:INFO:@event {"src": "Distr.Layer_2", "entity": "Distr.Layer", "label": "POST http://10.6.65.240:21345/yang-api/datastore/sync"}
+2015-02-06 14:20:39,630:INFO:@event {"src": "Distr.Layer_3", "entity": "Distr.Layer", "data": {"sync-state": "sync-start"}, "label": "PUT http://10.6.65.240:21345/yang-api/datastore/sync/sync-state"}
+2015-02-06 14:20:39,632:INFO:@event {"dst": "Distr.Layer_2", "entity": "VTF", "label": "POST /yang-api/datastore/sync"}
+2015-02-06 14:20:39,633:INFO:@event {"src": "VTF_0", "entity": "VTF", "label": "success (empty input)"}
+2015-02-06 14:20:39,634:INFO:@event {"dst": "VTF_0", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:20:39,635:INFO:@event {"dst": "Distr.Layer_3", "entity": "VTF", "label": "PUT /yang-api/datastore/sync/sync-state"}
+2015-02-06 14:20:39,635:INFO:@event {"src": "VTF_1", "entity": "VTF", "label": "success"}
+2015-02-06 14:20:39,636:INFO:@event {"dst": "VTF_1", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:20:39,637:INFO:@event {"src": "Distr.Layer_4", "entity": "Distr.Layer", "data": {"data": [{"object-id": "OBJ_PROT_ADDR", "operation": "OP_UPDATE", "data": {"ipv4": {"gateway-address": "1.1.10.161", "source-address": "1.1.10.201", "dhcp-address": "1.1.10.161"}}, "key": "ipv4"}, {"object-id": "OBJ_INTERFACE", "operation": "OP_UPDATE", "data": {"interface": {"type": "ethernetCsmacd", "ipv4-addr": "1.1.10.201", "enabled": "true", "name": "00:50:56:00:11:65", "ipv4-prefix-length": 24}}, "key": "00:50:56:00:11:65"}, {"object-id": "OBJ_INTERFACE", "operation": "OP_UPDATE", "data": {"interface": {"type": "ethernetCsmacd", "enabled": "true", "name": "00:50:56:00:00:FF"}}, "key": "00:50:56:00:00:FF"}]}, "label": "PATCH http://10.6.65.240:21345/yang-api/datastore/prop-bulk"}
+2015-02-06 14:20:39,638:INFO:@event {"src": "Distr.Layer_5", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:20:39,638:INFO:@event {"src": "Distr.Layer_6", "entity": "Distr.Layer", "data": {"VpefDownloadFailed": "Success", "VpefID": "101"}, "label": "PUT http://127.0.0.1/VTS/default/API/Vpef"}
+2015-02-06 14:20:39,639:INFO:@event {"dst": "Distr.Layer_4", "entity": "VTF", "label": "PATCH /yang-api/datastore/prop-bulk"}
+2015-02-06 14:20:39,640:INFO:@event {"dst": "Distr.Layer_6", "entity": "Route Compute", "data": {"VpefDownloadFailed": "Success", "VpefID": "101"}, "src-ip": "127.0.0.1", "label": "PUT /VTS/default/API/Vpef"}
+2015-02-06 14:20:39,642:INFO:@event {"src": "VTF_2", "entity": "VTF", "label": "success"}
+2015-02-06 14:20:39,643:INFO:@event {"dst": "VTF_2", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:20:39,643:INFO:@event {"dst": "Distr.Layer_5", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:20:39,644:INFO:@event {"src": "VTF_3", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:20:39,645:INFO:@event {"dst": "VTF_3", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:20:39,648:INFO:@event {"src": "Route Compute_3", "entity": "Route Compute", "label": ""}
+2015-02-06 14:20:39,649:INFO:@event {"dst": "Route Compute_3", "entity": "Distr.Layer", "label": "response"}
+2015-02-06 14:20:44,210:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:44,210:INFO:@event {"src": "Distr.Layer_7", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:20:44,211:INFO:@event {"dst": "Distr.Layer_7", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:20:44,212:INFO:@event {"src": "VTF_4", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:20:44,213:INFO:@event {"dst": "VTF_4", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:20:44,631:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "sync timer expired"}
+2015-02-06 14:20:54,211:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:20:54,212:INFO:@event {"src": "Distr.Layer_8", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:20:54,213:INFO:@event {"dst": "Distr.Layer_8", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:20:54,213:INFO:@event {"src": "VTF_5", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:20:54,215:INFO:@event {"dst": "VTF_5", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:04,213:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:04,213:INFO:@event {"src": "Distr.Layer_9", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:04,214:INFO:@event {"dst": "Distr.Layer_9", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:04,215:INFO:@event {"src": "VTF_6", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:04,216:INFO:@event {"dst": "VTF_6", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:14,215:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:14,215:INFO:@event {"src": "Distr.Layer_10", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:14,216:INFO:@event {"dst": "Distr.Layer_10", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:14,217:INFO:@event {"src": "VTF_7", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:14,219:INFO:@event {"dst": "VTF_7", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:24,216:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:24,216:INFO:@event {"src": "Distr.Layer_11", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:24,218:INFO:@event {"dst": "Distr.Layer_11", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:24,219:INFO:@event {"src": "VTF_8", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:24,221:INFO:@event {"dst": "VTF_8", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:26,474:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "timer expired: connecting to XRVR..."}
+2015-02-06 14:21:29,472:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "connection failed, attempt 2"}
+2015-02-06 14:21:34,218:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:34,218:INFO:@event {"src": "Distr.Layer_12", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:34,220:INFO:@event {"dst": "Distr.Layer_12", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:34,221:INFO:@event {"src": "VTF_9", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:34,223:INFO:@event {"dst": "VTF_9", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:44,220:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:44,220:INFO:@event {"src": "Distr.Layer_13", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:44,222:INFO:@event {"dst": "Distr.Layer_13", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:44,223:INFO:@event {"src": "VTF_10", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:44,225:INFO:@event {"dst": "VTF_10", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:21:54,222:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:21:54,222:INFO:@event {"src": "Distr.Layer_14", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:21:54,223:INFO:@event {"dst": "Distr.Layer_14", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:21:54,224:INFO:@event {"src": "VTF_11", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:21:54,226:INFO:@event {"dst": "VTF_11", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:04,224:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:04,224:INFO:@event {"src": "Distr.Layer_15", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:04,225:INFO:@event {"dst": "Distr.Layer_15", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:04,226:INFO:@event {"src": "VTF_12", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:04,228:INFO:@event {"dst": "VTF_12", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:14,226:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:14,226:INFO:@event {"src": "Distr.Layer_16", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:14,227:INFO:@event {"dst": "Distr.Layer_16", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:14,228:INFO:@event {"src": "VTF_13", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:14,229:INFO:@event {"dst": "VTF_13", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:24,226:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:24,227:INFO:@event {"src": "Distr.Layer_17", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:24,228:INFO:@event {"dst": "Distr.Layer_17", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:24,228:INFO:@event {"src": "VTF_14", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:24,230:INFO:@event {"dst": "VTF_14", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:29,478:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "timer expired: connecting to XRVR..."}
+2015-02-06 14:22:32,476:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "connection failed, attempt 3"}
+2015-02-06 14:22:34,228:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:34,229:INFO:@event {"src": "Distr.Layer_18", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:34,231:INFO:@event {"dst": "Distr.Layer_18", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:34,231:INFO:@event {"src": "VTF_15", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:34,234:INFO:@event {"dst": "VTF_15", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:44,231:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:44,231:INFO:@event {"src": "Distr.Layer_19", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:44,233:INFO:@event {"dst": "Distr.Layer_19", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:44,234:INFO:@event {"src": "VTF_16", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:44,237:INFO:@event {"dst": "VTF_16", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:22:54,234:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:22:54,234:INFO:@event {"src": "Distr.Layer_20", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:22:54,236:INFO:@event {"dst": "Distr.Layer_20", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:22:54,237:INFO:@event {"src": "VTF_17", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:22:54,239:INFO:@event {"dst": "VTF_17", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:04,236:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:04,236:INFO:@event {"src": "Distr.Layer_21", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:04,238:INFO:@event {"dst": "Distr.Layer_21", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:04,239:INFO:@event {"src": "VTF_18", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:04,241:INFO:@event {"dst": "VTF_18", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:14,239:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:14,239:INFO:@event {"src": "Distr.Layer_22", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:14,241:INFO:@event {"dst": "Distr.Layer_22", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:14,242:INFO:@event {"src": "VTF_19", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:14,244:INFO:@event {"dst": "VTF_19", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:24,241:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:24,241:INFO:@event {"src": "Distr.Layer_23", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:24,243:INFO:@event {"dst": "Distr.Layer_23", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:24,243:INFO:@event {"src": "VTF_20", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:24,246:INFO:@event {"dst": "VTF_20", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:32,481:INFO:@event {"entity": "DCI Server", "type": "Timer", "label": "timer expired: connecting to XRVR..."}
+2015-02-06 14:23:33,664:INFO:@event {"entity": "DCI Server", "label": "success"}
+2015-02-06 14:23:34,242:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:34,242:INFO:@event {"src": "Distr.Layer_24", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:34,244:INFO:@event {"dst": "Distr.Layer_24", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:34,245:INFO:@event {"src": "VTF_21", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:34,246:INFO:@event {"dst": "VTF_21", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:35,902:INFO:@event {"src": "DCI Server_3", "entity": "DCI Server", "label": "config"}
+2015-02-06 14:23:35,902:INFO:@event {"dst": "DCI Server_3", "entity": "XRVR", "label": "config"}
+2015-02-06 14:23:36,332:INFO:@event {"src": "XRVR_4", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:23:36,332:INFO:@event {"dst": "XRVR_4", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:23:36,332:INFO:@event {"src": "DCI Server_5", "entity": "DCI Server", "label": "load tftp://10.1.1.1/iosxr_config_xrvr01.txt"}
+2015-02-06 14:23:36,332:INFO:@event {"dst": "DCI Server_5", "entity": "XRVR", "label": "load tftp://10.1.1.1/iosxr_config_xrvr01.txt"}
+2015-02-06 14:23:37,542:INFO:@event {"src": "XRVR_6", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:23:37,542:INFO:@event {"dst": "XRVR_6", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:23:37,542:INFO:@event {"src": "DCI Server_7", "entity": "DCI Server", "label": "commit replace"}
+2015-02-06 14:23:37,542:INFO:@event {"dst": "DCI Server_7", "entity": "XRVR", "label": "commit replace"}
+2015-02-06 14:23:44,244:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:44,245:INFO:@event {"src": "Distr.Layer_25", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:44,246:INFO:@event {"dst": "Distr.Layer_25", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:44,248:INFO:@event {"src": "VTF_22", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:44,249:INFO:@event {"dst": "VTF_22", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:23:54,247:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:23:54,247:INFO:@event {"src": "Distr.Layer_26", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:23:54,249:INFO:@event {"dst": "Distr.Layer_26", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:23:54,250:INFO:@event {"src": "VTF_23", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:23:54,252:INFO:@event {"dst": "VTF_23", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:04,249:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:24:04,249:INFO:@event {"src": "Distr.Layer_27", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:24:04,251:INFO:@event {"dst": "Distr.Layer_27", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:24:04,252:INFO:@event {"src": "VTF_24", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:24:04,255:INFO:@event {"dst": "VTF_24", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:14,252:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:24:14,252:INFO:@event {"src": "Distr.Layer_28", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:24:14,254:INFO:@event {"dst": "Distr.Layer_28", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:24:14,255:INFO:@event {"src": "VTF_25", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:24:14,258:INFO:@event {"dst": "VTF_25", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:24,254:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:24:24,254:INFO:@event {"src": "Distr.Layer_29", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:24:24,256:INFO:@event {"dst": "Distr.Layer_29", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:24:24,257:INFO:@event {"src": "VTF_26", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:24:24,259:INFO:@event {"dst": "VTF_26", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:34,256:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:24:34,257:INFO:@event {"src": "Distr.Layer_30", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:24:34,259:INFO:@event {"dst": "Distr.Layer_30", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:24:34,260:INFO:@event {"src": "VTF_27", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:24:34,262:INFO:@event {"dst": "VTF_27", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:37,564:INFO:@event {"src": "XRVR_8", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:37,564:INFO:@event {"dst": "XRVR_8", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:37,565:INFO:@event {"src": "DCI Server_9", "entity": "DCI Server", "label": "y"}
+2015-02-06 14:24:37,565:INFO:@event {"dst": "DCI Server_9", "entity": "XRVR", "label": "y"}
+2015-02-06 14:24:38,284:INFO:@event {"src": "XRVR_10", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:38,284:INFO:@event {"dst": "XRVR_10", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:38,284:INFO:@event {"src": "DCI Server_11", "entity": "DCI Server", "label": "end"}
+2015-02-06 14:24:38,284:INFO:@event {"dst": "DCI Server_11", "entity": "XRVR", "label": "end"}
+2015-02-06 14:24:38,450:INFO:@event {"src": "XRVR_12", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:38,450:INFO:@event {"dst": "XRVR_12", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:38,462:INFO:@event {"src": "DCI Server_13", "entity": "DCI Server", "label": "config"}
+2015-02-06 14:24:38,463:INFO:@event {"dst": "DCI Server_13", "entity": "XRVR", "label": "config"}
+2015-02-06 14:24:38,809:INFO:@event {"src": "XRVR_14", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:38,809:INFO:@event {"dst": "XRVR_14", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:38,809:INFO:@event {"src": "DCI Server_15", "entity": "DCI Server", "label": "clock timezone PST -08 00"}
+2015-02-06 14:24:38,809:INFO:@event {"dst": "DCI Server_15", "entity": "XRVR", "label": "clock timezone PST -08 00"}
+2015-02-06 14:24:38,892:INFO:@event {"src": "XRVR_16", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:38,892:INFO:@event {"dst": "XRVR_16", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:38,892:INFO:@event {"src": "DCI Server_17", "entity": "DCI Server", "label": "commit"}
+2015-02-06 14:24:38,892:INFO:@event {"dst": "DCI Server_17", "entity": "XRVR", "label": "commit"}
+2015-02-06 14:24:39,348:INFO:@event {"src": "XRVR_18", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:39,348:INFO:@event {"dst": "XRVR_18", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:39,348:INFO:@event {"src": "DCI Server_19", "entity": "DCI Server", "label": "end"}
+2015-02-06 14:24:39,348:INFO:@event {"dst": "DCI Server_19", "entity": "XRVR", "label": "end"}
+2015-02-06 14:24:39,447:INFO:@event {"src": "XRVR_20", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:39,447:INFO:@event {"dst": "XRVR_20", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:39,447:INFO:@event {"src": "DCI Server_21", "entity": "DCI Server", "label": "config"}
+2015-02-06 14:24:39,448:INFO:@event {"dst": "DCI Server_21", "entity": "XRVR", "label": "config"}
+2015-02-06 14:24:40,080:INFO:@event {"src": "XRVR_22", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,080:INFO:@event {"dst": "XRVR_22", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,080:INFO:@event {"src": "DCI Server_23", "entity": "DCI Server", "label": "interface GigabitEthernet0/0/0/0"}
+2015-02-06 14:24:40,080:INFO:@event {"dst": "DCI Server_23", "entity": "XRVR", "label": "interface GigabitEthernet0/0/0/0"}
+2015-02-06 14:24:40,158:INFO:@event {"src": "XRVR_24", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,158:INFO:@event {"dst": "XRVR_24", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,158:INFO:@event {"src": "DCI Server_25", "entity": "DCI Server", "label": "ipv4 address 10.6.65.223/24"}
+2015-02-06 14:24:40,158:INFO:@event {"dst": "DCI Server_25", "entity": "XRVR", "label": "ipv4 address 10.6.65.223/24"}
+2015-02-06 14:24:40,240:INFO:@event {"src": "XRVR_26", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,241:INFO:@event {"dst": "XRVR_26", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,241:INFO:@event {"src": "DCI Server_27", "entity": "DCI Server", "label": "no shut"}
+2015-02-06 14:24:40,241:INFO:@event {"dst": "DCI Server_27", "entity": "XRVR", "label": "no shut"}
+2015-02-06 14:24:40,319:INFO:@event {"src": "XRVR_28", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,319:INFO:@event {"dst": "XRVR_28", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,320:INFO:@event {"src": "DCI Server_29", "entity": "DCI Server", "label": "commit"}
+2015-02-06 14:24:40,320:INFO:@event {"dst": "DCI Server_29", "entity": "XRVR", "label": "commit"}
+2015-02-06 14:24:40,718:INFO:@event {"src": "XRVR_30", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,718:INFO:@event {"dst": "XRVR_30", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,718:INFO:@event {"src": "DCI Server_31", "entity": "DCI Server", "label": "end"}
+2015-02-06 14:24:40,718:INFO:@event {"dst": "DCI Server_31", "entity": "XRVR", "label": "end"}
+2015-02-06 14:24:40,900:INFO:@event {"src": "XRVR_32", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:40,900:INFO:@event {"dst": "XRVR_32", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:40,900:INFO:@event {"src": "DCI Server_33", "entity": "DCI Server", "label": "config"}
+2015-02-06 14:24:40,900:INFO:@event {"dst": "DCI Server_33", "entity": "XRVR", "label": "config"}
+2015-02-06 14:24:41,457:INFO:@event {"src": "XRVR_34", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:41,457:INFO:@event {"dst": "XRVR_34", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:41,457:INFO:@event {"src": "DCI Server_35", "entity": "DCI Server", "label": "interface GigabitEthernet0/0/0/0"}
+2015-02-06 14:24:41,457:INFO:@event {"dst": "DCI Server_35", "entity": "XRVR", "label": "interface GigabitEthernet0/0/0/0"}
+2015-02-06 14:24:41,538:INFO:@event {"src": "XRVR_36", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:41,538:INFO:@event {"dst": "XRVR_36", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:41,538:INFO:@event {"src": "DCI Server_37", "entity": "DCI Server", "label": "no shut"}
+2015-02-06 14:24:41,538:INFO:@event {"dst": "DCI Server_37", "entity": "XRVR", "label": "no shut"}
+2015-02-06 14:24:41,617:INFO:@event {"src": "XRVR_38", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:41,618:INFO:@event {"dst": "XRVR_38", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:41,618:INFO:@event {"src": "DCI Server_39", "entity": "DCI Server", "label": "commit"}
+2015-02-06 14:24:41,618:INFO:@event {"dst": "DCI Server_39", "entity": "XRVR", "label": "commit"}
+2015-02-06 14:24:42,089:INFO:@event {"src": "XRVR_40", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:42,089:INFO:@event {"dst": "XRVR_40", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:42,090:INFO:@event {"src": "DCI Server_41", "entity": "DCI Server", "label": "end"}
+2015-02-06 14:24:42,090:INFO:@event {"dst": "DCI Server_41", "entity": "XRVR", "label": "end"}
+2015-02-06 14:24:42,215:INFO:@event {"src": "XRVR_42", "entity": "XRVR", "label": "ok"}
+2015-02-06 14:24:42,215:INFO:@event {"dst": "XRVR_42", "entity": "DCI Server", "label": "ok"}
+2015-02-06 14:24:43,986:INFO:@event {"src": "DCI Server_43", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 0, "DCIRoutingFailedStr": ""}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-02-06 14:24:44,258:INFO:@event {"entity": "Distr.Layer", "type": "Timer", "block": "begin", "label": "Monitor Timer expired"}
+2015-02-06 14:24:44,258:INFO:@event {"src": "Distr.Layer_31", "entity": "Distr.Layer", "label": "GET http://10.6.65.240:21345/yang-api/datastore/interfaces"}
+2015-02-06 14:24:44,259:INFO:@event {"dst": "Distr.Layer_31", "entity": "VTF", "label": "GET /yang-api/datastore/interfaces"}
+2015-02-06 14:24:44,260:INFO:@event {"src": "VTF_28", "entity": "VTF", "data": [{"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:11:65", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "1.1.10.201/24", "table": "global-v4"}}, {"flags": "incomplete, not-in-ifib", "key": "00:50:56:00:00:FF", "ifindex": "None", "IPV4-EXTENSION": {"flags": "incomplete, not-in-ifib", "platf_flags": "", "address": "None"}}], "label": "success"}
+2015-02-06 14:24:44,261:INFO:@event {"dst": "VTF_28", "entity": "Distr.Layer", "label": "success (200)"}
+2015-02-06 14:24:45,497:INFO:@event {"dst": "DCI Server_43", "entity": "Route Compute", "data": {"DCIRoutingID": "10.1.1.2", "DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingFailed": "0"}, "src-ip": "127.0.0.1", "label": "PUT /VTS/default/API/DCIRouting"}
+2015-02-06 14:24:45,498:INFO:@event {"src": "Route Compute_4", "entity": "Route Compute", "label": "Missing Arguments (usr_name or usr_password)\n"}
+2015-02-06 14:24:45,499:INFO:@event {"dst": "Route Compute_4", "entity": "DCI Server", "label": "success (500)"}

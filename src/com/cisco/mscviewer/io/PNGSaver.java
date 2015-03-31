@@ -37,6 +37,7 @@ public class PNGSaver {
         Thread t = new Thread("Image Writer") {
             @Override
             public void run() {
+                ImageOutputStream ios = null;
                 try {
                     BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
                     Graphics2D g2d = tmp.createGraphics();
@@ -69,7 +70,7 @@ public class PNGSaver {
                     if (! it.hasNext())
                         throw new Error("No PNG ImageWriter was found");
                     ImageWriter iw = it.next();
-                    ImageOutputStream ios = ImageIO.createImageOutputStream(file);
+                    ios = ImageIO.createImageOutputStream(file);
                     iw.setOutput(ios);
                     final ProgressReport pr = new ProgressReport("Exporting Image", ""+path, 0, 100);
                     iw.addIIOWriteProgressListener(new IIOWriteProgressListener() {
@@ -121,6 +122,14 @@ public class PNGSaver {
                         }						
                     });					
 
+                }finally{
+                    if (ios != null)
+                        try {
+                            ios.close();
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                 }
             }
         };

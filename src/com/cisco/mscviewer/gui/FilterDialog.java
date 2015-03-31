@@ -11,25 +11,27 @@
  */
 package com.cisco.mscviewer.gui;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener; //property change stuff
+import java.util.Vector;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-
-import javax.swing.JOptionPane;
-import javax.swing.border.EtchedBorder;
-
-import java.beans.*; //property change stuff
-import java.util.Vector;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.*;
 
 @SuppressWarnings("serial")
 class FilterDialog extends JDialog
@@ -152,7 +154,7 @@ PropertyChangeListener {
 
     /** This method handles events for the input unit combo. */
     public void actionPerformed(ActionEvent e) {
-        JRadioButton btn = (JRadioButton )e.getSource();
+        //JRadioButton btn = (JRadioButton )e.getSource();
     }
 
     /** This method reacts to state changes in the option pane. */

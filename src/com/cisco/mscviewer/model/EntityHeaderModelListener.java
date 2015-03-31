@@ -14,7 +14,7 @@ package com.cisco.mscviewer.model;
 
 public interface EntityHeaderModelListener {
     void entityAdded(ViewModel eh, Entity en, int idx);    
-    void entityRemoved(ViewModel eh, Entity en, int idx);    
+    void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx);    
     void entitySelectionChanged(ViewModel eh, Entity en, int idx);
     void entityMoved(ViewModel eh, Entity en, int toIdx);
     int getEntityHeaderModelNotificationPriority();

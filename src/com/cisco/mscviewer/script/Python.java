@@ -109,9 +109,7 @@ public class Python  {
             interpreter.exec("import sys"); 
             interpreter.exec("import mscviewer");
             interpreter.set("msc_main_panel", mp);
-            int v=4;
             for(String pathEl: pypath) {
-//                pr.progress("traversing path", v++);
                 traverse(pathEl, "", 0, dirs);
             }
             if (dw != null)
@@ -191,7 +189,6 @@ public class Python  {
             @Override
             public void done() {
                 try {
-                    @SuppressWarnings("unused")
                     Object res = get();
                     sc.setResult(res);
                 }catch(InterruptedException ex){

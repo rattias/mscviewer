@@ -131,7 +131,7 @@ class EntityList extends JList<Entity> implements EntityHeaderModelListener {
     }
 
     @Override
-    public void entityRemoved(ViewModel eh, Entity en, int idx) {
+    public void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx) {
         ((EntityListModel)getModel()).modelChanged();		
     }
 

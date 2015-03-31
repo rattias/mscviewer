@@ -11,6 +11,7 @@
  */
 package com.cisco.mscviewer.gui;
 import com.cisco.mscviewer.model.*;
+import com.cisco.mscviewer.util.Resources;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -18,13 +19,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -35,7 +43,8 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
     private final String root = "Entities";
     private final Vector<TreeModelListener> listeners;
     private final MSCDataModel dm;
-
+    private HashMap<String, ArrayList<Entity>> sortedModel;
+    
     public EntityTreeModel(MSCDataModel dm) {
         this.dm = dm;
         dm.addListener(this);
@@ -47,13 +56,45 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         return root;
     }
 
+    public ArrayList<Entity> getSortedModelChildren(String parentIdPath) {
+        if (sortedModel == null)
+            sortedModel = new HashMap<String, ArrayList<Entity>>();
+
+        ArrayList<Entity> al = sortedModel.get(parentIdPath);
+        if (al == null) {
+            al = new ArrayList<Entity>();
+            sortedModel.put(parentIdPath, al);
+            if (parentIdPath == root) {
+                for (int i=0; i<dm.getRootEntityCount(); i++) {
+                    al.add(dm.getRootEntityAt(i));
+                }
+            } else {
+                Entity en = dm.getEntity(parentIdPath);
+                if (en == null) {
+                    throw new Error("Entity "+parentIdPath+" not found");
+                }
+                for (int i=0; i<en.getChildCount(); i++) {
+                    al.add(en.getChildAt(i));
+                }
+            }
+            Collections.sort(al, new Comparator<Object>(){
+                @Override
+                public int compare(Object o1, Object o2) {
+                    return ((Entity)o1).getName().compareTo(((Entity)o2).getName());
+                }});
+        }
+        return al;
+    }
+    
+    public Object getSortedModelElement(String parentIdPath, int index) {
+        return getSortedModelChildren(parentIdPath).get(index);
+    }
+    
     @Override
     public Object getChild(Object parent, int index) {
+        String parentPath = parent instanceof Entity ? ((Entity) parent).getId() : (String)parent;
         if (dm != null) {
-            if (parent == root)
-                return dm.getRootEntityAt(index);
-            else
-                return ((Entity)parent).getChildAt(index);
+            return  getSortedModelElement(parentPath, index);
         } else
             return null;
     }
@@ -61,10 +102,8 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
     @Override
     public int getChildCount(Object parent) {
         if (dm != null) {
-            if (parent == root)
-                return dm.getRootEntityCount();
-            else
-                return ((Entity)parent).getChildCount();
+            String parentPath = parent instanceof Entity ? ((Entity) parent).getId() : (String)parent;
+            return getSortedModelChildren(parentPath).size();
         } else
             return 0;
     }
@@ -82,16 +121,9 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
     @Override
     public int getIndexOfChild(Object parent, Object child) {
         if (dm != null) {
-            if (parent == root) {
-                for(int i=0; i<dm.getEntityCount(); i++)
-                    if (dm.getRootEntityAt(i) == child)
-                        return i;
-            } else {
-                for(int i=0; i<((Entity)parent).getChildCount(); i++)
-                    if (((Entity)parent).getChildAt(i) == child)
-                        return i;
-
-            }
+            String parentPath = parent instanceof Entity ? ((Entity) parent).getId() : (String)parent;
+            ArrayList<Entity> al = getSortedModelChildren(parentPath);
+            return al.indexOf(child);
         }
         return -1;
     }
@@ -107,6 +139,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
     }
 
     public void fireTreeNodesInserted(TreeModelEvent e) {
+        sortedModel = null;
         Enumeration<TreeModelListener> listenersCount = listeners.elements();
         while(listenersCount.hasMoreElements()) {
             TreeModelListener listener = listenersCount.nextElement();
@@ -115,6 +148,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
     }
 
     public void fireTreeNodesRemoved(TreeModelEvent e) {
+        sortedModel = null;
         Enumeration<TreeModelListener> listenersCount = listeners.elements();
         while(listenersCount.hasMoreElements()) {
             TreeModelListener listener = listenersCount.nextElement();
@@ -134,6 +168,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         Runnable r = new Runnable() {
             @Override
             public void run() {
+                sortedModel = null;
                 Enumeration<TreeModelListener> listenersCount = listeners.elements();
                 while(listenersCount.hasMoreElements()) {
                     TreeModelListener listener = listenersCount.nextElement();
@@ -166,6 +201,17 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         buildPath(en, o, arr);
         Object[] path = arr.toArray();
         TreeModelEvent ev = new TreeModelEvent(this, path);
+        sortedModel = null;
+        fireTreeNodesChanged(ev);
+    }
+
+    public void updateTreeForEntityRemoved(Entity parentEn, Entity en) {
+        ArrayList<Object> arr = new ArrayList<Object>();
+        Object o = getRoot();
+        buildPath(parentEn, o, arr);
+        Object[] path = arr.toArray();
+        TreeModelEvent ev = new TreeModelEvent(this, path);
+        sortedModel = null;
         fireTreeNodesChanged(ev);
     }
 
@@ -174,6 +220,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         Object o[] = new Object[1];
         o[0]= getRoot();
         TreeModelEvent ev = new TreeModelEvent(this, o);
+        sortedModel = null;
         fireTreeStructureChanged(ev);
     }
 
@@ -188,6 +235,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         Object o[] = new Object[1];
         o[0]= getRoot();
         TreeModelEvent ev = new TreeModelEvent(this, o);
+        sortedModel = null;
         fireTreeStructureChanged(ev);
     }
 
@@ -196,6 +244,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
         // TODO Auto-generated method stub
 
     }
+
 }
 
 
@@ -208,6 +257,8 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
     }
 
     class EntityTreeRenderer extends DefaultTreeCellRenderer {
+    	private ImageIcon entityIcon = Resources.getImageIcon("32x32/entity.png", "entity");
+    	private ImageIcon entityFadedIcon = Resources.getImageIcon("32x32/entity_faded.png", "entity");
 
         @Override
         public Component getTreeCellRendererComponent(
@@ -231,12 +282,14 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
                     hasFocus);
             if (en != null) {
                 if (en.hasEvents()) {
+                	setIcon(entityIcon);
                     if (eh.indexOf(en) != -1) {
                         setForeground(Color.red);
                     } else
                         setForeground(Color.black);
                 } else {
-                    setForeground(Color.lightGray);
+                	setIcon(entityFadedIcon);
+                    //setForeground(Color.lightGray);
                 }
             }
             return this;
@@ -264,8 +317,10 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
         super(new EntityTreeModel(eh.getMSCDataModel()));
         this.eh = eh;
         eh.addListener(this);
+        
         setCellRenderer(new EntityTreeRenderer());
         setToggleClickCount(0);
+        setRowHeight(24);
         getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "flipState");
         getActionMap().put("flipState", new AbstractAction() {
             @Override
@@ -308,6 +363,12 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
         m.updateTreeForEntityChange(en);
     }
 
+    public void updateTreeForEntityRemoved(Entity parentEn, Entity en) {
+        EntityTreeModel m = (EntityTreeModel )getModel();
+        m.updateTreeForEntityRemoved(parentEn, en);
+    }
+
+    
     @Override
     public void entityAdded(ViewModel eh, Entity en, int idx) {
         updateTreeForEntityChange(en);
@@ -315,8 +376,8 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
     }
 
     @Override
-    public void entityRemoved(ViewModel eh, Entity en, int idx) {
-        updateTreeForEntityChange(en);
+    public void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx) {
+        updateTreeForEntityRemoved(parentEn, en);
 
     }
 

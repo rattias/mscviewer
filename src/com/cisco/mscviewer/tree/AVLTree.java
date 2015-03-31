@@ -21,7 +21,7 @@ import java.util.HashSet;
  */
 public class AVLTree implements Cloneable {
     protected AVLTreeNode root;
-
+    @SuppressWarnings("unused")
     private String name;
     
     public AVLTree(String name) {
@@ -151,7 +151,6 @@ public class AVLTree implements Cloneable {
         return new AVLTreeNode(d);
     }
 
-    @SuppressWarnings("unused")
     protected void verify(String msg) {
         if (root == null)
             return;

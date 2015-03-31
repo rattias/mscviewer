@@ -47,11 +47,13 @@ public class JsonLoader implements Loader {
     private static final String MSC_EVENT = "@msc_event";
     private static final String MSC_EVENT1 = "@event";
     private static final String MSC_ENTITY = "@msc_entity";
+    private static final String MSC_ENTITY1 = "@entity";
     private static final String MSC_KEY_SRC= "src";
     private static final String MSC_KEY_DST= "dst";
     private static final String MSC_KEY_INTER_ID = "id";
     private static final String MSC_KEY_ENT_ID= "id";
     private static final String MSC_KEY_ENT_NAME= "name";
+    @SuppressWarnings("unused")
     private static final String MSC_KEY_INTER_TYPE = "type";
     private static final String MSC_KEY_BLOCK = "block";
     private static final String MSC_KEY_BLOCK_BEGIN = "begin";
@@ -148,7 +150,11 @@ public class JsonLoader implements Loader {
     private static Interaction createInteraction(MSCDataModel dm, String pairingId, JSonObject props, Event ev,
             TypeEn type, int index, String fname, int lineNum) throws IOException {
         Interaction inter;
-        String t = (props != null) ? props.get("type").toString() : "DefaultInteraction";
+        String t;
+        if  (props != null && props.get("type") != null)
+            t = props.get("type").toString();
+        else
+            t = "DefaultInteraction";
         InteractionRenderer irenderer;
         if (t == null) {
             irenderer = new DefaultInteractionRenderer();
@@ -198,6 +204,7 @@ public class JsonLoader implements Loader {
         HashMap<String, Interaction> pendingSourced = new HashMap<String, Interaction>();
         HashMap<String, Interaction> pendingSinked = new HashMap<String, Interaction>();
         HashMap<String, Interval> pendingBlocks = new HashMap<String, Interval>();
+        HashMap<String, String> alias = new HashMap<String, String>(); 
         File file = new File(fname);
         int flen = (int) file.length();
         dm.setFilePath(fname);
@@ -207,7 +214,6 @@ public class JsonLoader implements Loader {
         int lineNum = 0;
         int readCnt = 0;
         ProgressReport pr = new ProgressReport("Loading file", fname, 0, flen-1);
-        HashMap<String, Event> previousEvent = new HashMap<String, Event>();
         try {
             int x = 0;            
             while ((line = fr.readLine()) != null) {
@@ -232,7 +238,8 @@ public class JsonLoader implements Loader {
                         throw new IOException(ex);
                     }
                     String entityPath = jo.get("entity").toString();
-                    Entity entity = dm.addEntity(entityPath, null);
+                    String dn = alias.get(entityPath);
+                    Entity entity = dm.addEntity(entityPath, dn);
                     Entity parentEntity = entity.getParentEntity();
 
                     JSonValue jlabel = jo.get("label");
@@ -321,6 +328,9 @@ public class JsonLoader implements Loader {
                     }
                     entity = entity.getSourceEntityForFromEvents();
                     Event ev = new Event(dm, ts, entity, label, lineNum, renderer, jo);
+//                    if (entity.getPath().equals("XRVR")) {
+//                        System.out.println("{XRVR}: "+ts);
+//                    }
                     int evIdx = dm.addEvent(ev);
                     
                     JSonValue data = jo.get("data");
@@ -389,7 +399,6 @@ public class JsonLoader implements Loader {
                     }catch(NoSuchFieldError ex) {                        
                     }
                     // HANDLE "dst" KEY
-                    boolean hasIncoming = false;
                     try {
                         Interaction inter = null;
                         ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
@@ -400,25 +409,18 @@ public class JsonLoader implements Loader {
                             // this event is sink for an interaction with default
                             // attributes
                             sinkPairingId.add(((JSonStringValue)sinkValue).toString());
-                            hasIncoming = true;
                             interAttrs.add(null);
                         } else if (sinkValue instanceof JSonObject) {
                             // this event is sink for an interaction with 
                             // non-default attributes
                             JSonObject jo1 = (JSonObject)sinkValue;
                             sinkPairingId.add(jo1.get(MSC_KEY_INTER_ID).toString());
-                            String type = jo1.get(MSC_KEY_INTER_TYPE).toString();
-                            if (! "Transition".equals(type))
-                                hasIncoming = true;
                             interAttrs.add((JSonObject)sinkValue);                        
                         } else if (sinkValue instanceof JSonArrayValue) {
                             // this event is sink for multiple interactions
                             for(JSonObject j : (ArrayList<JSonObject>)sinkValue) {
                                 sinkPairingId.add(j.get("id").toString());                                
                                 interAttrs.add(j);                        
-                                String type = j.get(MSC_KEY_INTER_TYPE).toString();
-                                if (! "Transition".equals(type))
-                                    hasIncoming = true;
                             }                            
                         }
 
@@ -448,11 +450,18 @@ public class JsonLoader implements Loader {
                     }
                 } else {
                     start = line.indexOf(MSC_ENTITY);
-                    if (start >= 0) {
+                    if (start >= 0)
                         start += MSC_ENTITY.length() + 1;
+                    if (start < 0) {
+                        start = line.indexOf(MSC_ENTITY1);
+                        if (start >= 0)
+                            start += MSC_ENTITY1.length() + 1;
+                    }
+                    if (start >= 0) {
                         JSonObject jo;
                         try {
                             jo = JSonParser.parseObject(line.substring(start), fname, lineNum);
+                            alias.put(jo.get("id").toString(), jo.get("name").toString());
                         }catch(JSonException ex) {
                             throw new IOException(ex);
                         }

@@ -38,13 +38,13 @@ def add_forward(selEv, res):
             tmpEv = Main.getModel().getEventAt(idx)
             if tmpEv.getEntity() == ent:
                 inters = tmpEv.getIncomingInteractions()
-                if len(inters) == 0:
+                if len(inters) == 0 and not tmpEv.isBlockBegin():
                     pending.append(tmpEv)
                 break
             idx += 1
 	
 @msc_fun
-def mark_flow(before=True, after=True):
+def mark_flow(before=False, after=True):
     """
     marks in green a flow starting from the selected event. 
     

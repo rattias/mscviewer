@@ -21,5 +21,9 @@ public class JSonArrayValue implements JSonValue {
     public String toString() {
         return value.toString();
     }
+    
+    public int size() {
+        return value.size();
+    }
 
 }

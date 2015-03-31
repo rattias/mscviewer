@@ -13,8 +13,6 @@ package com.cisco.mscviewer.tree;
 
 import java.util.ArrayList;
 
-import com.cisco.mscviewer.model.SimpleInterval;
-
 /**
  *
  * @author rattias

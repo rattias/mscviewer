@@ -11,14 +11,13 @@
  */
 package com.cisco.mscviewer.model;
 
-import com.cisco.mscviewer.io.JSonException;
-import com.cisco.mscviewer.util.JSonParser;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import com.cisco.mscviewer.io.JSonException;
+import com.cisco.mscviewer.util.JSonParser;
 
 
 /**
@@ -106,7 +105,6 @@ public class JSonObject implements JSonValue {
         return (JSonObject)map.get(key);
     }
 
-    @SuppressWarnings("unchecked")
     public JSonArrayValue getArray(String key) {
         return (JSonArrayValue)map.get(key);
     }

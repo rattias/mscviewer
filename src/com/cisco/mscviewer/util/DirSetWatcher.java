@@ -84,7 +84,6 @@ public class DirSetWatcher extends Thread {
                 }
                 if (wk != null) {
                     String parentPath = ((Path)wk.watchable()).toString();
-                    int cnt = 0;
                     List<WatchEvent<?>> events = wk.pollEvents();
                     for (WatchEvent<?> event : events) { 
                         Path path = (Path)event.context();
@@ -98,7 +97,6 @@ public class DirSetWatcher extends Thread {
                         modificationTime.put(file.getPath(), lm);
                         for(Watcher w: watchers)
                             w.event(parentPath, event);
-                        cnt++;
                         Kind<?> kind = event.kind();
                             
                         if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {

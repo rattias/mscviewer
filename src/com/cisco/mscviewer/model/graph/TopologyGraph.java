@@ -11,18 +11,17 @@
  */
 package com.cisco.mscviewer.model.graph;
 
-import com.cisco.mscviewer.util.ProgressReport;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeSet;
+
+import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
 import com.cisco.mscviewer.model.MSCDataModel;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.TreeSet;
-import com.cisco.mscviewer.gui.Marker;
+import com.cisco.mscviewer.util.ProgressReport;
 
 public class TopologyGraph {
     private ProgressReport pr;
@@ -210,6 +209,7 @@ public class TopologyGraph {
             sb.append("Found causality loop:\n");
             for (P p: al) {
                 Event ev = dm.getEventAt(p.node);
+                ev.setMarker(Marker.RED);
                 idx = ev.getLineIndex();
                 sb.append(idx+":"+dm.getData().get(idx)+"\n");
             }

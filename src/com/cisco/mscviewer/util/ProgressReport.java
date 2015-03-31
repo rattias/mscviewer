@@ -74,7 +74,6 @@ public class ProgressReport {
     private static ArrayList<Object> elements = new ArrayList<Object>();
     private JProgressBar pb;
     private JLabel msgLabel;
-    private long t0;
     private int minValue, maxValue;
     private boolean elementShowing, shouldShow;
     private ProgressReport parent;
@@ -141,9 +140,7 @@ public class ProgressReport {
             if (shouldShow) {
                 if (maxValue < 0) {
                     pb.setIndeterminate(true);
-                    t0 = 0;
-                } else
-                    t0 = System.currentTimeMillis();
+                }
 
                 innerPane = new JPanel();
                 innerPane.setBorder(new TitledBorder(activity));

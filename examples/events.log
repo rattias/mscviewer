@@ -1,0 +1,84 @@
+2015-01-28 13:36:27,060:INFO:@event {"entity": "DCI Server", "type": "Birth", "label": "DCI Server started"}
+2015-01-28 13:36:32,823:INFO:@event {"src": "DCI Server_0", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 1, "DCIRoutingFailedStr": "No route to host"}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-01-28 13:36:32,824:INFO:@event {"src": "DCI Server_1", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-01-28 13:36:32,825:INFO:@event {"entity": "DCI Server", "type": "Error", "label": "failure: Connection was refused by other side: 111: Connection refused."}
+2015-01-28 13:36:33,626:INFO:@event {"entity": "Distr.Layer", "type": "Birth", "label": "Distr.Layer started"}
+2015-01-28 13:36:33,626:INFO:@event {"entity": "Route Compute", "type": "Birth", "label": "rc started"}
+2015-01-28 13:36:33,638:INFO:@event {"src": "Distr.Layer_0", "entity": "Distr.Layer", "label": "POST http://127.0.0.1:80/VTS/default/API/SBreplay"}
+2015-01-28 13:36:33,770:INFO:@event {"dst": "Distr.Layer_0", "entity": "Route Compute", "label": "POST /VTS/default/API/SBreplay"}
+2015-01-28 13:36:33,779:INFO:@event {"src": "Route Compute_0", "entity": "Route Compute", "label": ""}
+2015-01-28 13:36:33,780:INFO:@event {"dst": "Route Compute_0", "entity": "Distr.Layer", "label": "success"}
+2015-01-28 13:36:47,827:INFO:@event {"src": "DCI Server_2", "entity": "DCI Server", "label": "POST http://127.0.0.1:80/VTS/default/API/DCIRtgReplay"}
+2015-01-28 13:36:47,829:INFO:@event {"dst": "DCI Server_2", "entity": "Route Compute", "label": "POST /VTS/default/API/DCIRtgReplay"}
+2015-01-28 13:36:47,832:INFO:@event {"src": "Route Compute_1", "entity": "Route Compute", "label": ""}
+2015-01-28 13:36:47,833:INFO:@event {"dst": "Route Compute_1", "entity": "DCI Server", "label": "success"}
+2015-01-28 13:41:53,038:INFO:@event {"src": "DCI Server_3", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 0, "DCIRoutingFailedStr": ""}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-01-28 13:41:54,715:INFO:@event {"dst": "DCI Server_3", "entity": "Route Compute", "label": "PUT /VTS/default/API/DCIRouting"}
+2015-01-28 13:41:54,720:INFO:@event {"src": "Route Compute_2", "entity": "Route Compute", "label": "Missing Arguments\n"}
+2015-01-28 13:41:54,722:INFO:@event {"dst": "Route Compute_2", "entity": "DCI Server", "label": "http://127.0.0.1:80/VTS/default/API/DCIRouting: success"}
+2015-01-28 13:48:19,718:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VpefGateway": ["1.1.10.161"], "VpefName": ["1.1.10.101"], "VpefTrunkIfMac": ["00:50:56:00:00:FF"], "VpefUnderlayIp": ["1.1.10.201/24"], "VpefBGPNhop": ["169.254.10.101"], "VpefID": ["101"], "VpefUnderlayIfMac": ["00:50:56:00:11:65"]}, "label": "POST /VTS/default/API/Vpef/"}
+2015-01-28 13:48:19,729:INFO:@event {"src": "Route Compute_3", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:19,739:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VpefGateway": ["1.1.10.161"], "VpefName": ["1.1.10.102"], "VpefTrunkIfMac": ["00:50:56:00:00:FF"], "VpefUnderlayIp": ["1.1.10.202/24"], "VpefBGPNhop": ["169.254.10.102"], "VpefID": ["102"], "VpefUnderlayIfMac": ["00:50:56:00:11:66"]}, "label": "POST /VTS/default/API/Vpef/"}
+2015-01-28 13:48:19,751:INFO:@event {"src": "Route Compute_4", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:19,764:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"LocalAS": ["100"], "DCIUnderlay": ["1.1.10.161"], "DCIRouterID": ["2.1.10.251"]}, "label": "POST /VTS/default/API/DCI/"}
+2015-01-28 13:48:19,776:INFO:@event {"src": "Route Compute_5", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:19,786:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"LocalAS": ["100"], "DCIUnderlay": ["1.1.10.161"], "DCIRouterID": ["2.1.10.252"]}, "label": "POST /VTS/default/API/DCI/"}
+2015-01-28 13:48:19,796:INFO:@event {"src": "Route Compute_6", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:19,809:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VRFRT": ["100:100"], "NetworkDhcpServer": ["1.60.30.172"], "VRFName": ["Tenant1"], "VRFRD": ["100:100"], "SubnetCIDR": ["11.75.1.0/24"], "SubnetGateway": ["11.75.1.1"]}, "label": "POST /VTS/default/API/Network/"}
+2015-01-28 13:48:20,928:INFO:@event {"src": "Route Compute_7", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:20,938:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"VRFRT": ["100:200"], "NetworkDhcpServer": ["1.60.30.172"], "VRFName": ["Tenant2"], "VRFRD": ["100:200"], "SubnetCIDR": ["12.75.1.0/24"], "SubnetGateway": ["12.75.1.1"]}, "label": "POST /VTS/default/API/Network/"}
+2015-01-28 13:48:21,214:INFO:@event {"src": "Route Compute_8", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,225:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"SubnetID": ["Tenant1sub1"], "CIDR": ["211.75.1.0/24"], "VRFName": ["Tenant1"], "Gateway": ["211.75.1.1"]}, "label": "POST /VTS/default/API/Subnet/"}
+2015-01-28 13:48:21,236:INFO:@event {"src": "Route Compute_9", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,244:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"SubnetID": ["Tenant2sub1"], "CIDR": ["212.75.1.0/24"], "VRFName": ["Tenant2"], "Gateway": ["212.75.1.1"]}, "label": "POST /VTS/default/API/Subnet/"}
+2015-01-28 13:48:21,255:INFO:@event {"src": "Route Compute_10", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,267:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:11:75:01:65"], "VRFName": ["Tenant1"], "Interface": ["1001"], "IP": ["11.75.1.101"], "VMID": ["VM01"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,287:INFO:@event {"src": "Route Compute_11", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,296:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:11:75:01:66"], "VRFName": ["Tenant1"], "Interface": ["1002"], "IP": ["11.75.1.102"], "VMID": ["VM02"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,308:INFO:@event {"src": "Route Compute_12", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,321:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:11:75:01:67"], "VRFName": ["Tenant1"], "Interface": ["1003"], "IP": ["11.75.1.103"], "VMID": ["VM03"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,340:INFO:@event {"src": "Route Compute_13", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,351:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:11:75:01:68"], "VRFName": ["Tenant1"], "Interface": ["1004"], "IP": ["11.75.1.104"], "VMID": ["VM04"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,369:INFO:@event {"src": "Route Compute_14", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,379:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:11:75:01:69"], "VRFName": ["Tenant1"], "Interface": ["1005"], "IP": ["11.75.1.105"], "VMID": ["VM05"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,396:INFO:@event {"src": "Route Compute_15", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,408:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:12:75:01:65"], "VRFName": ["Tenant2"], "Interface": ["2001"], "IP": ["12.75.1.101"], "VMID": ["VM06"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,425:INFO:@event {"src": "Route Compute_16", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,437:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:12:75:01:66"], "VRFName": ["Tenant2"], "Interface": ["2002"], "IP": ["12.75.1.102"], "VMID": ["VM07"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,452:INFO:@event {"src": "Route Compute_17", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,465:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:12:75:01:67"], "VRFName": ["Tenant2"], "Interface": ["2003"], "IP": ["12.75.1.103"], "VMID": ["VM08"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,485:INFO:@event {"src": "Route Compute_18", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,495:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:12:75:01:68"], "VRFName": ["Tenant2"], "Interface": ["2004"], "IP": ["12.75.1.104"], "VMID": ["VM09"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,515:INFO:@event {"src": "Route Compute_19", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,527:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:00:12:75:01:69"], "VRFName": ["Tenant2"], "Interface": ["2005"], "IP": ["12.75.1.105"], "VMID": ["VM10"], "VpefID": ["101"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,549:INFO:@event {"src": "Route Compute_20", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,555:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:11:75:01:D3"], "VRFName": ["Tenant1"], "Interface": ["1006"], "IP": ["211.75.1.211"], "VMID": ["VM11"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,578:INFO:@event {"src": "Route Compute_21", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,584:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:11:75:01:D4"], "VRFName": ["Tenant1"], "Interface": ["1007"], "IP": ["211.75.1.212"], "VMID": ["VM12"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,605:INFO:@event {"src": "Route Compute_22", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,612:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:11:75:01:D5"], "VRFName": ["Tenant1"], "Interface": ["1008"], "IP": ["211.75.1.213"], "VMID": ["VM13"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,630:INFO:@event {"src": "Route Compute_23", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,636:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:11:75:01:D6"], "VRFName": ["Tenant1"], "Interface": ["1009"], "IP": ["211.75.1.214"], "VMID": ["VM14"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,656:INFO:@event {"src": "Route Compute_24", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,662:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:11:75:01:D7"], "VRFName": ["Tenant1"], "Interface": ["1010"], "IP": ["211.75.1.215"], "VMID": ["VM15"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,682:INFO:@event {"src": "Route Compute_25", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,691:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:12:75:01:D3"], "VRFName": ["Tenant2"], "Interface": ["2006"], "IP": ["212.75.1.211"], "VMID": ["VM16"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,713:INFO:@event {"src": "Route Compute_26", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,721:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:12:75:01:D4"], "VRFName": ["Tenant2"], "Interface": ["2007"], "IP": ["212.75.1.212"], "VMID": ["VM17"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,741:INFO:@event {"src": "Route Compute_27", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,749:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:12:75:01:D5"], "VRFName": ["Tenant2"], "Interface": ["2008"], "IP": ["212.75.1.213"], "VMID": ["VM18"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,768:INFO:@event {"src": "Route Compute_28", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,776:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:12:75:01:D6"], "VRFName": ["Tenant2"], "Interface": ["2009"], "IP": ["212.75.1.214"], "VMID": ["VM19"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,793:INFO:@event {"src": "Route Compute_29", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,806:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "data": {"MAC": ["00:02:12:75:01:D7"], "VRFName": ["Tenant2"], "Interface": ["2010"], "IP": ["212.75.1.215"], "VMID": ["VM20"], "VpefID": ["102"]}, "label": "POST /VTS/default/API/VMPORT/"}
+2015-01-28 13:48:21,828:INFO:@event {"src": "Route Compute_30", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:21,838:INFO:@event {"dst": "unknown-rx-id", "entity": "Route Compute", "label": "POST /VTS/default/API/EndOfReplay"}
+2015-01-28 13:48:21,848:INFO:@event {"src": "Route Compute_31", "entity": "Route Compute", "label": ""}
+2015-01-28 13:48:34,723:INFO:@event {"src": "1", "entity": "Route Compute", "label": "sending bulk"}
+2015-01-28 13:48:34,746:INFO:@event {"dst": "1", "entity": "Distr.Layer", "label": "bulk_received"}
+2015-01-28 13:48:49,769:INFO:@event {"src": "1", "entity": "Route Compute", "label": "sending bulk"}
+2015-01-28 13:48:54,410:INFO:@event {"src": "DCI Server_4", "entity": "DCI Server", "data": {"DCIRoutingMgmtIP": "10.1.1.2", "DCIRoutingID": "10.1.1.2", "DCIRoutingFailed": 0, "DCIRoutingFailedStr": ""}, "label": "PUT http://127.0.0.1:80/VTS/default/API/DCIRouting"}
+2015-01-28 13:48:54,411:INFO:@event {"dst": "1", "entity": "DCI Server", "label": "bulk_received"}
+2015-01-28 13:48:54,413:INFO:@event {"dst": "DCI Server_4", "entity": "Route Compute", "label": "PUT /VTS/default/API/DCIRouting"}
+2015-01-28 13:48:54,414:INFO:@event {"src": "Route Compute_32", "entity": "Route Compute", "label": "Missing Arguments\n"}
+2015-01-28 13:48:54,415:INFO:@event {"dst": "Route Compute_32", "entity": "DCI Server", "label": "http://127.0.0.1:80/VTS/default/API/DCIRouting: success"}

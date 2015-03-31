@@ -1,10 +1,10 @@
 package com.cisco.mscviewer.graph;
 public class Point implements Comparable<Point> {
     public long x;
-    public float y;
+    public double y;
     public Object o;
     
-    public Point(long x, float y, Object o) {
+    public Point(long x, double y, Object o) {
         this.x = x;
         this.y = y;
         this.o = o;

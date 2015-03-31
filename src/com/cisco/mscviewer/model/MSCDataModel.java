@@ -11,27 +11,25 @@
  */
 package com.cisco.mscviewer.model;
 
-import com.cisco.mscviewer.util.Report;
-import com.cisco.mscviewer.util.Utils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Vector;
+
 import com.cisco.mscviewer.graph.GraphData;
-import com.cisco.mscviewer.gui.graph.GraphPanel;
 import com.cisco.mscviewer.gui.graph.GraphWindow;
-import com.cisco.mscviewer.model.graph.TopologyGraph;
 import com.cisco.mscviewer.model.graph.TopologyError;
+import com.cisco.mscviewer.model.graph.TopologyGraph;
 import com.cisco.mscviewer.tree.AVLTreeNode;
 import com.cisco.mscviewer.tree.InOrderAVLTreeNodeIterator;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.tree.IntervalTree;
 import com.cisco.mscviewer.tree.TreeIntegrityException;
 import com.cisco.mscviewer.tree.Visitor;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Vector;
+import com.cisco.mscviewer.util.Report;
+import com.cisco.mscviewer.util.Utils;
 
 class EventTimestampComparator implements Comparator<Event> {
     @Override

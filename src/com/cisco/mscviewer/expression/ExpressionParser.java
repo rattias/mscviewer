@@ -49,7 +49,7 @@ public class ExpressionParser {
         List<ScriptEngineFactory> factories = mgr.getEngineFactories();
         for (ScriptEngineFactory factory: factories) {
             String langName = factory.getLanguageName();
-            String langVersion = factory.getLanguageVersion();
+//            String langVersion = factory.getLanguageVersion();
             if (langName.equals("ECMAScript")) {
                 engine = factory.getScriptEngine();
                 break;	

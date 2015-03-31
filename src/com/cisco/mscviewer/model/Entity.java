@@ -74,8 +74,8 @@ public final class Entity {
     }
 
     /**
-     * returns the unqualified ID of this Entity.
-     * @return the unqualified ID of this Entity.
+     * returns the fully qualified ID of this Entity.
+     * @return the fully qualified ID of this Entity.
      */
     public String getId() {
         return id;
@@ -92,8 +92,7 @@ public final class Entity {
 
     /**
      * Instantiates an Entity.
-     * @param idPath the unqualified ID of this entity. Must be unique among all
-     * entities with the same parent.
+     * @param idPath the fully qualified ID of this entity. Must be unique.
      * @param parentEn the parent Entity
      * @param displayName the name to be used as alias for the ID when 
      * <code>getName()</code> is used. Doesn't need to be unique.
@@ -104,7 +103,7 @@ public final class Entity {
         if (displayName != null)
             setName(displayName);
         else
-            setName(getNameFromId(id));
+            setName(getNameFromId(idPath));
         children = new ArrayList<Entity>();
         firstEventIndex = -1;
         lastEventIndex = -1;

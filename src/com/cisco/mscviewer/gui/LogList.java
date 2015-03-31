@@ -7,9 +7,6 @@
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer.gui;
 
-import com.cisco.mscviewer.Main;
-import com.cisco.mscviewer.model.*;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -26,6 +23,13 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.MSCDataModelListener;
+import com.cisco.mscviewer.model.ViewModel;
 
 /**
  * @author Roberto Attias

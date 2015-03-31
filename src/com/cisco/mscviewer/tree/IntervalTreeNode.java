@@ -11,10 +11,6 @@
  */
 package com.cisco.mscviewer.tree;
 
-import com.cisco.mscviewer.Main;
-import com.cisco.mscviewer.gui.MainFrame;
-import com.cisco.mscviewer.model.Interaction;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;

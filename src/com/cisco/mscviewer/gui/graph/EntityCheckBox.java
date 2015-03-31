@@ -1,6 +1,5 @@
 package com.cisco.mscviewer.gui.graph;
 
-import java.awt.Color;
 
 import javax.swing.JCheckBox;
 

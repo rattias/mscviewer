@@ -21,7 +21,7 @@ class CustomButton extends JToggleButton {
 
     public CustomButton(Entity en) {
         super(en.getDescription() == null ?
-                en.getPath() :
+                en.getName() :
                     "<HTML>"+en.getPath()+"<BR> <i><center>"+en.getDescription()+"</center></i></HTML>");
         //, MainFrame.createImageIcon("close.jpg", "close")
         this.en = en;			
