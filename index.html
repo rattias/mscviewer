@@ -34,24 +34,39 @@
           <h3>
 <a id="welcome-to-the-homepage-for-mscviewer" class="anchor" href="#welcome-to-the-homepage-for-mscviewer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to the Homepage for MSCviewer</h3>
 
-<p>MSCViewer is a tool for visualization and analysis of message sequence charts. Simply put, the tool loads a text file with a subset of lines in written in a simple JSON format, and creates a sequence diagram model out of it. The user can navigate the model interactively, or even write Python script to analyze it.</p>
+<p>MSCViewer is a tool for visualization and analysis of message sequence charts. Simply put, the tool loads a text file with a subset of lines in written in 
+a simple JSON format, and creates a sequence diagram model out of it. The user can navigate the model interactively, or even write Python script to analyze it.</p>
+
+<p>The tool is extremely useful for visualization and interactive analysis of execution traces/logs for systems with a large number of cooperating 
+entities (processes, threads, etc.). By interactive we mean the tool doesn't produce a static picture of a sequence diagram: the user can interactively
+open as many entities as desired, sort them in the preferred order, search on events and interactions, filter undesired elements from the view, etc. 
+Of course, if desired the user can also create a PNG capture of the current diagram. </p>
+
+<p>This <a href="https://github.com/rattias/mscviewer/blob/master/doc/openstack_example.png">screen capture</a> shows, for example, the use of MSCViewer in the context
+of OpenStack.</p>
+
+<p>MSCViewer can also be used to create sequence diagrams for documentation, by simply typing the model for the desired diagram in a text editor.</p>
+
+<p>The real power of MSCViewer though comes from the integration with a Python engine. Through this, the user can write python scripts to navigate 
+the model. This opens a world of possibilities, including:</p>
+
+<ul>
+<li>Flow-based Automated Testing: scripts can test that the trace produce by a system contains certain distributed computational flows, and that
+such flows are operating as expected</li>
+<li>Ability to create custom graphs from the data in the model</li>
+</ul>
 
 <h3>
-<a id="applications" class="anchor" href="#applications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applications</h3>
+<a id="binary-release" class="anchor" href="#binary-release" aria-hidden="true"><span class="octicon octicon-link"></span></a>Binary Release</h3>
 
-<p>The tool is extremely useful for visualization and analysis of execution traces/logs for systems with a large number of interactive entities (processes, threads, etc.). </p>
-
-<p>An example in the context of OpenStack can be seen in this <a href="https://github.com/rattias/mscviewer/blob/master/doc/openstack_example.png">screen capture</a></p>
-
-<h3>
-<a id="release" class="anchor" href="#release" aria-hidden="true"><span class="octicon octicon-link"></span></a>Release</h3>
-
-<p>Pick your favorite archive:</p>
+<p>While MSCViewer is opensource, if you want to save yourself the hassle of building you can pick up a prebuilt release in your favorite archive format:</p>
 
 <ul>
 <li><a href="https://github.com/rattias/mscviewer/releases/download/v2.0Beta2/mscviewer_2.0B2.tgz">tar.gz archive</a></li>
 <li><a href="https://github.com/rattias/mscviewer/releases/download/v2.0Beta2/mscviewer_2.0B2.tgz">zip archive</a></li>
 </ul>
+
+<p>Just uncompress it in any directory, and run the <em>bin/mscviewer</em>. For your convenience some example input files are provided in the <em>examples</em> directory.</p>
         </section>
 
         <footer>
