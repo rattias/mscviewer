@@ -57,7 +57,7 @@ endif
 
 .PHONY: all clean install jar distrib
 
-distrib: jar
+distrib: jar manual
 	$(eval $(call setup_install_vars))
 	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
 	@mkdir -p $(INSTALL_DIR)
@@ -76,10 +76,12 @@ distrib: jar
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(INSTALL_DIR)/.[a-z]*
 	tar cfz $(VERSIONED_NAME).tgz -C $(INSTALL_PREFIX) $(VERSIONED_NAME)
+	cd $(INSTALL_PREFIX) ; zip -r $(VERSIONED_NAME).zip $(VERSIONED_NAME)
+	mv $(INSTALL_PREFIX)/$(VERSIONED_NAME).zip .
 	@echo "removing temporary dir $(INSTALL_DIR)"
 	@rm -rf $(INSTALL_DIR)
     
-all:  
+build:  
 	@echo "Building mscviewer java code..."
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
@@ -87,13 +89,15 @@ all:
 	@mkdir -p classes/com/cisco/mscviewer
 	-cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
 
+manual:
+	cd doc/manual ; pdflatex manual.tex
 
 clean:
 	-@rm -rf classes .srclist
 	-@rm -rf $(INSTALL_DIR)
 	-@rm -f $(WS_TOOLS_DIR)/host_tools.$(TARGET).sentinel 
 
-jar: all
+jar: build 
 	@echo "Packaging classes to jar file..."
 	$(eval $(call create_temp_file))
 	@echo "Manifest-Version: 1.1" >$(TEMPFILE)
