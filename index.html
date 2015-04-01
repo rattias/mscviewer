@@ -34,7 +34,7 @@
           <h3>
 <a id="welcome-to-the-homepage-for-mscviewer" class="anchor" href="#welcome-to-the-homepage-for-mscviewer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to the Homepage for MSCviewer</h3>
 
-<p>MSCViewer is a tool for visualization and analysis of message sequence charts. Simply put, the tool loads a text file with a subset of lines in written in 
+<p>MSCViewer is a tool for visualization and analysis of diagrams loosely based on UML Message Sequence Charts. Simply put, the tool loads a text file with a subset of lines in written in 
 a simple JSON format, and creates a sequence diagram model out of it. The user can navigate the model interactively, or even write Python script to analyze it.</p>
 
 <p>The tool is extremely useful for visualization and interactive analysis of execution traces/logs for systems with a large number of cooperating 
@@ -42,7 +42,7 @@ entities (processes, threads, etc.). By interactive we mean the tool doesn't pro
 open as many entities as desired, sort them in the preferred order, search on events and interactions, filter undesired elements from the view, etc. 
 Of course, if desired the user can also create a PNG capture of the current diagram. </p>
 
-<p>This <a href="https://github.com/rattias/mscviewer/blob/master/doc/openstack_example.png">screen capture</a> shows, for example, the use of MSCViewer in the context
+<p>This <a href="https://raw.githubusercontent.com/rattias/mscviewer/master/doc/openstack_example.png">screen capture</a> shows, for example, the use of MSCViewer in the context
 of OpenStack.</p>
 
 <p>MSCViewer can also be used to create sequence diagrams for documentation, by simply typing the model for the desired diagram in a text editor.</p>
@@ -54,6 +54,41 @@ the model. This opens a world of possibilities, including:</p>
 <li>Flow-based Automated Testing: scripts can test that the trace produce by a system contains certain distributed computational flows, and that
 such flows are operating as expected</li>
 <li>Ability to create custom graphs from the data in the model</li>
+</ul>
+
+<h3>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h3>
+
+<p>The following is a non-exhaustive list of features:</p>
+
+<ul>
+<li><p>Extended Message Sequence Chart model and visualization - Traditional UML message sequence charts are indended for use during system design, to clearly 
+capture the expected interactions across different entities involved in carrying on a particular flow. When visualizing traces/logs from a system
+execution the interactions for a flow of interest can appear together with tens or hundreds of unrelated interactions. In order for the user 
+to be able to identify regions of interest in the data at a glance MSCViewer model expands on the concepts defined in UML Sequence Diagram Charts, adding
+typed events, which can be visualized with type-specific icons. An event represent something interesting happening on an entity. Certain events are
+paired together into an interaction. MSCViewer doesn't prescribe a particular set of events or interactions; different domains can have different type
+of events and interactions, and different ways to render them.</p></li>
+<li><p>Event annotation - In addition to a representation via a type-specific icon, an event has an associated timestamp and label that can be visualized in
+the diagram </p></li>
+<li><p>Event auxiliary data - an event can also have associated structured data is visualized in a separate tab in MSCViewer when the event is selected</p></li>
+<li><p>Interactive Entity Selection - the user can choose which entities to see in the diagram by double-clicking on the desired ones from a tree. Once opened,
+entities can be organized in the preferred order by dragging their "heads". Entity columns cn be enlarged or shrank by using the '+' and '-' keys.
+Interactions outgoing or incoming into an entity for which the other entity involved is not open are visualized as arrow stubs.</p></li>
+<li><p>Easy cursor-key navigation - The user can select an event with the mouse pointer. From then on by pressing <strong>SHIFT</strong> + cursor keys the user can 
+navigate across events on the same entity, or to other entities through interactions. Navigating trhough an arrow stub and furhter "pushing" towards 
+the open end of the stub causes the missing entity to be automatically opened in the diagram.</p></li>
+<li><p>model-based search - A search widget allow to type expressions such as, for example, "label contains "foo"" to search through all events whose label 
+contains the "foo" substring. The widget provides automatic completion of the search syntax by pressing the TAB key.</p></li>
+<li><p>model-based filtering - Similar to the search above, but events not matching the expression are omitted from the diagram. </p></li>
+<li><p>Topologically sorted graph - MSCViewer doesn't assume that the entire system has a unified concept of time, as in typical distributed systems clocks
+can be somewhat out of sync. MSCViewer gives priority to the partial ordering imposed by interactions when sorting events to be visualized. This 
+means that if the input file describes an interaction going from event e1 at time T to event e2 at time T-delta, then even if in the input file
+e2 appears before e1, in the diagram e1 will appear first. </p></li>
+<li><p>Python integration - this may be the most powerful feature of the tool. The internal Java model can be traversed from python scripts to perform all
+sorts of validations or computations. The scripts can be invoked from the GUI, which automatically discovers them and provides the ability to 
+pass parameters at the invocation. Alternatively, MSCViewer can be run in batch mode, where it will load the input file and execute the desired 
+Python scripts without ever opening a GUI. This mode is particularly useful for the execution of smoke tests.</p></li>
 </ul>
 
 <h3>
