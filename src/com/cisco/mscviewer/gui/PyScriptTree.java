@@ -14,6 +14,7 @@ package com.cisco.mscviewer.gui;
 import com.cisco.mscviewer.script.Python;
 import com.cisco.mscviewer.script.PythonChangeListener;
 import com.cisco.mscviewer.script.PythonFunction;
+import com.cisco.mscviewer.util.PNGSnapshotTarget;
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
 
@@ -41,6 +42,7 @@ class PyScriptTree extends JTree {
     private Python py = null;
     private boolean updating;
     private MainPanel mainPanel;
+    private PythonFunction latestFunction;
     
     class PyScriptTreeRenderer extends DefaultTreeCellRenderer {        
         @Override
@@ -192,23 +194,34 @@ class PyScriptTree extends JTree {
                     DefaultMutableTreeNode tn = (DefaultMutableTreeNode )tp.getLastPathComponent();
                     Object o = tn.getUserObject();
                     if (o instanceof PythonFunction) {
-                        PythonFunction fun = (PythonFunction)o;
-                        boolean invokable = fun.canBeInvoked();
+                        latestFunction = (PythonFunction)o;
+                        
+                        boolean invokable = latestFunction.canBeInvoked();
                         if ((!invokable) || me.isShiftDown()) {
-                            int res = new FunctionParametersDialog(fun).open();
+                            int res = new FunctionParametersDialog(latestFunction).open();
                             if (res != FunctionParametersDialog.OK)
                                 return;
                         }
-                        try {
-                            fun.invoke();
-                        } catch (ScriptException e) {
-                            e.printStackTrace();
-                            Report.exception(e);
-                        }
+                        runLatestFunction();
                     }                        
                 }
             }
 
         });
     }
+    
+    public void runLatestFunction() {
+    	if (latestFunction == null)
+    		return;
+        try {
+            latestFunction.invoke();
+        } catch (ScriptException e) {
+            e.printStackTrace();
+            Report.exception(e);
+        }
+    }
+
+	public PythonFunction getLatestFunction() {
+		return latestFunction;
+	}
 }

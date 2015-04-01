@@ -14,6 +14,7 @@ import com.cisco.mscviewer.*;
 import com.cisco.mscviewer.expression.ParsedExpression;
 import com.cisco.mscviewer.io.*;
 import com.cisco.mscviewer.model.*;
+import com.cisco.mscviewer.script.PythonFunction;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
@@ -22,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -55,6 +57,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -74,11 +77,14 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.python.antlr.PythonTree;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements PNGSnapshotTarget {
@@ -97,7 +103,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final DataPanel data;
     private final JLabel info;
     final private JFileChooser jfc;
-    private JToggleButton selectBtn, showBlocksBtn;
+    //private JToggleButton selectBtn;
     private JSlider zoom;
     private Vector<Vector<String>> filters = new Vector<Vector<String>>();
     private final FilterPanel filterP;
@@ -346,13 +352,13 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         @Override
         public void mousePressed(final MouseEvent me) {
             MainPanel mp = getMainPanel();
-            if (selectBtn.isSelected()) {
+            if (currentMarker == null) {
                 JViewport jvp = (JViewport)mp.getParent();
                 Rectangle rec = jvp.getViewRect();
                 mp.requestFocus();
                 mp.getMSCRenderer().selectClosest(me.getX(), me.getY(), rec.y, rec.height);
                 repaint();
-            } else if (currentMarker != null) {
+            } else {
                 mp.requestFocus();
                 isMarking = toggleMarker(me, true, false);
             }
@@ -369,9 +375,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         
         @Override
         public void mouseDragged(MouseEvent me) {
-            if (selectBtn.isSelected()) {
+            if (currentMarker == null) {
                 //mainPanel.setSelectionRectangle(getRect(x0, y0, me.getX(), me.getY()));
-            } else  if (currentMarker != null) {
+            } else  {
                 toggleMarker(me, false, isMarking);
             }
         }
@@ -389,6 +395,117 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         
     }
     
+
+    private void loadFile() {
+        MSCDataModel dm = Main.getDataModel();
+        String curDir = dm.getOpenPath();
+        if (curDir != null)
+            jfc.setCurrentDirectory(new File (curDir));
+        int result = jfc.showOpenDialog(null);
+        dm.setOpenPath(jfc.getCurrentDirectory().getAbsolutePath());
+        switch (result) {
+            case JFileChooser.APPROVE_OPTION:
+                File f = jfc.getSelectedFile();
+                try {
+                    viewModel.reset();
+                    dm.reset();
+                    Main.getLoader().load(f.getPath(), dm);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+                break;
+            case JFileChooser.CANCEL_OPTION:
+                break;
+            case JFileChooser.ERROR_OPTION:
+                System.out.println("Error");
+        }
+    }
+    
+    private void reloadFile() {
+        MSCDataModel dm = Main.getDataModel();
+        try {
+        	viewModel.reset();
+            dm.reset();
+            Main.getLoader().load(dm.getFilePath(), dm);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
+    
+    private void exportPNG() {
+        Object[] choices = {"Highlighted Elements", "Open Entities", "Entire Model"};
+        String s = (String)JOptionPane.showInputDialog(
+            MainFrame.this,
+            "What image do you want to capture?",
+            "Choose ",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            choices,
+            choices[0]
+        );
+        int mode;
+        if (choices[0].equals(s))
+            mode = PNGSaver.SAVE_MARKED;
+        else if (choices[1].equals(s))
+            mode = PNGSaver.SAVE_OPENED;
+        else if (choices[2].equals(s))
+            mode = PNGSaver.SAVE_ALL;
+        else
+            return;
+        int result = jfc.showSaveDialog(null);
+        switch (result) {
+            case JFileChooser.APPROVE_OPTION:
+                File f = jfc.getSelectedFile();
+                try {
+                    PNGSaver.saveMSCasPNG(f.getAbsolutePath(), mainPanel.getMSCRenderer(), mode);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                break;
+            case JFileChooser.CANCEL_OPTION:
+                break;
+            case JFileChooser.ERROR_OPTION:
+                System.out.println("Error");
+        }
+    }
+
+    private void clearHighlights() {
+        int res = JOptionPane.showConfirmDialog(MainFrame.this, "Are you sure you want to remove all highlights?", "Clear Highlights", JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            MSCDataModel dm = mainPanel.getDataModel();
+            dm.clearMarkers();
+            repaint();
+        }
+    }
+    
+    private void runLatestScript() {
+    	scriptTree.runLatestFunction();
+    }
+    
+    private void openPreferences() {
+        MSCRenderer r = mainPanel.getMSCRenderer();
+        PrefsDialog d = new PrefsDialog(MainFrame.this, r.getTimeScaleFactor(), r.getAbsTimeUnit(), r.getDeltaTimeUnit());
+//        d.setInputUnit(r.getTimestampUnit());
+        d.setAbsoluteOutputUnit(r.getAbsTimeUnit());
+        d.setDeltaOutputUnit(r.getDeltaTimeUnit());
+        d.setShowUnits(r.getShowUnits());
+        d.setShowDate(r.getShowDate());
+        d.setShowLeadingZeroes(r.getShowLeadingZeroes());
+        d.setCompactView(r.getCompactView());
+        d.setVisible(true);
+        if (d.approved()) {
+//            r.setTimestampUnit(d.getInputUnit());
+            r.setAbsTimeUnit(d.getAbsoluteOutputUnit());
+            r.setDeltaTimeUnit(d.getDeltaOutputUnit());
+            r.setShowUnits(d.getShowUnits());
+            r.setShowDate(d.getShowDate());
+            r.setShowLeadingZeroes(d.getShowLeadingZeroes());
+            r.updateForTimeUnitChanges();
+            r.setCompactView(d.getCompactView());
+            mainPanel.updateView();
+        }
+
+    }
     
     public MainFrame(int x, int y, int w, int h) {
         MainFrame.mf = this;
@@ -543,28 +660,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         JMenu fileMenu = new JMenu("File");
         JMenuItem mi = new JMenuItem(new AbstractAction("Load...") {
             public void actionPerformed(ActionEvent e) {
-                MSCDataModel dm = Main.getDataModel();
-                String curDir = dm.getOpenPath();
-                if (curDir != null)
-                    jfc.setCurrentDirectory(new File (curDir));
-                int result = jfc.showOpenDialog(null);
-                dm.setOpenPath(jfc.getCurrentDirectory().getAbsolutePath());
-                switch (result) {
-                    case JFileChooser.APPROVE_OPTION:
-                        File f = jfc.getSelectedFile();
-                        try {
-                            viewModel.reset();
-                            dm.reset();
-                            Main.getLoader().load(f.getPath(), dm);
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
-                        break;
-                    case JFileChooser.CANCEL_OPTION:
-                        break;
-                    case JFileChooser.ERROR_OPTION:
-                        System.out.println("Error");
-                }
+            	loadFile();
             }});
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK));
         fileMenu.add(mi);
@@ -572,13 +668,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi = new JMenuItem(new AbstractAction("Reload") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MSCDataModel dm = Main.getDataModel();
-                try {
-                    dm.reset();
-                    Main.getLoader().load(dm.getFilePath(), dm);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
+            	reloadFile();
             }            
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.ALT_MASK));
@@ -587,40 +677,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi = new JMenuItem(new AbstractAction("Export PNG...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Object[] choices = {"Highlighted Elements", "Open Entities", "Entire Model"};
-                String s = (String)JOptionPane.showInputDialog(
-                    MainFrame.this,
-                    "What image do you want to capture?",
-                    "Choose ",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    choices,
-                    choices[0]
-                );
-                int mode;
-                if (choices[0].equals(s))
-                    mode = PNGSaver.SAVE_MARKED;
-                else if (choices[1].equals(s))
-                    mode = PNGSaver.SAVE_OPENED;
-                else if (choices[2].equals(s))
-                    mode = PNGSaver.SAVE_ALL;
-                else
-                    return;
-                int result = jfc.showSaveDialog(null);
-                switch (result) {
-                    case JFileChooser.APPROVE_OPTION:
-                        File f = jfc.getSelectedFile();
-                        try {
-                            PNGSaver.saveMSCasPNG(f.getAbsolutePath(), mainPanel.getMSCRenderer(), mode);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        break;
-                    case JFileChooser.CANCEL_OPTION:
-                        break;
-                    case JFileChooser.ERROR_OPTION:
-                        System.out.println("Error");
-                }
+            	exportPNG();
             }
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK));
@@ -657,12 +714,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi = new JMenuItem(new AbstractAction("Clear Highlights") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int res = JOptionPane.showConfirmDialog(MainFrame.this, "Are you sure you want to remove all highlights?", "Clear Highlights", JOptionPane.YES_NO_OPTION);
-                if (res == JOptionPane.YES_OPTION) {
-                    MSCDataModel dm = mainPanel.getDataModel();
-                    dm.clearMarkers();
-                    repaint();
-                }
+            	clearHighlights();
             }
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK));
@@ -672,27 +724,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi = new JMenuItem(new AbstractAction("Preferences...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MSCRenderer r = mainPanel.getMSCRenderer();
-                PrefsDialog d = new PrefsDialog(MainFrame.this, r.getTimeScaleFactor(), r.getAbsTimeUnit(), r.getDeltaTimeUnit());
-//                d.setInputUnit(r.getTimestampUnit());
-                d.setAbsoluteOutputUnit(r.getAbsTimeUnit());
-                d.setDeltaOutputUnit(r.getDeltaTimeUnit());
-                d.setShowUnits(r.getShowUnits());
-                d.setShowDate(r.getShowDate());
-                d.setShowLeadingZeroes(r.getShowLeadingZeroes());
-                d.setCompactView(r.getCompactView());
-                d.setVisible(true);
-                if (d.approved()) {
-//                    r.setTimestampUnit(d.getInputUnit());
-                    r.setAbsTimeUnit(d.getAbsoluteOutputUnit());
-                    r.setDeltaTimeUnit(d.getDeltaOutputUnit());
-                    r.setShowUnits(d.getShowUnits());
-                    r.setShowDate(d.getShowDate());
-                    r.setShowLeadingZeroes(d.getShowLeadingZeroes());
-                    r.updateForTimeUnitChanges();
-                    r.setCompactView(d.getCompactView());
-                    mainPanel.updateView();
-                }
+            	openPreferences();
             }
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
@@ -738,67 +770,125 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
 
     }
     
-//    private void initFilterCB() {
-//        filterCB.addItem("<none>");
-//        for(int i=0; i<filters.size(); i++) {
-//            filterCB.addItem(filters.elementAt(i).elementAt(0));
-//        }
-//    }
-
     private void setMainPanelCursor(Image img, int px, int py) {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-//        BufferedImage b_argb = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
-//        b_argb.getGraphics().drawImage(img, 0,0, null);
-//        for(int y=1; y<31; y++) {
-//        	for(int x=1; x<31; x++) {
-//    			int pxl = b_argb.getRGB(x, y);
-//    			int alpha = (pxl>>24) & 0xFF;
-//        	    if (alpha <128)
-//        	    	alpha = 0;
-//        	    else {
-//                	if (alpha <255)
-//                		pxl = 0xFFFF;
-//        	    	alpha = 255;
-//        	    }
-//        	    b_argb.setRGB(x, y, (pxl & 0xFFFFFF) | (alpha<<24));
-//        	}
-//        }
         Cursor c = toolkit.createCustomCursor(img , new Point(px, py), "img");
         mainPanel.setCursor(c);
     }
     
  
+    private JToggleButton addToggleButton(JToolBar bar, String resource, String description, boolean isSelected) {
+        ImageIcon ii = Resources.getImageIcon(resource, description);
+        if (ii == null)
+        	throw new Error("missing "+resource);
+        JToggleButton jtb = new JToggleButton(ii);
+        bar.add(jtb);
+        bar.add(Box.createHorizontalStrut(2));
+        jtb.setMargin(new Insets(1, 1, 1, 1));        
+        jtb.setToolTipText(ii.getDescription());
+        jtb.setSelected(isSelected);
+        return jtb;
+    }
+
+    private JButton addButton(JToolBar bar, String resource, String description, boolean isSelected) {
+    	return addButton(bar, resource, description, isSelected, null);
+    }
     
+    private JButton addButton(JToolBar bar, String resource, String description, boolean isSelected, JButton btn) {
+        ImageIcon ii = Resources.getImageIcon(resource, description);
+        if (ii == null)
+        	throw new Error("missing "+resource);
+        JButton jtb = btn != null ? btn : new JButton();
+        ToolTipManager.sharedInstance().registerComponent(jtb);
+        jtb.setIcon(ii);
+        jtb.setBorderPainted(false);
+        jtb.setContentAreaFilled(false);
+        bar.add(jtb);
+        bar.add(Box.createHorizontalStrut(2));
+        jtb.setMargin(new Insets(1, 1, 1, 1));        
+        jtb.setToolTipText(ii.getDescription());
+        jtb.setSelected(isSelected);
+        return jtb;
+    }
+
     private void populateToolbar(JToolBar bar){
         final String sz = "32x32/";
         final String hsz = "16x16/";
         bar.add(Box.createHorizontalStrut(10));
-
         ButtonGroup toolGroup = new ButtonGroup();
         
+        JButton jb = addButton(bar, sz+"load.png", "Load File", true);
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		loadFile();
+        	}
+        });
+        jb = addButton(bar, sz+"reload.png", "Reload File", true);
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		reloadFile();
+        	}
+        });
+
+        jb = addButton(bar, sz+"camera.png", "Capture Screenshot", true);
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		exportPNG();
+        	}
+        });
+        jb = addButton(bar, sz+"clear_highlights.png", "Clear Highlights", true);
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		clearHighlights();
+        	}
+        });
+        
+        jb = addButton(bar, sz+"run.png", "Rerun Latest Script", true, 
+        		new JButton() {
+        			public String getToolTipText() {
+        				super.getToolTipText();
+        				PythonFunction fun = scriptTree.getLatestFunction();
+        				return (fun != null) ? "Rerun Latest Script: "+fun.getName() : "Rerun Latest Script: <none>";
+        			}
+        	});
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		runLatestScript();
+        	}
+        });
+        
+        jb = addButton(bar, sz+"options.png", "Preferences", true);
+        jb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		openPreferences();
+        	}
+        });
+        bar.addSeparator(new Dimension(30, 32));
+
         ImageIcon ii = Resources.getImageIcon(sz+"select.png", "select");
-        selectBtn = new JToggleButton(ii);        
-        selectBtn.setMargin(new Insets(1, 1, 1, 1));
-        //selectBtn.setBorder(BorderFactory.createRaisedBevelBorder());
-        selectBtn.setToolTipText(ii.getDescription());
-        selectBtn.addActionListener(new ActionListener(){
+        JToggleButton jtb = addToggleButton(bar, sz+"select.png", "select", true);
+        toolGroup.add(jtb);
+        jtb.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (selectBtn.isSelected()) {
+            	JToggleButton jtb = (JToggleButton)e.getSource();
+                if (jtb.isSelected()) {
                     setMainPanelCursor(Resources.getImageIcon(sz+"select.png", "").getImage(), 0, 0);                
                     currentMarker = null;
                 }
             }            
-        });        toolGroup.add(selectBtn);
-        bar.add(selectBtn);
-        selectBtn.setSelected(true);
+        });
+
         String colors[] = {"Green", "Blue", "Yellow", "Red"};
         for(String c: colors) {
-        	ii = Resources.getImageIcon(sz+"highlight_"+c.toLowerCase()+".png", c+" Highlighter");
-        	JToggleButton highlightBtn = new JToggleButton(ii);
+        	JToggleButton highlightBtn = addToggleButton(bar, sz+"highlight_"+c.toLowerCase()+".png", c+" Highlighter", false);
         	highlightBtn.setName(c);
-        	highlightBtn.setMargin(new Insets(1, 1, 1, 1));        
-        	highlightBtn.setToolTipText(ii.getDescription());
         	toolGroup.add(highlightBtn);
         	bar.add(highlightBtn);
             highlightBtn.addActionListener(new ActionListener(){
@@ -821,43 +911,31 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             });
         }
 
-
-        bar.add(Box.createHorizontalStrut(100));
-
-        ii = Resources.getImageIcon(sz+"blocks.png", "show blocks");
-        if (ii == null)
-        	throw new Error("missing blocks.png");
-        showBlocksBtn = new JToggleButton(ii);
-        bar.add(showBlocksBtn);
-        showBlocksBtn.setMargin(new Insets(1, 1, 1, 1));        
-        showBlocksBtn.setToolTipText(ii.getDescription());
-        showBlocksBtn.setSelected(true);
-        showBlocksBtn.addActionListener(new ActionListener(){
+        bar.addSeparator(new Dimension(30, 32));
+        jtb = addToggleButton(bar, sz+"blocks.png", "show blocks", true);
+        jtb.addActionListener(new ActionListener(){
         	@Override
         	public void actionPerformed(ActionEvent e) {
-        		mainPanel.getMSCRenderer().setShowBlocks(showBlocksBtn.isSelected());
+        		mainPanel.getMSCRenderer().setShowBlocks(((JToggleButton)e.getSource()).isSelected());
         		mainPanel.repaint();
         	}
         });
-        ii = Resources.getImageIcon(sz+"time.png", "show timestamps");
-        if (ii == null)
-        	throw new Error("missing time.png");
-        JToggleButton btn = new JToggleButton(ii);
-        bar.add(btn);
-        btn.setMargin(new Insets(1, 1, 1, 1));        
-        btn.setToolTipText(ii.getDescription());
-        btn.setSelected(true);
-        btn.addActionListener(new ActionListener(){
+        jtb = addToggleButton(bar, sz+"time.png", "show timestamps", true);
+        jtb.addActionListener(new ActionListener(){
         	@Override
         	public void actionPerformed(ActionEvent e) {
         		mainPanel.getMSCRenderer().setShowTime(((JToggleButton)e.getSource()).isSelected());
         		mainPanel.repaint();
         	}
         });
-
-        
-        selectBtn.setSelected(true);
-
+        jtb = addToggleButton(bar, sz+"label.png", "show labels", true);
+        jtb.addActionListener(new ActionListener(){
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		mainPanel.getMSCRenderer().setShowLabels(((JToggleButton)e.getSource()).isSelected());
+        		mainPanel.repaint();
+        	}
+        });
     }
     
     public MSCDataModel getDataModel() {

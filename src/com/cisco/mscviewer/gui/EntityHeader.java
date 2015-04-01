@@ -307,21 +307,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-//            int count = ehm.entityCount();
-//            if (count == 1)
-//                // in case only one entity is shown we can't shrink
-//                return;
-//            CustomButton b = (CustomButton) e.getSource();
-//            int idx = ehm.indexOf(b.getEntity());
-//            Dimension d = ehm.getEntityPreferredSize(idx);
-//            d.width -= 6;
-//            ehm.setEntityPreferredSize(idx, d);
-//            if (ehm.getEntityPreferredSize(idx).width == d.width) {
-//                int nidx = idx < count-1 ? idx+1: idx-1;
-//                d = ehm.getEntityPreferredSize(nidx);
-//                d.width += 6;
-//                ehm.setEntityPreferredSize(nidx, d);
-//            }
+
             int count = ehm.entityCount();
             int totalW = getWidth();
             JViewport jvp = (JViewport)getParent();

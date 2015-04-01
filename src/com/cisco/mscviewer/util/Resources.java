@@ -26,13 +26,13 @@ public class Resources {
 
     public static void init(String plugins) {
         String sz = "/32x32/";
-        getImageIcon(sz+"highlight_green.png"       , "green");
-        getImageIcon(sz+"highlight_yellow.png"     , "yellow");
-        getImageIcon(sz+"highlight_blue.png"       , "blue");
-        getImageIcon(sz+"highlight_red.png"        , "red");
-        getImageIcon(sz+"select.png"               , "select");
-        getImageIcon(sz+"select.png"      , "select");
-        getImageIcon(sz+"blocks.png"      , "blocks");
+//        getImageIcon(sz+"highlight_green.png"       , "green");
+//        getImageIcon(sz+"highlight_yellow.png"     , "yellow");
+//        getImageIcon(sz+"highlight_blue.png"       , "blue");
+//        getImageIcon(sz+"highlight_red.png"        , "red");
+//        getImageIcon(sz+"select.png"               , "select");
+//        getImageIcon(sz+"select.png"      , "select");
+//        getImageIcon(sz+"blocks.png"      , "blocks");
 
         readDefaultRenderers();
         if (plugins == null)
@@ -73,7 +73,10 @@ public class Resources {
                 imgURL = ClassLoader.getSystemResource(ICON_PATH + "/" + path);
             }
             if (imgURL == null) {
-                System.err.println("Couldn't find image icon " + path);
+                System.err.println("Couldn't find image icon " + RESOURCE_PATH + path+" or "+ICON_PATH + "/" + path);
+                StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+                for(StackTraceElement el: ste)
+                	System.out.println(el);
                 return null;
             }
             im = new ImageIcon(imgURL, description);

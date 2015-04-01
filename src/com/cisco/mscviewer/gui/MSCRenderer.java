@@ -51,6 +51,7 @@ public class MSCRenderer {
     private int viewModelSelectedEventIndex = -1;
     private boolean showTime = true;
     private boolean showBlocks = true;
+    private boolean showLabels = true;
     private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
     private InputUnit deltaTimeUnit = InputUnit.NS; 
     //private InputUnit timestampUnit = InputUnit.NS;
@@ -313,15 +314,8 @@ public class MSCRenderer {
                         g2d.setColor(Color.RED);
                     else
                         g2d.setColor(Color.BLACK);
-//                    int labelStyle = ev.getRenderer()getLabelStyle();
-//                    if (labelStyle != Font.PLAIN) {
-//                        Font f = g2d.getFont();
-//                        g2d.setFont(f.deriveFont(labelStyle));
-//                        g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
-//                        g2d.setFont(f);
-//                    } else {
-                        //g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);					
-                    g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);					//                    }
+                    if (showLabels)
+                    	g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
                 }
             }
         }
@@ -1247,6 +1241,10 @@ public class MSCRenderer {
     public void setShowBlocks(boolean show) {
         showBlocks = show;
     }
+
+	public void setShowLabels(boolean show) {
+		showLabels = show;
+	}
 
 
 }
