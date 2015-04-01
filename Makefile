@@ -61,7 +61,7 @@ distrib: jar
 	$(eval $(call setup_install_vars))
 	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
 	@mkdir -p $(INSTALL_DIR)
-	@cp -rf bin batch examples doc third-parties $(INSTALL_DIR)
+	@cp -rf bin batch examples doc/manual/manual.pdf licenses third-parties $(INSTALL_DIR)
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
 	@echo $(JAVA)\
 	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
@@ -89,7 +89,7 @@ all:
 
 
 clean:
-	-@rm -rf classes bin .srclist
+	-@rm -rf classes .srclist
 	-@rm -rf $(INSTALL_DIR)
 	-@rm -f $(WS_TOOLS_DIR)/host_tools.$(TARGET).sentinel 
 

@@ -1,0 +1,42 @@
+\chapter{Introduction}
+
+
+\section{What is \prog?}
+Modern core routers are complex system where a large part of the functionalities
+is implemented in software. From a single-process/single-threaded model
+systems have evolved to multiple threads, multiple processes, and even multiple 
+nodes operating cooperatively. Even when processes are single threaded, they 
+often carry out asynchronous comunication and react to events, effectively
+handling concurrent execution contexts within a single thread. Control plane,
+admin plane and to some extent data plane implement multiple functionalities
+through transactions and interactions across different processes and threads.
+Some thread may cooperate to carry out multiple occurrencies of the same or
+different functionality. Hence, verifying the correct execution of a
+functionality is a complex task, typically requiring engineers to examine traces
+produced by various processes. Due to the complexity of the system
+very few engineers are familiar enough with the internals of all the
+processes involved, and therefore able to confidently interpret all traces. Thus
+triaging of bugs often requires multiple engineers attention for a considerable
+amount of time, diverting those engineers from more productive tasks.
+ 
+This reliance on engineers for doing even the first level of triaging is very
+expensive and not scalable. In this paper we present a solution addressing this  
+problem. The solution is based on emitting traces in a formal language where 
+events and interactions are captured, and from which a model can be
+automatically built. Through a second formal language we support specification
+of expected flows for various functionalities. Finally, we provide a tool which
+can  apply flow specifications to the model created from the traces, allowing
+to do both visual inspection of flows in the form of sequence diagram charts as
+well as GUI-less verification, for use in automatic tests. 
+  
+
+MSCViewer is a
+\href{http://en.wikipedia.org/wiki/Message_Sequence_Chart#Live_Sequence_Charts}{message sequence chart}
+visualization and analysis tool. The tool was created in NOSTG in the context of
+the NG-XR admin-plane development, and it is part of a set of technologies known
+under the name of RISE (Reusable Infrastructure Software Elements).
+while MSCViewer is indepenent from other RISE elements, such elements can
+be easily integrated in new or existing application to 
+leverage the power of Message Sequence Chart analysis efficiently and with
+minimal effort.
+A brief overview of RISE will be provided in section~\ref{sec:RISE}. 
