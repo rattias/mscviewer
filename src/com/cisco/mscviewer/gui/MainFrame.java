@@ -103,7 +103,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final DataPanel data;
     private final JLabel info;
     final private JFileChooser jfc;
-    //private JToggleButton selectBtn;
+
     private JSlider zoom;
     private Vector<Vector<String>> filters = new Vector<Vector<String>>();
     private final FilterPanel filterP;
@@ -111,7 +111,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final String progName;
     private String fname;
     private boolean isMarking;
-
+    private JTabbedPane jtabbed;
+    private JSplitPane leftRightSplitPane,  leftSplitPane, rightSplitPane;
+    
     class MouseHandler implements MouseListener, MouseMotionListener {
         
         private void popupMenu(final MouseEvent me) {
@@ -525,9 +527,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         toolBar.setFloatable(false);
         toolBar.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         getContentPane().add(toolBar, BorderLayout.NORTH);
-        JSplitPane horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        JSplitPane rightVerticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        getContentPane().add(horizontalSplitPane, BorderLayout.CENTER);
+        leftRightSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        getContentPane().add(leftRightSplitPane, BorderLayout.CENTER);
         info = new JLabel("");
         info.setBorder(BorderFactory.createEtchedBorder());
         getContentPane().add(info, BorderLayout.SOUTH);
@@ -555,14 +557,14 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         bottomLeft.setLayout(new BorderLayout());
         bottomLeft.add(new JLabel("Open Entities"), BorderLayout.NORTH);
         bottomLeft.add(new JScrollPane(entityList), BorderLayout.CENTER);
-        JSplitPane leftPane = new LeftPane(topLeft, bottomLeft);
-        leftPane.setOneTouchExpandable(true);
-        leftPane.setDividerLocation((int)(VER_SPLIT*h));
-        rightVerticalSplitPane.setResizeWeight(1.0);
+        leftSplitPane = new LeftPane(topLeft, bottomLeft);
+        leftSplitPane.setOneTouchExpandable(true);
+        leftSplitPane.setDividerLocation((int)(VER_SPLIT*h));
+        rightSplitPane.setResizeWeight(1.0);
         
-        horizontalSplitPane.setLeftComponent(leftPane);
-        horizontalSplitPane.setRightComponent(rightVerticalSplitPane);
-        horizontalSplitPane.setResizeWeight(0.3);
+        leftRightSplitPane.setLeftComponent(leftSplitPane);
+        leftRightSplitPane.setRightComponent(rightSplitPane);
+        leftRightSplitPane.setResizeWeight(0.3);
         mainPanel = new MainPanel(this, entityHeader, viewModel);
         mainPanel.getMSCRenderer().addSelectionListener(new SelectionListener() {
             @Override
@@ -622,7 +624,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         p.add(markerBar, BorderLayout.EAST);
         jsp.setColumnHeaderView(entityHeader);
         jsp.validate();
-        rightVerticalSplitPane.setTopComponent(p);
+        rightSplitPane.setTopComponent(p);
         logList = new LogList(Main.getDataModel(), viewModel);
         logList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         logList.addListSelectionListener(new ListSelectionListener() {
@@ -648,14 +650,14 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         data = new DataPanel();
         mainPanel.getMSCRenderer().addSelectionListener(data);
         
-        JTabbedPane jtabbed = new CustomJTabbedPane();
+        jtabbed = new CustomJTabbedPane();
         jtabbed.setName("bottom-right");
         jtabbed.add("input", logPanel);
         jtabbed.add("results", results);
         jtabbed.add("data", data);
-        rightVerticalSplitPane.setBottomComponent(jtabbed);
-        rightVerticalSplitPane.setDividerLocation((int)(VER_SPLIT*h));
-        rightVerticalSplitPane.setResizeWeight(1.0);
+        rightSplitPane.setBottomComponent(jtabbed);
+        rightSplitPane.setDividerLocation((int)(VER_SPLIT*h));
+        rightSplitPane.setResizeWeight(1.0);
         JMenuBar jmb = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenuItem mi = new JMenuItem(new AbstractAction("Load...") {
@@ -1041,4 +1043,28 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         }
         info.setText(sb.toString());
     }
+    
+    public void showTab(String s) {
+    	int idx = jtabbed.indexOfTab(s);
+    	if (idx < 0)
+    		throw new Error("Invalid tab name '"+s+"'");
+    	jtabbed.setSelectedIndex(idx);
+    }
+    
+    public EntityTree getEntityTree() {
+    	return entityTree;
+    }
+    
+    public JSplitPane getLeftSplitPane(){
+    	return leftSplitPane;
+    }
+    
+    public JSplitPane getRightSplitPane() {
+    	return rightSplitPane;
+    }
+    
+    public JSplitPane getLeftRightSplitPane() {
+    	return leftRightSplitPane;
+    }
+    
 }

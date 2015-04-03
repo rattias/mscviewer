@@ -15,6 +15,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Iterator;
 
 import javax.script.ScriptException;
 import javax.swing.ImageIcon;
@@ -25,11 +26,13 @@ import javax.swing.UIManager;
 
 import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.gui.MainPanel;
+import com.cisco.mscviewer.io.JsonLoader;
 import com.cisco.mscviewer.io.LegacyLoader;
 import com.cisco.mscviewer.io.Loader;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.JSonArrayValue;
 import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.script.Python;
@@ -307,8 +310,8 @@ public class Main {
         return mf.getMainPanel().getMSCRenderer().getSelectedInteraction();
     }
 
-    public static void show(final Entity en) {
-        Utils.dispatchOnAWTThreadLater(new Runnable() {
+    public static void open(final Entity en) {
+    	Utils.dispatchOnAWTThreadLater(new Runnable() {
             @Override
             public void run() {
                 mf.getViewModel().add(en);
@@ -316,13 +319,25 @@ public class Main {
         });
     }
 
-    public static void show(final String id) {
-        Entity en = mf.getDataModel().getEntity(id);
-        show(en);
+    public static Entity open(final String id) {
+    	final Entity en = mf.getDataModel().getEntity(id);
+        Utils.dispatchOnAWTThreadNow(new Runnable() {
+            @Override
+            public void run() {
+            	if (en == null) {
+            		StringBuilder ents = new StringBuilder();
+            		for(Iterator<Entity> it = mf.getDataModel().getEntityIterator(false); it.hasNext();)
+            			ents.append(it.next().getId()+", ");
+            		throw new Error("Entity '"+id+"' not present in model. Available entities are: "+ents.toString());
+            	}
+                mf.getViewModel().add(en);
+            }
+        });
+        return en;
     }
 
-    public static void show(final Entity[] en) {
-        Utils.dispatchOnAWTThreadLater(new Runnable() {
+    public static void open(final Entity[] en) {
+        Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
                 mf.getViewModel().add(en);
@@ -330,8 +345,8 @@ public class Main {
         });
     }
 
-    public static void show(final Event ev) {
-        Utils.dispatchOnAWTThreadLater(new Runnable() {
+    public static void open(final Event ev) {
+        Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
                 ViewModel vm = mf.getViewModel();
@@ -360,11 +375,18 @@ public class Main {
         return loader;
     }
 
-    public static MSCDataModel batchLoad(String path) throws IOException {
-        MSCDataModel dm = new MSCDataModel();
-        Loader l = new LegacyLoader();
-        l.load(path, dm);
-        return dm;
+    public static MSCDataModel batchLoad(String path) throws IOException, InvocationTargetException, InterruptedException {
+        Loader l = new JsonLoader();
+        SwingUtilities.invokeAndWait(new Runnable() {
+        	public void run() {
+        		MainFrame.getInstance().getViewModel().reset();
+        		dataModel.reset();
+        		MainFrame.getInstance().getViewModel().reset();
+        	}
+        });
+        l.load(path, dataModel);
+        l.waitIfLoading();
+        return dataModel;
     }
 
     public static void start(String[] args) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
@@ -396,5 +418,55 @@ public class Main {
         }
     }        
 
+    public static void quit() {
+    	System.exit(0);
+    }
+    
+    public static void captureDiagram(final String fname) {
+    	Utils.dispatchOnAWTThreadNow(new Runnable() {
+    		public void run() {
+    			Utils.getPNGSnapshot("MainPanelJSP", fname);
+    		}
+    	});
+    }
+
+    public static void captureGUI(final String compName, final String fname) {
+    	Utils.dispatchOnAWTThreadNow(new Runnable() {
+    		public void run() {
+    			Utils.getPNGSnapshot(compName, fname);
+    		}
+    	});
+    }
+    
+    public static void select(Event ev) {
+    	Utils.dispatchOnAWTThreadNow(new Runnable() {
+    		public void run() {
+    			MainFrame.getInstance().getMainPanel().getMSCRenderer().setSelectedEvent(ev);
+    		}
+    	});
+    }
+    
+    public static void showDataTab() {
+    	MainFrame.getInstance().showTab("data");
+    }
+    
+    public static void expandEntityTree() {
+    	MainFrame.getInstance().getEntityTree().expandAll();
+    }
+    
+    public static void setLeftSplitPaneDividerLocation(float f){    	
+    	MainFrame.getInstance().getLeftSplitPane().setDividerLocation(0);
+    	MainFrame.getInstance().getLeftSplitPane().setDividerLocation(f);
+    }
+    
+    public static void setRightSplitPaneDividerLocation(float f) {
+    	MainFrame.getInstance().getRightSplitPane().setDividerLocation(0);
+    	MainFrame.getInstance().getRightSplitPane().setDividerLocation(f);
+    }
+    
+    public static void setLeftRightSplitPaneDividerLocation(float f) {
+    	MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(0);
+    	MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(f);
+    }
 
 }

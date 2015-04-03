@@ -1,0 +1,10 @@
+@event {"entity":"User 1",     "label":"create VM",             "src":"1"}
+@event {"entity":"VM Manager", "label":"create VM",             "dst":"1"}
+@event {"entity":"VM Manager", "label":"allocate disk/cpu/mem", "src":"2"}
+@event {"entity":"VM Manager", "label":"retrieve image",        "src":"3"}
+@event {"entity":"Resource Manager",  "label":"allocate disk/cpu/mem", "dst":"2"}
+@event {"entity":"Image Repo",  "label":"retrieve image", "dst":"3"}
+@event {"entity":"Image Repo",  "label":"return image", "src":"4"}
+@event {"entity":"VM Manager",  "label":"return image", "dst":"4"}
+@event {"entity":"Resource Manager",  "label":"return resources", "src":"5"}
+@event {"entity":"VM Manager",  "label":"return resources", "dst":"5"}

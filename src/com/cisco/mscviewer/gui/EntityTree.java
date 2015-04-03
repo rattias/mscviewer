@@ -249,7 +249,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
 
 
 @SuppressWarnings("serial")
-class EntityTree extends JTree implements EntityHeaderModelListener {
+public class EntityTree extends JTree implements EntityHeaderModelListener {
     private final ViewModel eh;
 
     @Override
@@ -259,6 +259,7 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
     class EntityTreeRenderer extends DefaultTreeCellRenderer {
     	private ImageIcon entityIcon = Resources.getImageIcon("32x32/entity.png", "entity");
     	private ImageIcon entityFadedIcon = Resources.getImageIcon("32x32/entity_faded.png", "entity");
+    	private ImageIcon entityOpenIcon = Resources.getImageIcon("32x32/entity_open.png", "entity");
 
         @Override
         public Component getTreeCellRendererComponent(
@@ -284,9 +285,9 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
                 if (en.hasEvents()) {
                 	setIcon(entityIcon);
                     if (eh.indexOf(en) != -1) {
-                        setForeground(Color.red);
+                        setIcon(entityOpenIcon);
                     } else
-                        setForeground(Color.black);
+                        setIcon(entityIcon);
                 } else {
                 	setIcon(entityFadedIcon);
                     //setForeground(Color.lightGray);
@@ -395,6 +396,12 @@ class EntityTree extends JTree implements EntityHeaderModelListener {
             int idx) {
         // TODO Auto-generated method stub
 
+    }
+    
+    public void expandAll() {
+    	int cnt = getRowCount();
+    	for(int i=0; i<cnt; i++)
+    		expandRow(i);
     }
 
 }

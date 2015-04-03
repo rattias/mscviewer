@@ -101,9 +101,7 @@ SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
 
     @Override
     public void paintComponent(Graphics g) {
-
         Graphics2D g2d = (Graphics2D)g;
-        //		if (r.getDataModel() != null) {
         JViewport jvp = getAncestorViewport();
         Rectangle rec = jvp.getViewRect();	
         r.render(g2d, false, rec.y, rec.height);

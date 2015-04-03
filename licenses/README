@@ -1,0 +1,13 @@
+MSCViewer is open source software released under the ECLIPSE license provided in the 
+MSCViewer.LICENSE file.
+
+MSCViewer uses the Jython-stanalone-2.5.4.rc1..jar package for Python integration. 
+This package is released under the Python Software Foundation License V.2, provided in 
+the Jython.LICENSE file.
+
+MSCViewer leverages one class in the swingx-all-1.6.4.jar package. This package
+is released under the GLGPL V.3 license, provided in the swingx-all.LICENSE file.
+
+Some icons in MSCViewer are directly taken from the Nuvola icon set by David Vignoni.
+the Nuvola icons are licensed under the GLGPL v2.1 license, provided in the 
+nuvola_icons.LICENSE file.

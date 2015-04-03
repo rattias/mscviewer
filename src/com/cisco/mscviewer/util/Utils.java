@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
@@ -188,7 +189,7 @@ public class Utils {
     }
 
     public static void getPNGSnapshot(final PNGSnapshotTarget t, final String path) {
-        dispatchOnAWTThreadLater(new Runnable() {
+        dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
                 Component c = t.getPNGSnapshotClient();
@@ -199,7 +200,6 @@ public class Utils {
                 c.paint(capture.getGraphics());
                 try {
                     ImageIO.write(capture, "png", new File(path));
-                    System.out.println(" written to file "+path);
                 } catch (IOException ioe) {
                     throw new Error(ioe);
                 }

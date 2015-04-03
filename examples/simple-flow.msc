@@ -1,0 +1,10 @@
+@event {"entity":"User 1",   "label":"login info",         "src":"1"}
+@event {"entity":"Backend",  "label":"login info",         "dst":"1"}
+@event {"entity":"Backend",  "label":"Request actual pwd", "src":"2"}
+@event {"entity":"Database", "label":"Request actual pwd", "dst":"2"}
+@event {"entity":"Database", "label":"Return actual pwd",  "src":"3"}
+@event {"entity":"Backend",  "label":"Return actual pwd",  "dst":"3"}
+@event {"entity":"Backend",  "label":"Encrypt(entered pwd)"}
+@event {"entity":"Backend",  "label":"Compare(actual pwd, entered pwd)"}
+@event {"entity":"Backend",  "label":"Success",            "src":"4"}
+@event {"entity":"User 1",   "label":"Success",            "dst":"4"}

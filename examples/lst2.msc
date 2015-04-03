@@ -1,3 +1,3 @@
-@msc_event { "entity":"producer", "label":"start"}
-@msc_event { "entity":"producer", "label":"produce", "src":"1"}
-@msc_event { "entity":"consumer", "label":"consume", "dst":"1"}
+@event { "entity":"producer", "label":"start"}
+@event { "entity":"producer", "label":"produce", "src":"1"}
+@event { "entity":"consumer", "label":"consume", "dst":"1"}

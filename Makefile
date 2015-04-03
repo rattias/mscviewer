@@ -57,11 +57,14 @@ endif
 
 .PHONY: all clean install jar distrib
 
-distrib: jar manual
+distrib: jar manual-images manual-pdf manual-html
 	$(eval $(call setup_install_vars))
 	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
 	@mkdir -p $(INSTALL_DIR)
-	@cp -rf bin batch examples doc/manual/manual.pdf licenses third-parties $(INSTALL_DIR)
+	@cp -rf bin batch examples licenses third-parties $(INSTALL_DIR)
+	@mkdir -p $(INSTALL_DIR)/doc/html
+	@cp -rf doc/manual/mscviewer.pdf $(INSTALL_DIR)/doc
+	@cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/html
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
 	@echo $(JAVA)\
 	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
@@ -89,13 +92,29 @@ build:
 	@mkdir -p classes/com/cisco/mscviewer
 	-cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
 
-manual:
-	cd doc/manual ; pdflatex manual.tex
+
+manual-images: jar 
+	bin/mscviewer --script batch/gen_manual_captures.py
+
+manual-pdf:
+	@echo "Building PDF manual. If the GUI has changed, please run 'make manual-images' first"
+	@cd doc/manual ; echo "\tableofcontents" >tocnotoc.tex; pdflatex mscviewer.tex; pdflatex mscviewer.tex 
+	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
+
+manual-html:
+	@echo "Building HTML manual. If the GUI has changed, please run 'make manual-images' first" 
+	@cd doc/manual/ ; echo "" >tocnotoc.tex ; htlatex mscviewer.tex 
+	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
+
+
+
 
 clean:
 	-@rm -rf classes .srclist
+	-@rm -rf doc/manual/*.svg doc/manual/*.html doc/manual/*.png doc/manual/*.pdf doc/manual/tocnotoc.tex
 	-@rm -rf $(INSTALL_DIR)
 	-@rm -f $(WS_TOOLS_DIR)/host_tools.$(TARGET).sentinel 
+	-@rm -f mscviewer*.tgz mscviewer*.zip mscviewer*.jar
 
 jar: build 
 	@echo "Packaging classes to jar file..."

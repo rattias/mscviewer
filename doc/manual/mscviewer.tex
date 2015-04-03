@@ -5,6 +5,7 @@
 \usepackage[colorlinks=true, 
             urlcolor=blue]{hyperref}
 \usepackage{mathtools} 
+\usepackage{longtable}
 \usepackage{makeidx}
 \makeindex 
 
@@ -17,17 +18,20 @@
 \usepackage{listings}
 \usetikzlibrary{shadows}
 \usepackage[toc,page]{appendix}
-\usepackage{breakurl}
+\usepackage{etoolbox}
 \usepackage{wrapfig}
 \usepackage{tcolorbox}
 \usepackage{lipsum}
 \include{titlepage}
 
 \newcommand{\prog}{MSCViewer} 
-\newcommand{\eventprefix}{\texttt{@msc}}
-\newcommand{\mscevent}{\texttt{@msc\_event}}
+
+\newcommand{\mscevent}{\texttt{@event}}
+\newcommand{\mscentity}{\texttt{@entity}}
 \newcommand{\naive}{ na\"{\i}ve}
-\newcommand{\closebutton}{\includegraphics[height=.7\baselineskip]{../../src/com/cisco/mscviewer/resources/icons/16x16/close1.png}}
+\newcommand{\closebutton}{\includegraphics[height=.7\baselineskip]{images/close1.png}}
+\newcommand{\tblimg}[1]{\raisebox{-.5\height}{\includegraphics[height=.2in]{#1}}}
+
 \newenvironment{Sidebar}[1][r]
   {\wrapfigure{#1}{0.5\textwidth}\tcolorbox}
   {\endtcolorbox\endwrapfigure}
@@ -84,7 +88,7 @@
 }
 
 \makeatletter
-\renewcommand\tableofcontents{%
+\renewcommand\tableofcontents{
     \if@twocolumn
       \@restonecoltrue\onecolumn
     \else
@@ -106,7 +110,7 @@
 \clearpage
 \thispagestyle{empty}
 
-\tableofcontents 
+\include{tocnotoc} 
 
 \cleardoublepage
 
@@ -122,7 +126,7 @@
 \section{\prog}
 \prog{} is a tool supporting visualization and analysis of message sequence
 charts. The tool loads a text file, interprets lines containing the
-\eventprefix{} qualifier and representing events and interactions occurring on
+\mscevent{} or \mscentity{} keywords and representing events and interactions occurring on
 entities, ignoring other lines. From the interpreted lines a model is
 constructed in memory. In the GUI the tool can visualize the list of enties,
 from which the user can select a subset to be shown in a sequence diagram chart.
@@ -164,7 +168,7 @@ perform a functionality as \defterm{Flow}.
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{simple-flow.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/simple-flow.png}
   \caption{A simple flow example}
   \label{fig:simple-flow} 
 \end{figure}  
@@ -207,7 +211,7 @@ provided, VM Manager spawns the VM.
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{concurrent-flow.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/concurrent-flow.png}
   \caption{A flow with two concurrent branches}
   \label{fig:concurrent-flow} 
 \end{figure}  
@@ -276,7 +280,7 @@ in an entity. The syntax consists in the \mscevent{} token followed by a JSON
 object (see \href{http://json.org/}{http://json.org/} for more information about the JSON format).
 
 Line 1 defines a \defterm{local} event, which is not part of any interaction
-with other entities. The value of the \texttt{entity} key indicates the entity
+with other entities. The value of the \mscentity{} key indicates the entity
 this event belongs to. There is no explicit sytax to define an entity: as it
 parses events, \prog{} creates entities the events belong to.
 
@@ -298,13 +302,13 @@ bin/(*\MakeLowercase{\prog}*) examples/lst1.msc
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{gui-ex1.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex1.png}
   \caption{\prog{} GUI with \texttt{lst1.msc} loaded.}
   \label{fig:gui-lst1}
 \end{figure}
 
 Fig.~\ref{fig:gui-lst1} shows the GUI in its initial state.  The bottom-right
-area shows the the input file, while the top-left tree shows the various
+area shows the content of the input file, while the top-left tree shows the various
 entities. Double-click on the \texttt{producer} and \texttt{consumer} entities
 to open them in the diagram area, in the top-right part of the window
 (fig.~\ref{fig:gui-lst1-open}). Each entity is shown in a column, with events
@@ -319,7 +323,7 @@ destination event to the paired event in an interaction use the
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{gui-ex1-open.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex2-open.png}
   \caption{The user has opened all the entities in the diagram}
   \label{fig:gui-lst1-open}
 \end{figure}
@@ -352,7 +356,7 @@ an error upon loading the file and skips the sorting. This case is captured in
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{gui-ex3-cycle.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex3-cycle.png}
   \caption{Diagram with circular dependencies caused by interactions}
   \label{fig:gui-lst3}
 \end{figure}
@@ -368,7 +372,7 @@ through the \texttt{view/Preferences...} menu item.
 %\lstinputlisting[language=Java]{../../examples/lst4.msc}
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{gui-ex4-time.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex4-time.png}
   \caption{Diagram with timestamps associated to events.}
   \label{fig:gui-lst4}
 \end{figure} 
@@ -387,7 +391,7 @@ the third event results in the screen as shown in fig.~\ref{fig:gui-lst5}:
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{gui-ex5-data.png}
+  \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex5-data.png}
   \caption{The Data view showing data associated to the selected event}
   \label{fig:gui-lst5}
 \end{figure}
@@ -565,15 +569,279 @@ an event $e_2$ on entity $B$
 \section{Input Language}
 \prog{} can load a single file containing description of events for multiple
 entities and build a model in memory. The input file is composed by lines of
-text. \prog{} ignores any line not containing the \texttt{@msc\_event} or
-\texttt{@msc\_entity} word. This allows to load trace files which might contain
+text. \prog{} ignores any line not containing the \mscevent{} or
+\mscentity{} word. This allows to load trace files which might contain
 a mix of trace lines catered to \prog{} and unrelated trace lines.
 
 An event is described in the input language by a line containing the
-\texttt{@msc\_event} followed by a JSON object. If the reader is not familiar
+\mscevent{} followed by a JSON object. If the reader is not familiar
 with this format, it is explained here: \href{http://json.org/}{http://json.org/}
    
+\prog interprets certain keys-value pairs in the JSON objects in order to build
+the entity/event/interaction model. 
+
+For events, the following keys are interpreted:
+ 
+
+\begin{center}
+    \begin{longtable}{ll}
+    \hline
+    \textbf{Key:}         & \texttt{entity} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & y\\
+    \textbf{Example:}     & \texttt{"id":"node0/producer\_1"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        an identifier for the entity this event belongs to. identifiers can contain slash to indicate hierarchy of entities.\\
+    \end{minipage}    
+    \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{label} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & y\\
+    \textbf{Example:}     & \texttt{label":"operation competed"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        a label specifying some immediate info about this event. In MSCViewer the label is shown on the right 
+        of the icon representing the event.\\
+    \end{minipage}    
+    \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{time} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & n\\
+    \textbf{Example:}     & \texttt{"time":"1542532s"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        a timestamp for the event.  It's an integer number followed by a unit qualifier: "s" (seconds), "ms" 
+        (milliseconds), "us" (microseconds) or "ns" (nanoseconds). The timestamp is interpreted as elapsed time 
+        since the Unix Epoch . If the timestamp is not present inside the JSON object, it is expected to be 
+        present before it in one of the formats supported by syslog.  time is shown in MSCViewer at the right 
+        of the event icon. \\
+    \end{minipage}    
+    \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{type} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & n\\
+    \textbf{Example:}     & \texttt{"type":"Timer"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        If present, the value specifies a distinct type for the event. Events of different types can be rendered
+         by different icons in MSCViewer. Icons can be provided by a user in a directory in the form of PNG images
+          whose name matches the type name. This allows to plug domain-specific representation for events.\\
+    \end{minipage}    
+    \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{data} \\
+    \textbf{Type:}        & JSON Value\\
+    \textbf{Mandatory:}   & n\\
+    \textbf{Example:}     & \texttt{"data":\{"v1":10, "v2":20\}} \\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+	    Specifies some data associated to the event. For example, if the event corresponds to the sending of 
+	    a message, the value here could be a JSON representation of the message. in MSCViewer data is shown in 
+	    a table in the data section when the event is selected.\\
+    \end{minipage}    
+   \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{src} \\
+    \textbf{Type:}        & JSON Value\\
+    \textbf{Mandatory:}   & n\\
+    \textbf{Example:}     & 
+        \begin{minipage}[t]{0.8\columnwidth}%
+            \texttt{"src":"producer\_1/123"},\\
+            \texttt{"src":"\{"id":"producer\_1/123", "color":"00FF00"\}} 
+        \end{minipage}  \\  
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        Interactions are pairs of events. In a pair, one event contains the src key, while the other contains the 
+        dst key, both with the same value. Interactions are visualized in MSCViewer as arrows going from the source
+        to the destination event. The file format doesn't mandate a particular format for the value, but the value
+        should be unique for an interaction (more on this in the interaction section of this document. In the 
+        simplest case the value can be a string (which is a valid JSON value). When certain aspects of the 
+        rendering need to be controlled, the value can be a JSON object with an "id" key identifying the unique
+         interaction, and other keys (such as "color") identifying rendering aspects.\\
+     \end{minipage}   
+   \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{dst} \\
+    \textbf{Type:}        & JSON Value\\
+    \textbf{Mandatory:}   & n\\
+    \textbf{Example:}     & 
+        \begin{minipage}[t]{0.8\columnwidth}%
+            \texttt{"dst":"producer\_1/123"},\\
+            \texttt{"dst":"\{"id":"producer\_1/123", "color":"00FF00"\}} 
+        \end{minipage}  \\  
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        Interactions are pairs of events. In a pair, one event contains the src key, while the other contains 
+        the dst key, both with the same value. Interactions are visualized in MSCViewer as arrows going from
+        the source to the destination event. The file format doesn't mandate a particular format for the value,
+        but the value should be unique for an interaction (more on this in the interaction section of this 
+        document. In the simplest case the value can be a string (which is a valid JSON value). When certain
+        aspects of the rendering need to be controlled, the value can be a JSON object with an "id" key 
+        identifying the unique interaction, and other keys (such as "color") identifying rendering aspects.\\
+     \end{minipage}    
+   \tabularnewline
+  \hline
+  \end{longtable}
+\end{center}
+ 
+ 
+The following table shows the keys interpreted by MSCViewer for entities:
+
+\begin{center}
+    \begin{longtable}{ll}
+    \hline
+    \textbf{Key:}         & \texttt{id} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & y\\
+    \textbf{Example:}     & \texttt{"id":"/node0/1984"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+		The unique identifier for the entity \\
+    \end{minipage}    
+    \tabularnewline
+    \hline
+    \textbf{Key:}         & \texttt{name} \\
+    \textbf{Type:}        & String \\
+    \textbf{Mandatory:}   & y\\
+    \textbf{Example:}     & \texttt{"id":"/node0/producer\_1"}\\
+    \textbf{Description:} &
+    \begin{minipage}[t]{0.8\columnwidth}%
+        A name for the entity. Names don't need to be unique and provide a more human-readable representation for the entity\\    
+    \end{minipage}    
+    \tabularnewline
+	\end{longtable}
+\end{center}
+ 
+   
 \chapter{\prog{}  GUI}
+This chapter provides a description of all the GUI elements in \prog.
+
+\section{The Entities Tree}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.3\textwidth]{images/left-pane.png}
+  \caption{The Entities tree}
+  \label{fig:entity-tree} 
+\end{figure}  
+
+The Entities Tree is visible on the top-left are of the GUI once an input file is loaded and the \textit{Entities} tab 
+is selected. This tree shows all entities defined in the input file. An entity is defined if a \mscentity{} line is 
+present or if the entity is specified in the \texttt{entity} entry of a \mscevent line. Elements of an entity 
+ID separated by slashes constitute nodes in the tree. Internal nodes of the tree may have event of their own, if 
+they appear as the terminal element in the \texttt{entity} entry of at least one event, or not, in which case they
+just represent some relationship among the child nodes. In the latter case the node is visualized in a lighter 
+shade.
+
+For example, a system may be composed by multiple processes running in different hosts. The user may decide to 
+have a log file for each process, and use a \texttt{host-id/process-id} notation for entity events. In this case,
+Intermediate tree nodes for host-id will be created, but clearly there will be no events associated to them.
+
+Double-clicking on a node corresponding to an entity with at least one event opens the entity in the Sequence 
+Diagram. Double-clicking on a node corresponding to an entity already opened in the Sequence Diagram causes
+it to be removed from the diagram. The following legend shows the various representations of the tree nodes:
+
+\begin{center}
+    \begin{longtable}{ll}
+  	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/entity.png}
+	& entity with at least one event, currently closed in sequence diagram\\
+  	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/entity_open.png}
+	& entity with at least one event, currently open in sequence diagram\\
+  	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/entity_faded.png}
+	& entity with no event, can't be opened in sequence diagram\\
+	\end{longtable}
+\end{center}
+
+
+\section{The Sequence Diagram area}
+The sequence diagram area is situated on the top-right part of the GUI. Entities can be opened in this area by
+double-clicking on them in the Entity Tree. Open entities can be rearranged by dragging them from their 
+header.
+
+\section{The Tool Bar}
+The toolbar contains the following buttons:
+
+\begin{center}
+    \begin{longtable}{ll}
+	 \multicolumn{2}{l}{\textbf{Actions}} \\
+	\hline
+  	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/load.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Loads a new input file. Pressing this button causes a file chooser to open. Selecting a file and
+      	pressing ok results in the file being loaded. 
+       \end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/reload.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Reload the present file. This command can be used if changes are made to the file after it was loaded.
+	  	Note that all currently opened entities are closed before the new file is loaded.
+	  	\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/camera.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Captures a screenshot of the sequence diagram. The user can select whether to capture the entire model 
+		(regardless of what entities are opened in the diagram), The entities currently opened, or just the 
+		entities for which at least one event is highlighted.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/clear_highlights.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Removes any highlight set on events or interactions, whether they're on open entity or not.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/run.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Re-run the latest script that was executed. Scripts can be executed by double-clicking on nodes in the
+		tree shown in the Script tab, but this button provides a convenient shortcut to rerun the latest script.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/options.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Opens a window where various program options can be configured.
+		\end{minipage}\\ \\
+		
+		
+	\multicolumn{2}{l}{\textbf{Cursor Tools}} \\
+	\hline
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/select.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Chooses the select tool associated to the mouse pointer. The select tool allows to select an event or
+		interaction. 
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/highlight_green.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		chooses the green marker for highlighting events. When this tool is selected clicking on an event
+		causes it to be highlighted in green.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/highlight_blue.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Same as the green highlighter, but with blue color.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/highlight_yellow.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Same as the green highlighter, but with yellow color.
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/highlight_red.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Same as the green highlighter, but with red color.
+		\end{minipage}\\ \\
+		
+		
+	\multicolumn{2}{l}{\textbf{Visualization Options}} \\
+	\hline
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/blocks.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Shows/hides blocks. 
+	  \end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/time.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Shows/hides event timestamps
+		\end{minipage}\\ \\
+	\tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/label.png}
+	& \begin{minipage}[t]{0.8\columnwidth}
+		Shows/hides event labels
+		\end{minipage}\\ \\
+	\end{longtable}  
+\end{center}
 
 \chapter{Customizing \prog}
 \section{Icons}

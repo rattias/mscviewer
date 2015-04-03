@@ -26,14 +26,6 @@ public class Resources {
 
     public static void init(String plugins) {
         String sz = "/32x32/";
-//        getImageIcon(sz+"highlight_green.png"       , "green");
-//        getImageIcon(sz+"highlight_yellow.png"     , "yellow");
-//        getImageIcon(sz+"highlight_blue.png"       , "blue");
-//        getImageIcon(sz+"highlight_red.png"        , "red");
-//        getImageIcon(sz+"select.png"               , "select");
-//        getImageIcon(sz+"select.png"      , "select");
-//        getImageIcon(sz+"blocks.png"      , "blocks");
-
         readDefaultRenderers();
         if (plugins == null)
             return;

@@ -66,7 +66,7 @@ class ResultPanel extends JPanel implements MouseListener {
                         for (String idarr1 : idarr) {
                             if (!idarr1.equals("")) {
                                 Event ev = model.getEventAt(Integer.parseInt(idarr1));
-                                Main.show(ev);
+                                Main.open(ev);
                             }
                         }
                     }
