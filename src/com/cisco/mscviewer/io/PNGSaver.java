@@ -13,7 +13,9 @@ package com.cisco.mscviewer.io;
 
 import com.cisco.mscviewer.gui.MSCRenderer;
 import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.util.ProgressReport;
+
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -21,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.event.IIOWriteProgressListener;
@@ -43,7 +46,7 @@ public class PNGSaver {
                     Graphics2D g2d = tmp.createGraphics();
                     FontMetrics fm = g2d.getFontMetrics();
                     int entityWidth = 0;
-                    for(Iterator<Entity> it = r.getViewModel().getMSCDataModel().getEntityIterator(false); it.hasNext();) {
+                    for(Iterator<Entity> it = MSCDataModel.getInstance().getEntityIterator(false); it.hasNext();) {
                         Entity en = it.next();
                         int w = fm.stringWidth(en.getName());
                         if (w>entityWidth)

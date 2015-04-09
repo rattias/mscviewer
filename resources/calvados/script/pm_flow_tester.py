@@ -1,6 +1,7 @@
 import re
 
 from mscviewer import *
+from mscviewer_flows import *
 
 def is_fsa_birth(fev, ev, vars, arg):
     """
@@ -56,7 +57,7 @@ def role_assignment_flow_verifier(human_friendly=True):
     """
     f = role_assignment_flow()
     
-    for n in msc_entities(rootOnly=True):
+    for n in entities(root_only=True):
         vars = {'node':n.getPath()}
         f.setvars(vars)
         idx = 0
@@ -65,22 +66,22 @@ def role_assignment_flow_verifier(human_friendly=True):
             try:
                 idx = f.match(start_event_idx=idx)
                 m = f.get_model()
-                msc_flow_mark(m,msc_color.GREEN)
-                msc_results_add_flow(f, valid=True, human_friendly=True)
+                flow_mark(m,marker.GREEN)
+                results_add_flow(f, valid=True, human_friendly=True)
             except FlowError, err:
                 m = f.get_model()
                 if len(m) == 0:
                     #nothing matched, we are done
                     break
-                msc_flow_mark(m,msc_color.RED)
-                msc_results_add_flow(f, valid=False, msg=str(err), human_friendly=True)
+                flow_mark(m,marker.RED)
+                results_add_flow(f, valid=False, msg=str(err), human_friendly=True)
 
                 # we had partial match, but idx was never returned.
                 # need to try next match with first idx == smaller
                 # index that matched + 1
                 idx = f.get_min_model_index()+1
                  
-        msc_results_add('<hr>')
+        results_report('<hr>')
             
             
             

@@ -42,7 +42,7 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
         this.entityHeader = eh;
         this.viewModel = m;        
         this.r = r;
-        this.model = viewModel.getMSCDataModel();
+        this.model = MSCDataModel.getInstance();
         addMouseListener(this);
     }
 

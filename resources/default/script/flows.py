@@ -1,4 +1,6 @@
 from mscviewer import *
+import mscviewer_flows
+from sets import Set
 
 def add_backward(selEv, res):
     pending = [selEv]
@@ -15,7 +17,7 @@ def add_backward(selEv, res):
             continue
         idx = ev.getIndex() - 1
         while idx >= limit:
-            tmpEv = Main.getModel().getEventAt(idx)
+            tmpEv = event_at(idx)
             if tmpEv.getEntity() == ent:
                 pending.append(tmpEv)
                 break
@@ -35,7 +37,7 @@ def add_forward(selEv, res):
 
         idx = ev.getIndex() + 1
         while idx <= limit:
-            tmpEv = Main.getModel().getEventAt(idx)
+            tmpEv = event_at(idx)
             if tmpEv.getEntity() == ent:
                 inters = tmpEv.getIncomingInteractions()
                 if len(inters) == 0 and not tmpEv.isBlockBegin():
@@ -56,20 +58,20 @@ def mark_flow(before=False, after=True):
         - add to S all events which are sinks for interactions
         where E is the source
         - add to S the next event in the same Entity as E, unless
-        such event is a sink
+        such event begins a block
     3) if TMP is not empty, goto 2    
     
     Arguments:
     - before: if set to True all events before the selected one
               and belonging to the same flow are marked.
-              default is True
+              default is False
     - after:  if set to True all events after the selected one
               and belonging to the same flow are marked.
               default is True
     """
-    selEv = Main.getSelectedEvent()
+    selEv = event_selected()
     if not selEv:
-        inter = Main.getSelectedInteraction()
+        inter = interaction_selected()
         if not inter:
             raise Exception("No event or interaction was selected")
         selEv = inter.getToEvent()
@@ -78,7 +80,7 @@ def mark_flow(before=False, after=True):
         add_backward(selEv, res)
     if after:
         add_forward(selEv, res)
-    msc_flow_mark(res, msc_color.GREEN)
+    mscviewer_flows.flow_mark(res, marker.GREEN)
 
 
 class Node:
@@ -100,24 +102,27 @@ class Arc:
 
 @msc_fun
 def marked_to_flow():
+    """
+    prints on standard output a flow definition which captures the flow
+    currently marked.
+    """
+    
     graph = set()
-    m = Main.getModel()
     # find marked events and add them to set
-    for i in range(0, m.getEventCount()):
-        ev = m.getEventAt(i)        
-        if ev.getMarker():
+    for ev in events():
+        if event_marker(ev):
             graph.add(ev)
             
     
     # find roots
     roots = []
     for el in graph:
-        if el.getPreviousEventForEntity() in graph:
+        if event_predecessor(el, same_entity=True) in graph:
             continue
-        incs = el.getIncomingInteractions()
+        incs = event_interactions(el, outgoing=False)
         isRoot = True
         for inc in incs:
-            fs = inc.getFromEvent()
+            fs = interaction_from_event(inc)
             if fs in graph:
                 isRoot = False
                 break
@@ -136,17 +141,19 @@ def marked_to_flow():
                 f[0] += ")"
         
     elif lr == 1:
+        print "calling get_flow"
         get_flow(graph, roots[0], 1, f)
     print f[0]
     
 def get_nexts(graph, node):
   nexts = []
-  n = node.getNextEventForEntity() 
-  if n in graph:
+  n = event_successor(node, same_entity=True) 
+  if n in graph and not event_is_block_begin(n):
       nexts = [n]
   else:
       nexts = []
-  nexts.extend([outInter.getToEvent() for outInter in node.getOutgoingInteractions() if outInter.getType() != "Transition" and outInter.getToEvent() in graph])
+  nexts.extend([interaction_to_event(outInter) for outInter in event_interactions(node, outgoing=True) if interaction_type(outInter) != "Transition" and interaction_to_event(outInter) in graph])
+  print "NEXTS(",event_index(node),") = ", [event_index(ev) for ev in nexts]
   return nexts
 
 def fevent(n):
@@ -155,9 +162,14 @@ def fevent(n):
 def ind(v):
     return "  "*v
 
-def get_flow(graph, node, indent, res):
+def get_flow(graph, node, indent, res, s=Set()):
     in_fseq = False
     while node:
+        if node in s:
+            # raise Exception("node "+str(event_index(node))+" already in set")
+            return
+        s.add(node)
+    	print ind(indent), "NODE ", event_index(node), node.isBlockBegin()
         nexts = get_nexts(graph, node) 
         ln = len(nexts)
         if ln == 0:
@@ -178,11 +190,11 @@ def get_flow(graph, node, indent, res):
         elif ln == 2:
             res[0] += ",\n"+ind(indent)+'fint("'+node.getEntity().getPath()+'", "'+nexts[1].getEntity().getPath()+', "'+node.getLabel()+'")'
             res[0] += ",\n"+ind(indent+1)+'src='
-            get_flow(graph, nexts[0], indent+2, res)
+            get_flow(graph, nexts[0], indent+2, res, s)
             res[0] += ",\n"+ind(indent+1)+'dst='
-            get_flow(graph, nexts[1], indent+2, res)
+            get_flow(graph, nexts[1], indent+2, res, s)
             res[0] += "\n"+ind(indent)+") //fint 2"
             if in_fseq:
                  res[0] += "\n"+ind(indent-1)+") //fseq"
             return              
-        
+"""        

@@ -62,7 +62,6 @@ class TimeHeader extends JPanel {
 @SuppressWarnings("serial")
 public class MainPanel extends JPanel implements Scrollable, KeyListener,
 SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
-    private final MSCDataModel dataModel;
     //private float zoomFactor = 1.0f;
     private final MainFrame mf;
     private final MSCRenderer r;
@@ -74,8 +73,7 @@ SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
         this.mf = mf;
         this.entityHeader = entityHeader;
         this.viewModel = viewModel;
-        this.dataModel = viewModel.getMSCDataModel();
-        viewModel.getMSCDataModel().addListener(this);		
+        MSCDataModel.getInstance().addListener(this);		
         viewModel.addListener(this);
         setFocusable(true);
         addKeyListener(this);
@@ -94,9 +92,6 @@ SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
         return r;
     }
 
-    public MSCDataModel getDataModel() {
-        return dataModel;
-    }
 
 
     @Override
@@ -312,13 +307,11 @@ SelectionListener, MSCDataModelListener, EntityHeaderModelListener {
     }
 
     public void updateViewForFilter() {
-        if (dataModel != null) {
-            //String exp = mf.getCurrentFilterRegExp();
-            if (mf.filteringEnabled())
-                viewModel.setFilter(new JSViewFilter(dataModel, viewModel, mf.getFilterExpression()));
-            else
-                viewModel.setFilter(new CompactViewFilter(viewModel, ".*"));
-        }
+    	//String exp = mf.getCurrentFilterRegExp();
+    	if (mf.filteringEnabled())
+    		viewModel.setFilter(new JSViewFilter(MSCDataModel.getInstance(), viewModel, mf.getFilterExpression()));
+        else
+            viewModel.setFilter(new CompactViewFilter(viewModel, ".*"));
         updateView();
     }
 

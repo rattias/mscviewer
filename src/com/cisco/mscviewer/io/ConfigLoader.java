@@ -83,7 +83,7 @@ public class ConfigLoader {
                             case JOptionPane.YES_OPTION:
                                 try {
                                     Loader l = new LegacyLoader();
-                                    l.load(logPath, min);
+                                    l.load(logPath, min, false);
                                 } catch (IOException e) {
                                     throw new SAXException(e);
                                 }
@@ -104,7 +104,7 @@ public class ConfigLoader {
                             case JOptionPane.YES_OPTION:
                                 try {
                                     Loader l = new LegacyLoader();
-                                    l.load(logPath, min);
+                                    l.load(logPath, min, false);
                                 } catch (IOException e) {
                                     throw new SAXException(e);
                                 }

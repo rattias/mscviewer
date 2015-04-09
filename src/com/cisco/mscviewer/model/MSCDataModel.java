@@ -51,7 +51,8 @@ class KeyEvent extends Event {
  * @author rattias
  */
 public final class MSCDataModel {
-    private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<String, Entity>();
+    private static MSCDataModel singleton;
+	private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<String, Entity>();
     private final ArrayList<Entity> rootEntities;
     private ArrayList<Event> events;
     private IntervalTree interactions;
@@ -68,7 +69,7 @@ public final class MSCDataModel {
     /**
      * Instantiate a data model
      */
-    public MSCDataModel() {
+    private MSCDataModel() {
         this.listeners = new Vector<MSCDataModelListener>();
         this.events = new ArrayList<Event>();
         this.rootEntities = new ArrayList<Entity>();
@@ -214,9 +215,9 @@ public final class MSCDataModel {
         return events.get(idx);
     }
 
-//    public int getEventIndex(Event ev) {
-//        return events.indexOf(ev);
-//    }
+    public int getEventIndex(Event ev) {
+        return events.indexOf(ev);
+    }
     
     /**
      * returns the number of events in the data model.
@@ -840,4 +841,10 @@ public final class MSCDataModel {
         }
         return null;
     }
+
+	public static MSCDataModel getInstance() {
+		if (singleton == null)
+			singleton = new MSCDataModel();
+		return singleton;
+	}
 }

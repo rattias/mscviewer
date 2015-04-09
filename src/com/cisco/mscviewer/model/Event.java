@@ -243,6 +243,13 @@ public class Event {
         return null;
     }
 
+    public Event getPreviousEvent() {
+        int idx = getIndex();
+        if (idx == 0)
+        	return null;
+        return model.getEventAt(idx-1);
+    }
+
     public Event getNextEventForEntity() {
         int cnt = model.getEventCount();
         
@@ -254,13 +261,21 @@ public class Event {
         return null;
     }
 
+    public Event getNextEvent() {
+        int idx = getIndex();
+        if (idx == model.getEventCount()-1)
+        	return null;
+        return model.getEventAt(idx+1);
+    }
+
+    
     public void setBlockBegin() {
         blockBegin = true;
     }
 
-    public void setBlockEnd() {
-        blockBegin = false;
-    }
+//    public void setBlockEnd() {
+//        blockBegin = false;
+//    }
     
     public boolean isBlockBegin() {
         return blockBegin;

@@ -12,6 +12,7 @@
 package com.cisco.mscviewer.util;
 
 import com.cisco.mscviewer.Main;
+
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -26,6 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;
@@ -73,7 +75,7 @@ public class Report {
                 }
             });
             JOptionPane.showMessageDialog(
-                    Main.getMainFrame(), 
+                    MainFrame.getInstance(), 
                     jsplit, 
                     "Exception", 
                     JOptionPane.ERROR_MESSAGE);
@@ -82,21 +84,21 @@ public class Report {
     }
     
     public static void error(Event ev, String msg) {
-        MSCDataModel m = Main.getModel(); 
+        MSCDataModel m = MSCDataModel.getInstance(); 
         String finfo = m.getFilePath()+":"+ev.getLineIndex();
         if (Main.batchMode()) {
            System.err.println(finfo+": "+msg);
         } else {
-            JOptionPane.showMessageDialog(Main.getMainFrame(), finfo+"\n"+msg, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(MainFrame.getInstance(), finfo+"\n"+msg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public static void error(Entity en, String msg) {
-        MSCDataModel m = Main.getModel(); 
+        MSCDataModel m = MSCDataModel.getInstance(); 
         if (Main.batchMode()) {
            System.err.println(m.getFilePath()+": entity "+en.getPath()+": "+msg);
         } else {
-            JOptionPane.showMessageDialog(Main.getMainFrame(), msg, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(MainFrame.getInstance(), msg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

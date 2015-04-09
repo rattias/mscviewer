@@ -308,8 +308,8 @@ public class LegacyLoader implements Loader {
     }
 
     @Override
-    public void load(final String fname, final MSCDataModel dm) throws IOException {
-        if (Main.batchMode()) {
+    public void load(final String fname, final MSCDataModel dm, boolean batchMode) throws IOException {
+        if (batchMode) {
             loadInternal(fname, dm);
         } else {
             latch = new CountDownLatch(1);
@@ -344,7 +344,7 @@ public class LegacyLoader implements Loader {
 //                @Override
 //                public void propertyChange(PropertyChangeEvent evt) {
 //                    if ("progress".equals(evt.getPropertyName())) {
-//                        Main.progress((Integer) evt.getNewValue());
+//                        MSC.progress((Integer) evt.getNewValue());
 //                    }
 //                }
 //            });

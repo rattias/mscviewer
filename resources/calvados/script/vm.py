@@ -1,6 +1,7 @@
 from string import Template
 import re
 from mscviewer import *
+from mscviewer_flows import *
 	
             
 def vm_creation_flow(human_friendly=True):
@@ -113,7 +114,7 @@ def find_vm_flows(human_friendly=True):
     
     """
     f = vm_creation_flow()
-    for n in msc_entities(rootOnly=True):
+    for n in entities(root_only=True):
         vars = {'node':n.getPath()}
         f.setvars(vars)
         idx = 0
@@ -122,21 +123,21 @@ def find_vm_flows(human_friendly=True):
             try:
                 idx = f.match(start_event_idx=idx)
                 m = f.get_model()
-                msc_flow_mark(m, msc_color.GREEN)
-                msc_results_add_flow(f, human_friendly=human_friendly, valid=True)
+                flow_mark(m, marker.GREEN)
+                results_add_flow(f, human_friendly=human_friendly, valid=True)
             except FlowError, err:
                 m = f.get_model()
                 if len(m) == 0:
                     # nothing matched, we are done
                     break
-                msc_results_add_flow(f, valid=False, human_friendly=human_friendly)
+                results_add_flow(f, valid=False, human_friendly=human_friendly)
                 # we had partial match, but idx was never returned.
                 # need to try next match with first idx == smaller
                 # index that matched + 1
                 idx = f.get_min_model_index() + 1
         
-        msc_results_add('<hr>')
-    
+        results_report('<hr>')
+        results_show()
     
    
 if __name__ == "__main__":

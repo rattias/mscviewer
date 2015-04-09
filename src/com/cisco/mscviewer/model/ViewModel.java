@@ -281,9 +281,6 @@ public class ViewModel implements MSCDataModelListener {
         });
     }
 
-    public MSCDataModel getMSCDataModel() {
-        return dm;
-    }
 
     private EntityInfo entityInfoForEntity(Entity en) {
         for(EntityInfo ei: ent) {

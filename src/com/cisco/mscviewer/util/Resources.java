@@ -25,15 +25,15 @@ public class Resources {
     private static HashMap<String, ImageRenderer> imgRenderers;
 
     public static void init(String plugins) {
+        imgRenderers = new HashMap<String, ImageRenderer>();
+  
         String sz = "/32x32/";
         readDefaultRenderers();
         if (plugins == null)
             return;
-        imgRenderers = new HashMap<String, ImageRenderer>();
         for(String path: plugins.split(File.pathSeparator)) {
             File f = new File(path+"/renderer");
             if (f.isDirectory()) {
-                System.out.println("init renderer at "+f.getPath());
                 String[] icons = f.list();
                 for(String s: icons) {
                     int dotIdx = s.lastIndexOf('.');
@@ -78,9 +78,6 @@ public class Resources {
     }
 
     private static void readDefaultRenderers() {
-        if (imgRenderers == null)
-            imgRenderers = new HashMap<String, ImageRenderer>();
-        
         URL resourceURL = ClassLoader.getSystemResource(RENDERER_PATH);
         String urlStr = resourceURL.getPath(); 
         int idx = urlStr.indexOf(".jar!"); 
@@ -118,7 +115,8 @@ public class Resources {
                     imgRenderers.put(key, ir);
                 }
             }
-        }catch(MalformedURLException ex) {                        ex.printStackTrace();
+        }catch(MalformedURLException ex) {                        
+            ex.printStackTrace();
         } catch (URISyntaxException ex) {
             ex.printStackTrace();            
         }catch(IOException ex) { 
@@ -129,8 +127,9 @@ public class Resources {
 
 
 
-    public static EventRenderer getImageRenderer(String t) {
-        return imgRenderers.get(t);
+    public static EventRenderer getImageRenderer(String t) {    	
+        EventRenderer r = imgRenderers.get(t);
+        return r;
     }
     
 }

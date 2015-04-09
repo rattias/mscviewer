@@ -73,7 +73,6 @@ public class Main {
     //    public static String loaderClass = "LegacyLoader";
     public static boolean batchMode = false;
     public static String batchFun = null;
-    private static MSCDataModel dataModel;
     public static ProgressMonitor pm;
 
     private static final void appendToPyPath(String s) {
@@ -158,7 +157,7 @@ public class Main {
     ClassNotFoundException, SecurityException, NoSuchMethodException,
     IllegalArgumentException, IllegalAccessException,
     InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
-        System.setProperty("pypath", Main.getInstallDir()+"/resources/default/script");
+        System.setProperty("pypath", Utils.getInstallDir()+"/resources/default/script");
         
         setupUIDefaults();
         int idx = processOptions(args);
@@ -169,13 +168,12 @@ public class Main {
         Resources.init(Main.plugins);
 
         loader = (Loader)cl.newInstance();
-        dataModel = new MSCDataModel();
         if (batchMode()) {
             if (fname == null) {
                 System.err.println("Missing input file");
                 System.exit(1);
             }
-            loader.load(fname, dataModel);
+            loader.load(fname, MSCDataModel.getInstance(), true);
         } else {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -190,7 +188,7 @@ public class Main {
                 }
             });
             if (fname != null) {
-                loader.load(fname, dataModel);
+                loader.load(fname, MSCDataModel.getInstance(), false);
             }
         }
         if (script != null) {
@@ -288,45 +286,41 @@ public class Main {
 //            throw new Error("Couldn't find file entity.gif");
 //        }
     }
-
-
+    
     public static boolean batchMode() {
         return batchMode;
     }
 
     public static MainFrame getMainFrame() {
-        return mf;
-    }
-
-    public static MSCDataModel getModel() {
-        return dataModel;
+        return MainFrame.getInstance();
     }
 
     public static Event getSelectedEvent() {
-        return mf.getMainPanel().getMSCRenderer().getSelectedEvent();
+        return MainFrame.getInstance().getMainPanel().getMSCRenderer().getSelectedEvent();
     }
 
     public static Interaction getSelectedInteraction() {
-        return mf.getMainPanel().getMSCRenderer().getSelectedInteraction();
+        return MainFrame.getInstance().getMainPanel().getMSCRenderer().getSelectedInteraction();
     }
 
     public static void open(final Entity en) {
-    	Utils.dispatchOnAWTThreadLater(new Runnable() {
+    	Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
-                mf.getViewModel().add(en);
+            	MainFrame.getInstance().getViewModel().add(en);
             }
         });
     }
 
     public static Entity open(final String id) {
-    	final Entity en = mf.getDataModel().getEntity(id);
+    	final Entity en = MSCDataModel.getInstance().getEntity(id);
         Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
+            	MainFrame mf = MainFrame.getInstance();
             	if (en == null) {
             		StringBuilder ents = new StringBuilder();
-            		for(Iterator<Entity> it = mf.getDataModel().getEntityIterator(false); it.hasNext();)
+            		for(Iterator<Entity> it = MSCDataModel.getInstance().getEntityIterator(false); it.hasNext();)
             			ents.append(it.next().getId()+", ");
             		throw new Error("Entity '"+id+"' not present in model. Available entities are: "+ents.toString());
             	}
@@ -340,7 +334,7 @@ public class Main {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
-                mf.getViewModel().add(en);
+            	MainFrame.getInstance().getViewModel().add(en);
             }
         });
     }
@@ -349,6 +343,7 @@ public class Main {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
+            	MainFrame mf = MainFrame.getInstance();
                 ViewModel vm = mf.getViewModel();
                 vm.add(ev.getEntity());
                 int idx = vm.indexOf(ev);
@@ -359,7 +354,7 @@ public class Main {
     }
 
     public static void hide(Entity en) {
-        mf.getEntityHeader().remove(en);
+    	MainFrame.getInstance().getEntityHeader().remove(en);
     }
 
     public static void addResult(final String res) {
@@ -371,52 +366,43 @@ public class Main {
         });
     }
 
-    public static Loader getLoader() {
-        return loader;
-    }
+//    public static Loader getLoader() {
+//        return loader;
+//    }
 
-    public static MSCDataModel batchLoad(String path) throws IOException, InvocationTargetException, InterruptedException {
+    public static void load(String path) throws IOException, InvocationTargetException, InterruptedException {
         Loader l = new JsonLoader();
+		final MainFrame mf = MainFrame.getInstance();
         SwingUtilities.invokeAndWait(new Runnable() {
         	public void run() {
-        		MainFrame.getInstance().getViewModel().reset();
-        		dataModel.reset();
-        		MainFrame.getInstance().getViewModel().reset();
+        		mf.getViewModel().reset();
+        		MSCDataModel.getInstance().reset();
         	}
         });
-        l.load(path, dataModel);
+        l.load(path, MSCDataModel.getInstance(), true);
         l.waitIfLoading();
-        return dataModel;
     }
 
-    public static void start(String[] args) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
-        main(args);
-    }
+//    public static void start(String[] args) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
+//        main(args);
+//    }
 
     public static void clearModel() {
-        MSCDataModel dm  = mf.getDataModel();
-        dm.reset();
+		MainFrame mf = MainFrame.getInstance();
+		mf.getViewModel().reset();
+		MSCDataModel.getInstance().reset();
     }
 
     public static void maximize() {
+		MainFrame mf = MainFrame.getInstance();
         mf.setExtendedState(mf.getExtendedState() | JFrame.MAXIMIZED_BOTH);
     }
 
 
-    public static MSCDataModel getDataModel() {
-        return dataModel;
-    }
-
-    public static String getInstallDir() {
-        URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
-        String urlStr = resourceURL.getPath(); 
-        int idx = urlStr.indexOf("mscviewer.jar!");
-        if (idx < 0) {
-            return urlStr.substring(1,  urlStr.indexOf("classes"));
-        } else {
-            return urlStr.substring("file:/".length(),  idx);
-        }
-    }        
+//    public static MSCDataModel getDataModel() {
+//		MainFrame mf = MainFrame.getInstance();
+//		return mf.getDataModel();
+//    }
 
     public static void quit() {
     	System.exit(0);
@@ -450,6 +436,10 @@ public class Main {
     	MainFrame.getInstance().showTab("data");
     }
     
+    public static void showResultsTab() {
+    	MainFrame.getInstance().showTab("results");
+    }
+
     public static void expandEntityTree() {
     	MainFrame.getInstance().getEntityTree().expandAll();
     }
@@ -468,5 +458,6 @@ public class Main {
     	MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(0);
     	MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(f);
     }
+
 
 }

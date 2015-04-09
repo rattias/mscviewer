@@ -44,7 +44,6 @@ import com.cisco.mscviewer.util.Resources;
 public class MSCRenderer {
     public final static int EVENT_HEIGHT = 20;
     private int eventHeight = EVENT_HEIGHT;
-    private final MSCDataModel dataModel;
     //private EntityHeaderModel headerModel;
     private Event selectedEvent = null;
     private Interaction selectedInteraction = null;
@@ -95,7 +94,6 @@ public class MSCRenderer {
 
     public MSCRenderer(ViewModel eh) {
         viewModel = eh;
-        dataModel = viewModel.getMSCDataModel();
         infoIcon = Resources.getImageIcon("32x32/info.png", "Info icon");	
     }
 
@@ -175,6 +173,7 @@ public class MSCRenderer {
     }
     
     public void updateForTimeUnitChanges() {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             int cnt = dataModel.getEventCount();
             for(int i=0; i<cnt; i++) {
@@ -193,6 +192,7 @@ public class MSCRenderer {
         font = mainFont.deriveFont(tf);
         g2d.setFont(font);
         int ascent = g2d.getFontMetrics().getAscent();
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             // render blocks first
             Dimension max = new Dimension(64, eventHeight);
@@ -307,7 +307,7 @@ public class MSCRenderer {
                         if (time != null) {
                             g2d.setColor(Color.pink);
                             int w = g2d.getFontMetrics().stringWidth(time);
-                            g2d.drawString(time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
+                            g2d.drawString(MSCDataModel.getInstance().getEventIndex(ev)+":"+time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
                         }
                     }
                     if (ev.getRenderer() instanceof ErrorRenderer)
@@ -453,6 +453,7 @@ public class MSCRenderer {
 
 
     private void computeMaxBBWidth() {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             int cnt = viewModel.getEventCount();
             Rectangle r = new Rectangle();
@@ -528,6 +529,7 @@ public class MSCRenderer {
     }
 
     public int getHeight() {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         if (dataModel == null)
             return 0;
         if (timeProportional) {
@@ -563,6 +565,7 @@ public class MSCRenderer {
     public int getViewModelClosestEventIndex(int x, int y, int viewY, int viewHeight) {
         int minIdx = viewY/eventHeight;
         int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (maxIdx > viewModel.getEventCount()-1)
                 maxIdx = viewModel.getEventCount()-1;
@@ -593,6 +596,7 @@ public class MSCRenderer {
     private Interaction getClosestInteraction(int x, int y, int viewMinIdx, int viewMaxIdx) {
         int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
         int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         ArrayList<Interaction> al = dataModel.getInteractionsInInterval(modelMinIdx, modelMaxIdx);
         for(Interaction in: al) {
             InteractionRenderer ir = in.getIRenderer();
@@ -633,6 +637,7 @@ public class MSCRenderer {
     }
 
     public Object getClosest(int x, int y, int viewY, int viewHeight) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             int evCount = viewModel.getEventCount();
             int minIdx = viewY/eventHeight;
@@ -659,6 +664,7 @@ public class MSCRenderer {
     }
     
     public int getClosestEventViewIndex(int x, int y, int viewY, int viewHeight) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             int evCount = viewModel.getEventCount();
             int minIdx = viewY/eventHeight;
@@ -734,6 +740,7 @@ public class MSCRenderer {
         }
         if (modelIdx != -1) {
             selectedInteraction = null;
+        	MSCDataModel dataModel = MSCDataModel.getInstance();
             selectedEvent = dataModel.getEventAt(modelIdx);
             viewModelSelectedEventIndex = selectedEvent != null ? viewModel.getViewIndexFromModelIndex(modelIdx) : -1;
         } else {         
@@ -776,6 +783,7 @@ public class MSCRenderer {
     }
 
     public void selectByLineNumber(int lineIndex) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized (dataModel) {			
             for(int i=0; i<viewModel.getEventCount(); i++) {
                 if (viewModel.getEventAt(i).getLineIndex() == lineIndex)
@@ -784,10 +792,6 @@ public class MSCRenderer {
         }
     }
 
-
-    //	public MSCDataModel getDataModel() {
-    //		return dataModel;
-    //	}
 
     public ViewModel getViewModel() {
         return viewModel;
@@ -842,6 +846,7 @@ public class MSCRenderer {
      * @param ctrl
      */
     public void cursorDown(boolean ctrl) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (selectedEvent != null) {
                 Entity en = selectedEvent.getEntity();
@@ -911,6 +916,7 @@ public class MSCRenderer {
      * @param ctrl
      */
     public void cursorUp(boolean ctrl) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (selectedEvent != null) {
                 Entity en = selectedEvent.getEntity();
@@ -983,6 +989,7 @@ public class MSCRenderer {
      * @param ctrl
      */
     public void cursorLeft(boolean ctrl) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (selectedEvent != null) {
                 Entity selEn = selectedEvent.getEntity();
@@ -1066,6 +1073,7 @@ public class MSCRenderer {
      * @param ctrl
      */
     public void cursorRight(boolean ctrl) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (selectedEvent != null) {
                 Entity selEn = selectedEvent.getEntity();
@@ -1130,6 +1138,7 @@ public class MSCRenderer {
 
 
     public Rectangle getEventBoundingRect(int evIdx) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (evIdx >= viewModel.getEventCount())
                 return null;
@@ -1148,6 +1157,7 @@ public class MSCRenderer {
     }
 
     public Point getEventPoint(int evIdx) {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             Event ev = viewModel.getEventAt(evIdx);
             int enIdx = viewModel.indexOf(ev.getEntity());
@@ -1193,6 +1203,7 @@ public class MSCRenderer {
     }
 
     public String getSelectedStatusString() {
+    	MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized(dataModel) {
             if (selectedEvent != null) {
                 return "Event: local, t="+getTimeRepr(selectedEvent.getTimestamp());

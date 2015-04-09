@@ -26,11 +26,13 @@ public class PythonFunction {
     private String doc;
     private boolean wasSet;
     private Python python;
+    private String pkg;
     
     public PythonFunction(Python p, String pkg, String name) {
+    	this.pkg = pkg;
         this.name = name;
         python = p;
-        PyObject args = p.eval("inspect.getargspec("+name+")");
+        PyObject args = p.eval("inspect.getargspec("+pkg+"."+name+")");
         PyTuple t = (PyTuple) args;
         PyObject[] objs = ((PyList) t.get(0)).getArray();
         argNames = new String[objs.length];
@@ -117,7 +119,7 @@ public class PythonFunction {
 
     public void invoke() throws ScriptException {
         StringBuilder sb = new StringBuilder();
-        sb.append(name).append("(");
+        sb.append(pkg).append('.').append(name).append("(");
         StringBuffer args = new StringBuffer();
         int regArgCount = argValues.length - argDefaults.length;
         for (int i = 0; i < regArgCount; i++) {

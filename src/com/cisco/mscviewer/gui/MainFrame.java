@@ -399,7 +399,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     
 
     private void loadFile() {
-        MSCDataModel dm = Main.getDataModel();
+        MSCDataModel dm = MSCDataModel.getInstance();
         String curDir = dm.getOpenPath();
         if (curDir != null)
             jfc.setCurrentDirectory(new File (curDir));
@@ -411,7 +411,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 try {
                     viewModel.reset();
                     dm.reset();
-                    Main.getLoader().load(f.getPath(), dm);
+                    new JsonLoader().load(f.getPath(), dm, false);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -424,11 +424,11 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
     
     private void reloadFile() {
-        MSCDataModel dm = Main.getDataModel();
+        MSCDataModel dm = MSCDataModel.getInstance();
         try {
         	viewModel.reset();
             dm.reset();
-            Main.getLoader().load(dm.getFilePath(), dm);
+            new JsonLoader().load(dm.getFilePath(), dm, false);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -474,7 +474,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private void clearHighlights() {
         int res = JOptionPane.showConfirmDialog(MainFrame.this, "Are you sure you want to remove all highlights?", "Clear Highlights", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            MSCDataModel dm = mainPanel.getDataModel();
+            MSCDataModel dm = MSCDataModel.getInstance();
             dm.clearMarkers();
             repaint();
         }
@@ -533,7 +533,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         info = new JLabel("");
         info.setBorder(BorderFactory.createEtchedBorder());
         getContentPane().add(info, BorderLayout.SOUTH);
-        viewModel = new ViewModel(Main.getDataModel());
+        viewModel = new ViewModel(MSCDataModel.getInstance());
         entityHeader = new EntityHeader(viewModel);
         entityTree = new EntityTree(viewModel);
         entityList = new EntityList(viewModel);
@@ -625,7 +625,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         jsp.setColumnHeaderView(entityHeader);
         jsp.validate();
         rightSplitPane.setTopComponent(p);
-        logList = new LogList(Main.getDataModel(), viewModel);
+        logList = new LogList(MSCDataModel.getInstance(), viewModel);
         logList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         logList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -646,7 +646,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         logPanel.add(fsp, BorderLayout.NORTH);
         logPanel.add(new JScrollPane(logList), BorderLayout.CENTER);
         
-        results = new ResultPanel(Main.getDataModel());        
+        results = new ResultPanel(MSCDataModel.getInstance());        
         data = new DataPanel();
         mainPanel.getMSCRenderer().addSelectionListener(data);
         
@@ -940,9 +940,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         });
     }
     
-    public MSCDataModel getDataModel() {
-        return Main.getDataModel();
-    }
     
     int getLifeLineY(int entityIdx) {
         return entityHeader.getEntityCenterX(entityIdx);

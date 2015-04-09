@@ -342,8 +342,8 @@ public class JsonLoader implements Loader {
                     if (block != null) {
                         if (block.toString().equals(MSC_KEY_BLOCK_BEGIN))
                             ev.setBlockBegin();
-                        else
-                            ev.setBlockEnd();
+//                        else
+//                            ev.setBlockEnd();
                     }
                     
                     // HANDLE "source" KEY
@@ -502,6 +502,7 @@ public class JsonLoader implements Loader {
                         SimpleInterval blk = (SimpleInterval)pendingBlocks.get(blkPath);
                         if (ev.getIncomingInteractions().length > 0|| ev.isBlockBegin()) {
                             if (blk != null) {
+                            	ev.setBlockBegin();
                                 dm.addBlock(blk);
                             }
                             blk = new SimpleInterval(i, i);
@@ -545,11 +546,11 @@ public class JsonLoader implements Loader {
     }
 
     @Override
-    public void load(final String fname, final MSCDataModel dm) throws IOException {
+    public void load(final String fname, final MSCDataModel dm, boolean batchMode) throws IOException {
         dm.setOpenPath(new File(fname).getParent());
-        if (Main.batchMode()) {
-            loadInternal(fname, dm);
-        } else {
+//        if (batchMode) {
+//            loadInternal(fname, dm);
+//        } else {
             latch = new CountDownLatch(1);
             SwingWorker<Object, Object> sw = new SwingWorker<Object, Object>() {
                 @Override
@@ -582,12 +583,12 @@ public class JsonLoader implements Loader {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("progress".equals(evt.getPropertyName())) {
-                        //cMain.progress((Integer) evt.getNewValue());
+                        //cMSC.progress((Integer) evt.getNewValue());
                     }
                 }
             });
             sw.execute();
-        }
+//        }
     }
 
 }

@@ -1,46 +1,33 @@
-from com.cisco.mscviewer import Main
 from com.cisco.mscviewer.model import MSCDataModel
 from com.cisco.mscviewer.graph import GraphData
-from mscviewer import *
+import mscviewer
 import math
     
-@msc_fun  
+@mscviewer.msc_fun  
 def event_rate_fn():
     """
     Creates a set of graph representing rate of events, one for each entity of the
     opened entities.
     """
-    model = Main.getModel()
-    sz = model.getEventCount()
     cnt = 0;
     info = {}
-    for en in msc_entities():
+    evcount = mscviewer.event_count()
+    for en in mscviewer.entities():
         info[en] = GraphData(en.getPath())
         info[en].setXType("time")
         
-    pr = ProgressReport("processing events", "", 0, msc_event_count());
+    pr = mscviewer.progress_start("processing events", 0, mscviewer.event_count());
     prev = {}
-    """
-    for ev in msc_events():
-        en = ev.getEntity()
-        if en in prev:
-            x = prev[en]            
-            info[en].add(x, x, ev)
-            prev[en] = x+1
-        else:
-            info[en].add(0, 0, ev)
-            prev[en] = 1
-    """                
-    twidth = model.getEventAt(model.getEventCount()-1).getTimestamp() - model.getEventAt(0).getTimestamp()
-    for ev in msc_events():
+    twidth = mscviewer.event_timestamp(mscviewer.event_at(evcount-1)) - mscviewer.event_timestamp(mscviewer.event_at(0))
+    for ev in mscviewer.events():
         cnt += 1
-        pr.progress(cnt)
-        en = ev.getEntity()
-        enp = en.getPath()
-        t = ev.getTimestamp()
+        mscviewer.progress_report(pr, cnt)
+        en = mscviewer.event_entity(ev)
+        enp = mscviewer.entity_path(en)
+        t = mscviewer.event_timestamp(ev)
         v = 0
         if enp in prev:
-            tprev = prev[enp].getTimestamp()
+            tprev = mscviewer.event_timestamp(prev[enp])
             v = t - tprev
             if v < 0:
                 v = -v
@@ -50,14 +37,12 @@ def event_rate_fn():
             pv = 0
             v = 0
         info[en].add(t, v, ev)
-#        if en.getPath() == "XRVR":
-#            print "XRVR: ",v, pv
         prev[enp] = ev
         
     arr = []
-    for en in msc_entities():
+    for en in mscviewer.entities():
         inf = info[en]
         if not inf.isEmpty():
             arr.append(inf)
-    model.addGraph(arr)
+    mscviewer.graph(arr)
     pr.progressDone() 

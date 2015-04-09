@@ -32,6 +32,9 @@ UNAME:=$(shell uname -s)
 MSCVER = $(shell cat src/com/cisco/mscviewer/Main.java |\
            grep VERSION | cut -d\" -f2)
 
+TEXFLAGS = -interaction=nonstopmode -halt-on-error
+CURDIR=$(shell pwd)
+
 ifeq (,$(findstring CYGWIN,$(UNAME)))
   P:=:
 else
@@ -57,14 +60,17 @@ endif
 
 .PHONY: all clean install jar distrib
 
-distrib: jar manual-images manual-pdf manual-html
+distrib: banner jar manual-images manual-pdf manual-html manual-python-api
 	$(eval $(call setup_install_vars))
-	@echo "Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)"
+	#@echo "*** Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)..."
 	@mkdir -p $(INSTALL_DIR)
 	@cp -rf bin batch examples licenses third-parties $(INSTALL_DIR)
-	@mkdir -p $(INSTALL_DIR)/doc/html
-	@cp -rf doc/manual/mscviewer.pdf $(INSTALL_DIR)/doc
-	@cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/html
+	@mkdir -p $(INSTALL_DIR)/doc/user-guide
+	@mkdir -p $(INSTALL_DIR)/doc/python-api
+	@cp -rf doc/manual/mscviewer.pdf $(INSTALL_DIR)/doc/user-guide
+	@cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/user-guide
+	@cp -rf doc/python-api/build/html/* $(INSTALL_DIR)/doc/python-api/
+	@cp -rf doc/python-api/build/latex/mscviewer_python_api.pdf $(INSTALL_DIR)/doc/python-api/
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
 	@echo $(JAVA)\
 	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
@@ -78,35 +84,49 @@ distrib: jar manual-images manual-pdf manual-html
                         
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(INSTALL_DIR)/.[a-z]*
-	tar cfz $(VERSIONED_NAME).tgz -C $(INSTALL_PREFIX) $(VERSIONED_NAME)
-	cd $(INSTALL_PREFIX) ; zip -r $(VERSIONED_NAME).zip $(VERSIONED_NAME)
-	mv $(INSTALL_PREFIX)/$(VERSIONED_NAME).zip .
-	@echo "removing temporary dir $(INSTALL_DIR)"
+	@echo "*** Creating tgz distribution..."
+	@tar cfz $(VERSIONED_NAME).tgz -C $(INSTALL_PREFIX) $(VERSIONED_NAME) &>.log/tar.log
+	@echo "*** Creating zip distribution..."
+	@cd $(INSTALL_PREFIX) ; zip -r $(VERSIONED_NAME).zip $(VERSIONED_NAME) &>$(CURDIR)/.log/zip.log
+	@mv $(INSTALL_PREFIX)/$(VERSIONED_NAME).zip .
+	@echo "*** removing temporary dir $(INSTALL_DIR)..."
 	@rm -rf $(INSTALL_DIR)
+	@echo "Distribution creation completed."
+
+banner:
+	@echo "Creating MSCViewer distribution. In case of error please"
+	@echo "consult log files in .log/"
     
 build:  
-	@echo "Building mscviewer java code..."
+	@echo "*** Building mscviewer java code..."
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
-	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist
+	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist &>.log/java-build.log
 	@mkdir -p classes/com/cisco/mscviewer
-	-cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
+	-@cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
 
 
 manual-images: jar 
-	bin/mscviewer --script batch/gen_manual_captures.py
+	@echo "*** Capturing GUI screenshot for manual..."
+	@bin/mscviewer --script batch/gen_manual_captures.py
 
 manual-pdf:
-	@echo "Building PDF manual. If the GUI has changed, please run 'make manual-images' first"
-	@cd doc/manual ; echo "\tableofcontents" >tocnotoc.tex; pdflatex mscviewer.tex; pdflatex mscviewer.tex 
+	@mkdir -p .log
+	@echo "*** Building PDF manual..."
+	@cd doc/manual ; echo "\tableofcontents" >tocnotoc.tex; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-1.log; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-2.log
 	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
 
 manual-html:
-	@echo "Building HTML manual. If the GUI has changed, please run 'make manual-images' first" 
-	@cd doc/manual/ ; echo "" >tocnotoc.tex ; htlatex mscviewer.tex 
+	@mkdir -p .log
+	@echo "*** Building HTML manual..."
+	@cd doc/manual/ ; echo "" >tocnotoc.tex ; htlatex mscviewer.tex "" "" "" $(TEXFLAGS) &> ../../.log/manual-html.log
 	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
 
-
+manual-python-api:
+	@mkdir -p .log
+	@echo "*** Building Python API documentation..."
+	@cd doc/python-api ; ./buildit.sh latexpdf &>../../.log/manual-python-api-latexpdf.log
+	@cd doc/python-api ; ./buildit.sh html &> ../../.log/manual-python-api-html.log
 
 
 clean:
@@ -117,7 +137,7 @@ clean:
 	-@rm -f mscviewer*.tgz mscviewer*.zip mscviewer*.jar
 
 jar: build 
-	@echo "Packaging classes to jar file..."
+	@echo "*** Packaging classes to jar file..."
 	$(eval $(call create_temp_file))
 	@echo "Manifest-Version: 1.1" >$(TEMPFILE)
 	@echo "Created-By: Rattias" >>$(TEMPFILE)

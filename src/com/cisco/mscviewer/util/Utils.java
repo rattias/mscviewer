@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -206,4 +207,17 @@ public class Utils {
             }
         });
     }   
+    
+    public static String getInstallDir() {
+        URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
+        String urlStr = resourceURL.getPath(); 
+        int idx = urlStr.indexOf("mscviewer.jar!");
+        if (idx < 0) {
+            return urlStr.substring(1,  urlStr.indexOf("classes"));
+        } else {
+            return urlStr.substring("file:/".length(),  idx);
+        }
+    }        
+
+
 }

@@ -72,7 +72,6 @@ public class Python  {
                 module2PyFile.put(pkg,fullpath);
                 module2funcs.put(pkg, new PythonFunction[0]);
                 interpreter.exec("import "+pkg);
-                interpreter.exec("from "+pkg+" import *");
             }
         }
     }
@@ -107,7 +106,16 @@ public class Python  {
             pr.progress("Importing packages", 1);
 
             interpreter.exec("import sys"); 
+            interpreter.exec("import inspect"); 
             interpreter.exec("import mscviewer");
+            interpreter.exec(
+            "def list_msc_functions(pkg):\n"+
+            "    ret = []\n"+
+            "    for fn_name in dir(pkg):\n"+
+            "        fn = getattr(pkg, fn_name)\n"+
+            "        if hasattr(fn, \"is_msc_fun\"):\n"+
+            "            ret.append(fn_name)\n"+ 
+            "    return ret;");
             interpreter.set("msc_main_panel", mp);
             for(String pathEl: pypath) {
                 traverse(pathEl, "", 0, dirs);
@@ -118,11 +126,8 @@ public class Python  {
             dw.add(new Watcher() {
                 @Override
                 public void event(String parentPath, WatchEvent<?> ev) {
-                    //System.out.println("Watcher Event cnt="+ev.count()+", ctx="+ev.context());
                     Path path = (Path)ev.context();
                     File  file = new File(parentPath, path.toString());
-                    //System.out.println("-->"+file.toString());
-                    //System.out.println("isFile: "+file.isFile());
                     if ((!file.isDirectory()) && path.toString().endsWith(".py")) {
                         System.out.println("scripts Changed");
                         scriptsChanged = true;
@@ -134,12 +139,7 @@ public class Python  {
             dw.start();
 
             for(String m: module2funcs.keySet()) {
-//                System.out.println("traversing module "+m);
-                Object[] fnNames = ((PyList)interpreter.eval("msc_list_functions("+m+")")).toArray();
-//                System.out.print("    found functions: ");
-//                for(Object fn: fnNames)
-//                    System.out.print(fn+" ");
-//                System.out.println();
+                Object[] fnNames = ((PyList)interpreter.eval("list_msc_functions("+m+")")).toArray();
                 if (fnNames.length > 0) {
                     PythonFunction[] funcs = new PythonFunction[fnNames.length];
                     for(int i=0; i<fnNames.length; i++) {
@@ -158,7 +158,6 @@ public class Python  {
 
     public String[] getPackages() {
         Set<String> s = module2funcs.keySet();
-        //System.out.println("getPackages(): "+s.size()+" packages");
         return s.toArray(new String[s.size()]);
     }
 

@@ -31,7 +31,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
-
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;

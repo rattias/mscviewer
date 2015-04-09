@@ -315,7 +315,7 @@ public class EntityTree extends JTree implements EntityHeaderModelListener {
     }
 
     public EntityTree(ViewModel eh) {
-        super(new EntityTreeModel(eh.getMSCDataModel()));
+        super(new EntityTreeModel(MSCDataModel.getInstance()));
         this.eh = eh;
         eh.addListener(this);
         
