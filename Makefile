@@ -99,6 +99,7 @@ banner:
     
 build:  
 	@echo "*** Building mscviewer java code..."
+	@mkdir -p .log
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
 	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist &>.log/java-build.log
