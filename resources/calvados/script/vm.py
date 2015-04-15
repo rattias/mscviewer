@@ -1,7 +1,7 @@
 from string import Template
 import re
-from mscviewer import *
-from mscviewer_flows import *
+from msc.model import *
+from msc.flows import *
 	
             
 def vm_creation_flow(human_friendly=True):

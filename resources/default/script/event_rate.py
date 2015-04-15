@@ -1,9 +1,9 @@
-from com.cisco.mscviewer.model import MSCDataModel
-from com.cisco.mscviewer.graph import GraphData
-import mscviewer
+import msc.model as model
+import msc.graph as graph
+import msc.gui as gui
 import math
     
-@mscviewer.msc_fun  
+@gui.msc_fun  
 def event_rate_fn():
     """
     Creates a set of graph representing rate of events, one for each entity of the
@@ -11,23 +11,23 @@ def event_rate_fn():
     """
     cnt = 0;
     info = {}
-    evcount = mscviewer.event_count()
-    for en in mscviewer.entities():
-        info[en] = GraphData(en.getPath())
+    evcount = model.event_count()
+    for en in model.entities():
+        info[en] = graph.series(en.getPath())
         info[en].setXType("time")
         
-    pr = mscviewer.progress_start("processing events", 0, mscviewer.event_count());
+    pr = gui.progress_start("processing events", 0, model.event_count());
     prev = {}
-    twidth = mscviewer.event_timestamp(mscviewer.event_at(evcount-1)) - mscviewer.event_timestamp(mscviewer.event_at(0))
-    for ev in mscviewer.events():
+    twidth = model.event_timestamp(model.event_at(evcount-1)) - model.event_timestamp(model.event_at(0))
+    for ev in model.events():
         cnt += 1
-        mscviewer.progress_report(pr, cnt)
-        en = mscviewer.event_entity(ev)
-        enp = mscviewer.entity_path(en)
-        t = mscviewer.event_timestamp(ev)
+        gui.progress_report(pr, cnt)
+        en = model.event_entity(ev)
+        enp = model.entity_path(en)
+        t = model.event_timestamp(ev)
         v = 0
         if enp in prev:
-            tprev = mscviewer.event_timestamp(prev[enp])
+            tprev = model.event_timestamp(prev[enp])
             v = t - tprev
             if v < 0:
                 v = -v
@@ -39,10 +39,14 @@ def event_rate_fn():
         info[en].add(t, v, ev)
         prev[enp] = ev
         
-    arr = []
-    for en in mscviewer.entities():
+    g = graph.graph("graph") 
+    for en in model.entities():
         inf = info[en]
         if not inf.isEmpty():
-            arr.append(inf)
-    mscviewer.graph(arr)
-    pr.progressDone() 
+            graph.graph_add_series(g, inf)
+            print model.entity_path(en)
+            for p in graph.series_points(inf):
+                print p[0], p[1]
+                    
+    gui.graph_show(g, graph.graph_type.HEAT)
+    gui.progress_done(pr)

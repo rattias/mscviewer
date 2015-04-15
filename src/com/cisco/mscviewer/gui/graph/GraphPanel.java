@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
-import com.cisco.mscviewer.graph.GraphData;
+import com.cisco.mscviewer.graph.GraphSeries;
 import com.cisco.mscviewer.graph.Point;
 
 
@@ -40,9 +40,9 @@ abstract public class GraphPanel extends JPanel  {
     protected static final long ZOOM_THRESHOLD = 10;
     private static int AXIS_OFFSET = 10;
     private Vector<GraphCursorListener> listeners = new Vector<GraphCursorListener>();
-    private ArrayList<GraphData> graph = new ArrayList<GraphData>();
-    private HashMap<GraphData, Color> foregroundMap = new HashMap<GraphData, Color>();
-    private HashSet<GraphData> enabled = new HashSet<GraphData>(); 
+    private ArrayList<GraphSeries> graph = new ArrayList<GraphSeries>();
+    private HashMap<GraphSeries, Color> foregroundMap = new HashMap<GraphSeries, Color>();
+    private HashSet<GraphSeries> enabled = new HashSet<GraphSeries>(); 
     private int startX = -1, endX = -1;
     private long minVisibleX = 0;
     private long maxVisibleX = 0;
@@ -254,9 +254,9 @@ abstract public class GraphPanel extends JPanel  {
     }
 
 
-    public void addGraph(GraphData gd) throws IllegalArgumentException {
+    public void addGraph(GraphSeries gd) throws IllegalArgumentException {
         if (! graph.isEmpty()) {
-            GraphData g0 = graph.get(0);
+            GraphSeries g0 = graph.get(0);
             String g0xType = g0.getXType();
             String gdxType = gd.getXType();
             if (! gdxType.equals(g0xType))
@@ -315,11 +315,11 @@ abstract public class GraphPanel extends JPanel  {
 
     public long getMaxModelX() { return maxModelX; }
     
-    public void setForeground(GraphData g, Color b) {
+    public void setForeground(GraphSeries g, Color b) {
         foregroundMap.put(g, b);
     }
 
-    public Color getForeground(GraphData g) {
+    public Color getForeground(GraphSeries g) {
         Color c = foregroundMap.get(g);
         if (c == null)
             c = getForeground();
@@ -381,8 +381,8 @@ abstract public class GraphPanel extends JPanel  {
     }
 
 
-    public GraphData[] getGraphData() {
-        return graph.toArray(new GraphData[graph.size()]);
+    public GraphSeries[] getGraphData() {
+        return graph.toArray(new GraphSeries[graph.size()]);
     }
 
     public long getMinVisibleX() {
@@ -417,7 +417,7 @@ abstract public class GraphPanel extends JPanel  {
         long cursorX = modelX(x);
         long closestDist = Long.MAX_VALUE;
         for(int i=0; i<graph.size(); i++) {
-            GraphData g = graph.get(i);
+            GraphSeries g = graph.get(i);
             int idx = g.closestIndex(cursorX);
             Point p = g.point(idx);
             long dist = Math.abs(p.x-cursorX); 
@@ -437,7 +437,7 @@ abstract public class GraphPanel extends JPanel  {
         return cursorIdx;
     }
 
-    public GraphData getCursorGraph() {
+    public GraphSeries getCursorGraph() {
         return cursorGraphIdx >= 0 ? graph.get(cursorGraphIdx) : null;
     }
 
@@ -448,7 +448,7 @@ abstract public class GraphPanel extends JPanel  {
     abstract public void paintGraph(Graphics2D g);
 
     public int xToEventIdx(int x) {
-        for(GraphData g: graph) {
+        for(GraphSeries g: graph) {
             int v = g.xToIndex(x);
             if (v >=0)
                 return v;
@@ -456,7 +456,7 @@ abstract public class GraphPanel extends JPanel  {
         return -1;
     }
 
-    public void setEnabled(GraphData gd, boolean value) {
+    public void setEnabled(GraphSeries gd, boolean value) {
         if (value)
             enabled.add(gd);
         else {
@@ -482,7 +482,7 @@ abstract public class GraphPanel extends JPanel  {
         }
     }
 
-    public boolean isEnabled(GraphData gd) {
+    public boolean isEnabled(GraphSeries gd) {
         return enabled.contains(gd);
     }
     /**
@@ -500,7 +500,7 @@ abstract public class GraphPanel extends JPanel  {
         int minGraphIdx = Integer.MAX_VALUE;
         if (cursorIdx < 0)
             return false;
-        GraphData cursorGraph = graph.get(cursorGraphIdx);
+        GraphSeries cursorGraph = graph.get(cursorGraphIdx);
         if (local) {
             if (cursorIdx == cursorGraph.size()-1)
                 return false;
@@ -510,7 +510,7 @@ abstract public class GraphPanel extends JPanel  {
             long minDist = Long.MAX_VALUE;
             long currX = cursorGraph.point(cursorIdx).x;
             for(int gidx = 0; gidx < graph.size(); gidx++) {
-                GraphData g = graph.get(gidx);
+                GraphSeries g = graph.get(gidx);
                 int idx;
                 idx = g.insertionIndex(currX);
                 if (idx > g.size()-1) {
@@ -573,7 +573,7 @@ abstract public class GraphPanel extends JPanel  {
         int minGraphIdx = Integer.MAX_VALUE;
         if (cursorIdx < 0 )
             return false;
-        GraphData cursorGraph = graph.get(cursorGraphIdx);
+        GraphSeries cursorGraph = graph.get(cursorGraphIdx);
         if (local) {
             if (cursorIdx == 0)
                 return false;
@@ -583,7 +583,7 @@ abstract public class GraphPanel extends JPanel  {
             long minDist = Long.MAX_VALUE;
             long currX = cursorGraph.point(cursorIdx).x;
             for(int gidx = graph.size()-1; gidx >= 0 ; gidx--) {
-                GraphData g = graph.get(gidx);
+                GraphSeries g = graph.get(gidx);
                 int idx;
                 idx = g.insertionIndex(currX);
                 long xx = (idx > g.size()-1) ? g.point(idx-1).x : g.point(idx).x;

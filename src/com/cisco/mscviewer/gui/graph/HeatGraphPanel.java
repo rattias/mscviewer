@@ -9,14 +9,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import com.cisco.mscviewer.graph.GraphData;
+import com.cisco.mscviewer.graph.GraphSeries;
 import com.cisco.mscviewer.graph.Point;
 import com.cisco.mscviewer.tree.Interval;
 
 @SuppressWarnings("serial")
 public class HeatGraphPanel extends GraphPanel {
     private final static int BAR_HEIGHT = 6;
-    private HashMap<GraphData, JLabel> labels; 
+    private HashMap<GraphSeries, JLabel> labels; 
     private static Color[] heatMap = new Color[256];
     
     static {
@@ -28,7 +28,7 @@ public class HeatGraphPanel extends GraphPanel {
     }
     
     public HeatGraphPanel() {
-        labels = new HashMap<GraphData, JLabel>();
+        labels = new HashMap<GraphSeries, JLabel>();
     }
     
     public JPanel getYLabelsPanel() {
@@ -37,7 +37,7 @@ public class HeatGraphPanel extends GraphPanel {
         p.setOpaque(true);
         p.setLayout(new GridLayout(-1, 1));
         p.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 4));
-        for(GraphData gd: getGraphData()) {
+        for(GraphSeries gd: getGraphData()) {
             if (isEnabled(gd)) {
                 JLabel l = new JLabel(gd.getName(), JLabel.RIGHT);
                 l.setForeground(Color.lightGray);
@@ -54,10 +54,10 @@ public class HeatGraphPanel extends GraphPanel {
     
     @Override
     public void paintGraph(Graphics2D g) {
-        GraphData[] graphs = getGraphData();
+        GraphSeries[] graphs = getGraphData();
         long minX = 0;
         long maxX = getMaxModelX();
-        for (GraphData d : graphs) {
+        for (GraphSeries d : graphs) {
             if (isEnabled(d)) {
                 Interval in = d.getInterval(minX, maxX);
                 g.setColor(getForeground(d)); 
@@ -93,7 +93,7 @@ public class HeatGraphPanel extends GraphPanel {
     
     public void paintCursor(Graphics2D g2d) {
         super.paintCursor(g2d);
-        GraphData cursorGraph = getCursorGraph();
+        GraphSeries cursorGraph = getCursorGraph();
         if (cursorGraph == null)
             return;
         int cursorScreenX = screenX(cursorGraph.point(cursorIdx).x);

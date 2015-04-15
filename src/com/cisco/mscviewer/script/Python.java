@@ -107,7 +107,7 @@ public class Python  {
 
             interpreter.exec("import sys"); 
             interpreter.exec("import inspect"); 
-            interpreter.exec("import mscviewer");
+            //interpreter.exec("import mscviewer");
             interpreter.exec(
             "def list_msc_functions(pkg):\n"+
             "    ret = []\n"+

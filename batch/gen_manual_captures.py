@@ -1,4 +1,5 @@
-from mscviewer import *
+from msc.model import *
+from msc.gui import *
 import time
 
 #Main.maximize();

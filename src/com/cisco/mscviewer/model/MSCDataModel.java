@@ -18,8 +18,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
-import com.cisco.mscviewer.graph.GraphData;
-import com.cisco.mscviewer.gui.graph.GraphWindow;
+import com.cisco.mscviewer.graph.Graph;
+import com.cisco.mscviewer.graph.GraphSeries;
+import com.cisco.mscviewer.gui.graph.HeatGraphWindow;
 import com.cisco.mscviewer.model.graph.TopologyError;
 import com.cisco.mscviewer.model.graph.TopologyGraph;
 import com.cisco.mscviewer.tree.AVLTreeNode;
@@ -64,7 +65,7 @@ public final class MSCDataModel {
     private String path;
     private boolean notificationEnabled;
     private String openPath;
-    private ArrayList<GraphData[]> graphs = new ArrayList<GraphData[]>(); 
+    private ArrayList<Graph> graphs = new ArrayList<Graph>(); 
     
     /**
      * Instantiate a data model
@@ -831,15 +832,8 @@ public final class MSCDataModel {
         openPath = path;
     }
 
-    public GraphWindow addGraph(GraphData d[]) {
-        try {
-            graphs.add(d);
-            GraphWindow w = new GraphWindow(d);
-            return w;
-        }catch(Throwable t) {
-            t.printStackTrace();
-        }
-        return null;
+    public void addGraph(Graph g){
+        graphs.add(g);
     }
 
 	public static MSCDataModel getInstance() {

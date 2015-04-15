@@ -2,7 +2,7 @@ package com.cisco.mscviewer.gui.graph;
 
 import java.awt.Graphics2D;
 
-import com.cisco.mscviewer.graph.GraphData;
+import com.cisco.mscviewer.graph.GraphSeries;
 import com.cisco.mscviewer.graph.Point;
 import com.cisco.mscviewer.tree.Interval;
 
@@ -10,10 +10,10 @@ import com.cisco.mscviewer.tree.Interval;
 public class LineGraphPanel extends GraphPanel {    
     @Override
     public void paintGraph(Graphics2D g) {
-        GraphData[] graphs = getGraphData();
+        GraphSeries[] graphs = getGraphData();
         long minX = 0;
         long maxX = getMaxModelX();
-        for (GraphData d : graphs) {
+        for (GraphSeries d : graphs) {
             if (isEnabled(d)) {
                 Interval in = d.getInterval(minX, maxX);
                 int start = in.getStart();
