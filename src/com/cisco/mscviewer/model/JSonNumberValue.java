@@ -1,16 +1,16 @@
 package com.cisco.mscviewer.model;
 
 public class JSonNumberValue implements JSonValue {
-    private Number value;
-    
+    private final Number value;
+
     public JSonNumberValue(Number n) {
         value = n;
     }
-    
+
     public int intValue() {
         return value.intValue();
     }
-    
+
     public long longValue() {
         return value.longValue();
     }
@@ -23,6 +23,7 @@ public class JSonNumberValue implements JSonValue {
         return value.doubleValue();
     }
 
+    @Override
     public String toString() {
         return value.toString();
     }

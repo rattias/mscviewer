@@ -17,5 +17,7 @@ import com.cisco.mscviewer.model.MSCDataModel;
 
 public interface Loader {
     void waitIfLoading();
-    void load(final String fname, final MSCDataModel dm, boolean batchMode) throws IOException;
+
+    void load(final String fname, final MSCDataModel dm, boolean batchMode)
+            throws IOException;
 }

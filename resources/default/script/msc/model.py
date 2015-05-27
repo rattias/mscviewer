@@ -39,17 +39,16 @@ class marker(object):
 
 #------ ENTITY-SPECIFIC FUNCTIONS --------------
 def entities(root_only=False):
-    """returns an iterable on all entities in the model.
+    """
+    $descr{returns an iterator on all entities in the model.}
     
-    This function can be used to iterate on all entities in the model.
+    $header{Parameters}
+    $param{root_only}{boolean}{if True, only top-level entities are iterated upon}
     
-    :param root_only: if True, only top-level entities are iterated upon
-    :type root_only: boolean
-    
-    **Example:** ::
-    
-        for en in entities():
-            print entity_name(en)    
+    $header{Example}
+    $code{for en in entities():
+            print entity_name(en)
+    }    
     """
     
     model = MSCDataModel.getInstance();
@@ -57,20 +56,21 @@ def entities(root_only=False):
     while it.hasNext():
         yield it.next()
 
+
 def entity_id(entity):
-    """returns the unique ID of this entity"""
+    """$descr{returns the unique ID of this entity}"""
     return entity.getId()
 
     
 def entity_count(root_only=False):
-    """returns a count of the entities in the model
+    """$descr{returns a count of the entities in the model}
 
-    :param root_only: if True, only top-level entities are counted
-    :type root_only: boolean
+    $header{Parameters}
+    $param{root_only}{boolean}{if True, only top-level entities are counted}
     
-    **Example:** ::
-    
-       printf "total entities: ",entity_count(), ", top-level: ", entity_count(True)    
+    $header{Example}
+    $code{printf "total entities: ",entity_count(), ", top-level: ", entity_count(True)    
+    }
     """
     model = MSCDataModel.getInstance();
     if root_only:
@@ -79,40 +79,48 @@ def entity_count(root_only=False):
         return model.getEntityCount()
 
 def entity_path(en):
-    """returns the pathname of the entity.
-    :param en: an entity
+    """$descr{returns the pathname of the entity.}
+    $header{Parameters}
+    $param{en}{Entity}{an entity}
     """
     return en.getPath()
     
 
 def entity_first_event_index(en):
+    """$descr{returns the index of the first event for this entity, or -1 if the entity has no events}
+    $header{Parameters}
+    $param{en}{Entity}{the entity}
+    """
     return en.getFirstEventIndex()
 
 def entity_last_event_index(en):
+    """$descr{returns the index of the first last for this entity, or -1 if the entity has no events}
+    $header{Parameters}
+    $param{en}{Entity}{the entity}
+    """
     return en.getLastEventIndex()
 
 
 #------ EVENT-SPECIFIC FUNCTIONS --------------
 
 def event_entity(ev):
-    """returns the entity this event occurred on.
-    :param ev: an event
-    :type ev: event (opaque type)
-    
-    **Example:** ::
-
-        for ev in events():
+    """$descr{returns the entity this event occurred on.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
+    $header{Example}
+    $code{for ev in events():
             print entity_path(event_entity(ev))
+    }
     """
     return ev.getEntity()
 
 def events():
-    """returns an iterable on all events in the model.
+    """$descr{returns an iterable on all events in the model.}
     
-    **Example:** ::
-
-        for ev in events():
+    $header{Example}
+    $code{for ev in events():
             print event_label(ev)
+    }
     """
     model = MSCDataModel.getInstance();
     cnt = model.getEventCount()
@@ -121,69 +129,59 @@ def events():
 
 
 def event_count():
-    """returns the count of all events in the model.
-
-    **Example:** ::
-
-        for i in range(event_count()):
+    """$descr{returns the count of all events in the model.}
+    $header{Example}
+    $code{for i in range(event_count()):
             print event_label(event_at(i))
+    }
     """
     model = MSCDataModel.getInstance();
     return model.getEventCount()
 
 def event_at(idx=0):
-    """returns the idx-th event in the model.
+    """$descr{returns the idx-th event in the model.}
+    $header{Parameters}
+    $param{idx}{int}{index of the event, should be between 0 (included) and event_count() (excluded).}
 
-    :param idx: index of the event, should be between 0 (included) and event_count() (excluded).
-
-    **Example:** ::
-
-        for i in range(event_count()):
+    $header{Example}
+    $code{for i in range(event_count()):
             print event_label(event_at(i))
+    }
     """
     model = MSCDataModel.getInstance();
     return model.getEventAt(idx)
         	
 def event_timestamp(ev):
-    """returns the timestamp for the event.
-
-    The timestamp is in the form of an integer number of nanoseconds.
-    
-    :param ev: an event
-    :type ev: Event
-
-    **Example:** ::
-
-        for ev in events:
+    """$descr{returns the timestamp for the event. The timestamp is in the form of an integer number of nanoseconds.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
+    $header{Example}
+    $code{for ev in events:
             print event_timestamp(ev)            
+    }
     """
     return ev.getTimestamp()
 
 def event_label(ev):
-    """returns the label for the event.
-
-    :param ev: an event
-    :type ev: Event 
-
-    **Example:** ::
-
-        for ev in events:
+    """$descr{returns the label for the event.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
+    $header{Example}
+    $code{for ev in events:
             print event_timestamp(ev)            
+    }
     """
     return ev.getLabel()
 
 def event_interactions(ev, outgoing=True):
-    """returns interactions incoming or outgoing from the event, depending on 
-    the value of the outgoing parameter.
-
-    :param ev: an event
-    :type ev: event (opaque type)
-    :param outgoing: if True, outgoing interactions are returned, if False incoming interactions are reported (default=True).
-    :type outgoing: boolean
-
-    **Example:** ::
-
-        print "event has ", len(event_interactions(ev, False), "incoming and", len(event_interactions(ev), "outgoing transitions"
+    """$descr{returns interactions incoming or outgoing from the event, depending on 
+    the value of the outgoing parameter.}
+    $header{Parameter}
+    $param{ev}{Event}{an event}
+    $param{outgoing}{boolean}{if True, outgoing interactions are returned, if False incoming interactions are reported (default=True).}
+    $header{Example}
+    $code{print "event has ", len(event_interactions(ev, False), "incoming and", len(event_interactions(ev), "outgoing transitions"
+    }
     """
     if outgoing:
         inter = ev.getOutgoingInteractions()
@@ -193,42 +191,36 @@ def event_interactions(ev, outgoing=True):
     
     
 def event_type(ev):
-    """returns the type of the event.
-    
-    :param ev: an event
-    :type ev: Event 
+    """$descr{returns the type of the event as a string.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     return ev.getType()
     
 def event_index(ev):
-    """returns the index of the event in the model.
-
-    :param ev: an event
-    :type ev: Event 
+    """$descr{returns the index of the event in the model.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     model = MSCDataModel.getInstance();
     return model.getEventIndex(ev)
     
 def event_marker(ev):
-    """
-    returns the current marker associated to the event,
-    or None
-    
-    :param ev: an event
-    :type ev: Event  
+    """$descr{returns the current marker associated to the event, or None}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     return ev.getMarker() 
 
 def event_predecessor(ev, same_entity=False):
-    """returns the event preceding this event.
+    """$descr{returns the event preceding this event.
     
     If same_entity is False returns the event 
     preceding this event in the model, otherwise
     returns the event preceding this event within
-    the same entity.
-
-    :param ev: an event
-    :type ev: Event 
+    the same entity.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     if same_entity:
         return ev.getPreviousEventForEntity()
@@ -236,15 +228,14 @@ def event_predecessor(ev, same_entity=False):
         return ev.getPreviousEvent()   
        
 def event_successor(ev, same_entity=False):
-    """returns the event following this event.
+    """$descr{returns the event following this event.
     
     If same_entity is False returns the event 
     following this event in the model, otherwise
     returns the event following this event within
-    the same entity.
-
-    :param ev: an event
-    :type ev: Event 
+    the same entity.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     if same_entity:
         return ev.getNextEventForEntity()
@@ -252,8 +243,9 @@ def event_successor(ev, same_entity=False):
         return ev.getNextEvent()
 
 def event_is_block_begin(ev):
-    """returns True if this event begins a block,
-    False otherwise.
+    """$descr{returns True if this event begins a block, False otherwise.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
     """
     return ev.isBlockBegin()
     
@@ -261,7 +253,7 @@ def event_is_block_begin(ev):
 #------ INTERACTION-SPECIFIC FUNCTIONS --------------
 
 def interactions():
-    """returns an iterable on all interactions in the model
+    """$descr{returns an iterable on all interactions in the model}
     """
     model = MSCDataModel.getInstance();
     iter = model.getTransitionIterator()
@@ -269,23 +261,30 @@ def interactions():
         yield iter.next()
 
 def interaction_events(inter):
-    """returns a tuple containing the from- and to- 
-    event for the interaction.
+    """$descr{returns a tuple containing the $e{from} and $e{to} event for the interaction.}
+    $header{Parameters}
+    $param{inter}{Interaction}{an interaction}
     """
     return (inter.getFromEvent(), inter.getToEvent())
     
 def interaction_from_event(inter):
-    """returns the from event for the interaction.
+    """$descr{returns the $e{from} event for the interaction.}
+    $header{Parameters}
+    $param{inter}{Interaction}{an interaction}
     """
     return inter.getFromEvent()
     
 def interaction_to_event(inter):
-    """returns the to event for the interaction.
+    """$descr{returns the $e{to} event for the interaction.}
+    $header{Parameters}
+    $param{inter}{Interaction}{an interaction}
     """
     return inter.getToEvent()
        
 def interaction_type(inter):
-    """returns the type of the interaction.
+    """$descr{returns the type of the interaction.}
+    $header{Parameters}
+    $param{inter}{Interaction}{an interaction}
     """
     return inter.getType()
              

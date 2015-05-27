@@ -22,25 +22,25 @@ public class Img extends Primitive {
     private final Image img;
     private final float xf, yf, wf, hf;
     private int x, y, w, h;
-    
+
     public Img(float x0, float y0, float w, float h, Image img) {
         xf = x0;
         yf = y0;
         wf = w;
-        hf = h;                
+        hf = h;
         this.img = img;
     }
-    
+
     @Override
     public void setContainerDimension(int cw, int ch) {
-        x = (int)(xf*cw);
-        y = (int)(yf*ch);
-        w = (int)(wf*cw);
-        h = (int)(hf*ch);        
+        x = (int) (xf * cw);
+        y = (int) (yf * ch);
+        w = (int) (wf * cw);
+        h = (int) (hf * ch);
     }
-    
+
     @Override
     public final void render(Graphics2D g2d) {
-        g2d.drawImage(img, x, y, w, h, null); 
+        g2d.drawImage(img, x, y, w, h, null);
     }
 }

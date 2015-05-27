@@ -11,8 +11,8 @@
  */
 package com.cisco.mscviewer.model;
 
-import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
 import com.cisco.mscviewer.gui.Marker;
+import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
 import com.cisco.mscviewer.tree.Interval;
 
 /**
@@ -30,8 +30,8 @@ import com.cisco.mscviewer.tree.Interval;
  * An interaction has a type and an associated renderer.
  *
  * Interactions are stored in the data model as Intervals in an interval tree
- * {@see http://en.wikipedia.org/wiki/Interval_tree}. Elements of the tree
- * must implement the {@link Interval} interface, which this class does implement.
+ * {@see http://en.wikipedia.org/wiki/Interval_tree}. Elements of the tree must
+ * implement the {@link Interval} interface, which this class does implement.
  *
  * @author rattias
  */
@@ -46,10 +46,14 @@ public final class Interaction implements Interval {
      * Instantiates an <code>Interaction</code> with the specified model,
      * indices for source and sink even in the data model
      *
-     * @param model     {@link MSCDataModel} the interaction belongs to
-     * @param fromIdx   data model index of the source event
-     * @param toIdx     data model index of the sink event
-     * @param irenderer renderer for the interaction
+     * @param model
+     *            {@link MSCDataModel} the interaction belongs to
+     * @param fromIdx
+     *            data model index of the source event
+     * @param toIdx
+     *            data model index of the sink event
+     * @param irenderer
+     *            renderer for the interaction
      */
     public Interaction(MSCDataModel model, int fromIdx, int toIdx,
             InteractionRenderer irenderer) {
@@ -60,9 +64,11 @@ public final class Interaction implements Interval {
     }
 
     /**
-     * if the source/sink event is passed as argument, returns the sink/source event.
+     * if the source/sink event is passed as argument, returns the sink/source
+     * event.
+     * 
      * @param ev
-     * @return 
+     * @return
      */
     public Event getOtherEvent(Event ev) {
         if (ev == getFromEvent()) {
@@ -74,20 +80,23 @@ public final class Interaction implements Interval {
         }
     }
 
-        /**
-     * returns the type of the Event. The type corresponds to the
-     * name of the Renderer class, stripped of the "Renderer" suffix.
-     * @return 
+    /**
+     * returns the type of the Event. The type corresponds to the name of the
+     * Renderer class, stripped of the "Renderer" suffix.
+     * 
+     * @return
      */
     public String getType() {
-        String clName = irenderer.getClass().getName();
-        return clName.substring(clName.lastIndexOf('.')+1, clName.indexOf("Renderer"));
+        final String clName = irenderer.getClass().getName();
+        return clName.substring(clName.lastIndexOf('.') + 1,
+                clName.indexOf("Renderer"));
     }
 
     /**
      * returns the data model index of the other event (@see getOtherEvent}
+     * 
      * @param ev
-     * @return 
+     * @return
      */
     public int getOtherEventIndex(Event ev) {
         if (ev == getFromEvent()) {
@@ -100,8 +109,9 @@ public final class Interaction implements Interval {
     }
 
     /**
-     * return the source event for this interaction, or <code>null</code> if 
-     * the interaction has no source event.
+     * return the source event for this interaction, or <code>null</code> if the
+     * interaction has no source event.
+     * 
      * @return the source event
      */
     public Event getFromEvent() {
@@ -109,8 +119,9 @@ public final class Interaction implements Interval {
     }
 
     /**
-     * return the sink event for this interaction, or <code>null</code> if 
-     * the interaction has no sink event.
+     * return the sink event for this interaction, or <code>null</code> if the
+     * interaction has no sink event.
+     * 
      * @return the sink event
      */
     public Event getToEvent() {
@@ -118,18 +129,20 @@ public final class Interaction implements Interval {
     }
 
     /**
-     * return the data model index of the source event for this interaction, 
-     * or <code>null</code> if the interaction has no source event.
-     * @return 
+     * return the data model index of the source event for this interaction, or
+     * <code>null</code> if the interaction has no source event.
+     * 
+     * @return
      */
     public int getFromIndex() {
         return fromIndex;
     }
 
     /**
-     * return the data model index of the sink event for this interaction, 
-     * or <code>null</code> if the interaction has no source event.
-     * @return 
+     * return the data model index of the sink event for this interaction, or
+     * <code>null</code> if the interaction has no source event.
+     * 
+     * @return
      */
     public int getToIndex() {
         return toIndex;
@@ -137,40 +150,45 @@ public final class Interaction implements Interval {
 
     /**
      * sets the data model index of the source event for this interaction.
-     * @param from 
+     * 
+     * @param from
      */
     public void setFromIndex(int from) {
         if (from == toIndex) {
-            throw new Error("Invalid self-looping Interaction (" + fromIndex + "," + toIndex + ")->(" + from + "," + toIndex + ")");
+            throw new Error("Invalid self-looping Interaction (" + fromIndex
+                    + "," + toIndex + ")->(" + from + "," + toIndex + ")");
         }
         fromIndex = from;
     }
 
     /**
      * sets the data model index of the sink event for this interaction.
-     * @param from 
+     * 
+     * @param from
      */
     public void setToIndex(int to) {
         if (fromIndex == to) {
-            throw new Error("Invalid self-looping Interaction (" + fromIndex + "," + toIndex + ")->(" + fromIndex + "," + to + ")");
+            throw new Error("Invalid self-looping Interaction (" + fromIndex
+                    + "," + toIndex + ")->(" + fromIndex + "," + to + ")");
         }
         toIndex = to;
     }
 
     /**
      * sets the data model indices for source and sink event of this interaction
+     * 
      * @param newFrom
-     * @param newTo 
+     * @param newTo
      */
     public void setFromToIndices(int newFrom, int newTo) {
         fromIndex = newFrom;
         toIndex = newTo;
     }
 
-    
     /**
      * sets the {@link InteractionRenderer} for this Interaction
-     * @param irenderer 
+     * 
+     * @param irenderer
      */
     public void setIRenderer(InteractionRenderer irenderer) {
         this.irenderer = irenderer;
@@ -178,15 +196,17 @@ public final class Interaction implements Interval {
 
     /**
      * returns the {@link InteractionRenderer} for this Interaction
-     * @return 
+     * 
+     * @return
      */
     public InteractionRenderer getIRenderer() {
         return irenderer;
     }
 
-    /** 
+    /**
      * sets a {@link Marker} for this interaction
-     * @param currentMarker 
+     * 
+     * @param currentMarker
      */
     public void setMarker(Marker currentMarker) {
         marker = currentMarker;
@@ -194,7 +214,8 @@ public final class Interaction implements Interval {
 
     /**
      * retusn the marker associated to this interaction
-     * @return 
+     * 
+     * @return
      */
     public Marker getMarker() {
         return marker;
@@ -203,15 +224,17 @@ public final class Interaction implements Interval {
     @Override
     public String toString() {
         String s;
-        Event fromEvent = getFromEvent();
-        Event toEvent = getToEvent();
+        final Event fromEvent = getFromEvent();
+        final Event toEvent = getToEvent();
         if (fromEvent != null) {
-            s = "(" + fromEvent.getEntity().getPath() + ", " + fromEvent.getLabel() + ")";
+            s = "(" + fromEvent.getEntity().getPath() + ", "
+                    + fromEvent.getLabel() + ")";
         } else {
             s = "(???,???)";
         }
         if (toEvent != null) {
-            s += "->(" + toEvent.getEntity().getPath() + ", " + toEvent.getLabel() + ")";
+            s += "->(" + toEvent.getEntity().getPath() + ", "
+                    + toEvent.getLabel() + ")";
         } else {
             s += "->(???,???)";
         }
@@ -220,7 +243,8 @@ public final class Interaction implements Interval {
 
     /**
      * Implements the corresponding method of the {@link Interval} interface
-     * @return 
+     * 
+     * @return
      */
     @Override
     public int getStart() {
@@ -229,7 +253,8 @@ public final class Interaction implements Interval {
 
     /**
      * Implements the corresponding method of the {@link Interval} interface
-     * @return 
+     * 
+     * @return
      */
     @Override
     public int getEnd() {
@@ -238,7 +263,8 @@ public final class Interaction implements Interval {
 
     /**
      * Implements the corresponding method of the {@link Value} interface
-     * @return 
+     * 
+     * @return
      */
     @Override
     public int getValue() {

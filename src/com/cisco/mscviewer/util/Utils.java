@@ -23,18 +23,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.imageio.ImageIO;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
 import com.cisco.mscviewer.gui.MainFrame;
 
 public class Utils {
-    private static final HashSet<String> en = new HashSet<String>(); 
+    private static final HashSet<String> en = new HashSet<String>();
     private static final boolean tracing = false;
     public final static String EVENTS = "events";
     public static JFileChooser jfc;
-
 
     public static void setEnabled(String cl, boolean enabled) {
         if (enabled)
@@ -45,18 +43,20 @@ public class Utils {
 
     public static void trace(String group, String msg) {
         if (tracing) {
-            StackTraceElement[] frames = Thread.currentThread().getStackTrace();
+            final StackTraceElement[] frames = Thread.currentThread().getStackTrace();
             int cnt;
-            for(cnt=2; cnt<frames.length; cnt++) {
-                if (! frames[cnt].getClass().getPackage().getName().startsWith("com.cisco"))
+            for (cnt = 2; cnt < frames.length; cnt++) {
+                if (!frames[cnt].getClass().getPackage().getName()
+                        .startsWith("com.cisco"))
                     break;
             }
-            String ind = "                                                                                            ".substring(2, cnt);
+            final String ind = "                                                                                            "
+                    .substring(2, cnt);
             String cl = frames[2].getClassName();
-            cl = cl.substring(cl.lastIndexOf('.')+1);
-            String m = frames[2].getMethodName();
+            cl = cl.substring(cl.lastIndexOf('.') + 1);
+            final String m = frames[2].getMethodName();
             if (en.contains(group))
-                System.out.println(ind+cl+"."+m+":"+msg);
+                System.out.println(ind + cl + "." + m + ":" + msg);
         }
     }
 
@@ -66,13 +66,13 @@ public class Utils {
         else
             try {
                 SwingUtilities.invokeAndWait(r);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } catch (InvocationTargetException e) {
+            } catch (final InvocationTargetException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }		
+            }
     }
 
     public static void dispatchOnAWTThreadLater(Runnable r) {
@@ -85,31 +85,28 @@ public class Utils {
     }
 
     public static String stringToHTML(String string) {
-        StringBuilder sb = new StringBuilder(string.length());
+        final StringBuilder sb = new StringBuilder(string.length());
         // true if last char was blank
         boolean lastWasBlankChar = false;
         char c;
 
         string = string.trim();
-        int len = string.length();
-        for (int i = 0; i < len; i++)
-        {
+        final int len = string.length();
+        for (int i = 0; i < len; i++) {
             c = string.charAt(i);
             if (c == ' ') {
                 // blank gets extra work,
                 // this solves the problem you get if you replace all
-                // blanks with &nbsp;, if you do that you loose 
+                // blanks with &nbsp;, if you do that you loose
                 // word breaking
                 if (lastWasBlankChar) {
                     lastWasBlankChar = false;
                     sb.append("&nbsp;");
-                }
-                else {
+                } else {
                     lastWasBlankChar = true;
                     sb.append(' ');
                 }
-            }
-            else {
+            } else {
                 lastWasBlankChar = false;
                 //
                 // HTML Special Chars
@@ -125,8 +122,8 @@ public class Utils {
                     // Handle Newline
                     sb.append("<br/>");
                 else {
-                    int ci = 0xffff & c;
-                    if (ci < 160 )
+                    final int ci = 0xffff & c;
+                    if (ci < 160)
                         // nothing special only 7 Bit
                         sb.append(c);
                     else {
@@ -141,45 +138,45 @@ public class Utils {
         return sb.toString();
     }
 
-
-    private static void getPNGSnapshotTargetsInternal(Component c, ArrayList<PNGSnapshotTarget> arr) {
+    private static void getPNGSnapshotTargetsInternal(Component c,
+            ArrayList<PNGSnapshotTarget> arr) {
         if (c instanceof PNGSnapshotTarget)
-            arr.add((PNGSnapshotTarget)c);
+            arr.add((PNGSnapshotTarget) c);
         if (c instanceof Container) {
-            Container cc = (Container)c;
-            int cnt = cc.getComponentCount();
-            for(int i=0; i<cnt; i++) {
+            final Container cc = (Container) c;
+            final int cnt = cc.getComponentCount();
+            for (int i = 0; i < cnt; i++) {
                 getPNGSnapshotTargetsInternal(cc.getComponent(i), arr);
             }
         }
     }
 
     public static PNGSnapshotTarget[] getPNGSnapshotTargets(Component c) {
-        ArrayList<PNGSnapshotTarget> al = new ArrayList<PNGSnapshotTarget>();
-        while(c.getParent() != null)
+        final ArrayList<PNGSnapshotTarget> al = new ArrayList<PNGSnapshotTarget>();
+        while (c.getParent() != null)
             c = c.getParent();
         getPNGSnapshotTargetsInternal(c, al);
-        return al.toArray(new PNGSnapshotTarget[al.size()]);        
+        return al.toArray(new PNGSnapshotTarget[al.size()]);
     }
 
     public static void getPNGSnapshot(String compName, String path) {
-        PNGSnapshotTarget[] tgt = getPNGSnapshotTargets(MainFrame.getInstance());
-        for (PNGSnapshotTarget tgt1 : tgt) {
+        final PNGSnapshotTarget[] tgt = getPNGSnapshotTargets(MainFrame.getInstance());
+        for (final PNGSnapshotTarget tgt1 : tgt) {
             if (tgt1.getName().equals(compName)) {
                 getPNGSnapshot(tgt1, path);
                 return;
             }
         }
-        throw new Error("component "+compName+" not found");
+        throw new Error("component " + compName + " not found");
     }
 
     public static void getPNGSnapshot(final PNGSnapshotTarget t) {
         if (jfc == null)
             jfc = new JFileChooser();
-        int result = jfc.showSaveDialog(null);
+        final int result = jfc.showSaveDialog(null);
         switch (result) {
         case JFileChooser.APPROVE_OPTION:
-            File f = jfc.getSelectedFile();
+            final File f = jfc.getSelectedFile();
             getPNGSnapshot(t, f.getAbsolutePath());
             break;
         case JFileChooser.CANCEL_OPTION:
@@ -189,35 +186,35 @@ public class Utils {
         }
     }
 
-    public static void getPNGSnapshot(final PNGSnapshotTarget t, final String path) {
+    public static void getPNGSnapshot(final PNGSnapshotTarget t,
+            final String path) {
         dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
                 Component c = t.getPNGSnapshotClient();
                 if (c == null)
-                    c = (Component)t;
-                Rectangle rec = c.getBounds(); 
-                BufferedImage capture = new BufferedImage(rec.width, rec.height, BufferedImage.TYPE_INT_ARGB);
+                    c = (Component) t;
+                final Rectangle rec = c.getBounds();
+                final BufferedImage capture = new BufferedImage(rec.width,
+                        rec.height, BufferedImage.TYPE_INT_ARGB);
                 c.paint(capture.getGraphics());
                 try {
                     ImageIO.write(capture, "png", new File(path));
-                } catch (IOException ioe) {
+                } catch (final IOException ioe) {
                     throw new Error(ioe);
                 }
             }
         });
-    }   
-    
+    }
+
     public static String getInstallDir() {
-        URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
-        String urlStr = resourceURL.getPath(); 
-        int idx = urlStr.indexOf("mscviewer.jar!");
+        final URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
+        final String urlStr = resourceURL.getPath();
+        final int idx = urlStr.indexOf("mscviewer.jar!");
         if (idx < 0) {
-            return urlStr.substring(1,  urlStr.indexOf("classes"));
+            return urlStr.substring(1, urlStr.indexOf("classes"));
         } else {
-            return urlStr.substring("file:/".length(),  idx);
+            return urlStr.substring("file:/".length(), idx);
         }
-    }        
-
-
+    }
 }

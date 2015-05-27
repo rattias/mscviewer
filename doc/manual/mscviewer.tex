@@ -22,7 +22,7 @@
 \usepackage{wrapfig}
 \usepackage{tcolorbox}
 \usepackage{lipsum}
-\include{titlepage}
+\include{generated/titlepage}
 
 \newcommand{\prog}{MSCViewer} 
 
@@ -53,7 +53,20 @@
 
 \newcommand{\todo}[1]{\textit{#1}}
 \newcommand{\defterm}[1]{\textit{#1}\index{#1}}
-
+%
+\makeatletter
+\newenvironment{indentation}[2]%
+{ \par \setlength{\leftmargin}{#1}
+  \setlength{\rightmargin}{#2}
+  \advance\linewidth -\leftmargin
+  \advance\linewidth -\rightmargin
+  \advance\@totalleftmargin\leftmargin
+  \@setpar{{\@@par}}%
+  \parshape 1 \@totalleftmargin
+  \linewidth \ignorespaces
+}{\par}
+\makeatother
+%
 %\title{\prog{} v1.0} \author{ Roberto Attias  \\
 %    User Manual
 %    }
@@ -76,11 +89,11 @@
   keywordstyle=\color{blue},
   commentstyle=\color{mauve},
   stringstyle=\color{dkgreen},
-  backgroundcolor=\color{lightcyan},
-  frame=shadowbox,
-  xleftmargin=2em,
-  framexleftmargin=1.5em, 
-  rulesepcolor=\color{gray},
+  %backgroundcolor=\color{lightcyan},
+  %frame=shadowbox,
+  %xleftmargin=2em,
+  %framexleftmargin=1.5em, 
+  %rulesepcolor=\color{gray},
   breaklines=true,
   breakatwhitespace=true,
   tabsize=3,
@@ -125,37 +138,43 @@
 
 \section{\prog}
 \prog{} is a tool supporting visualization and analysis of message sequence
-charts. The tool loads a text file, interprets lines containing the
-\mscevent{} or \mscentity{} keywords and representing events and interactions occurring on
-entities, ignoring other lines. From the interpreted lines a model is
-constructed in memory. In the GUI the tool can visualize the list of enties,
-from which the user can select a subset to be shown in a sequence diagram chart.
-through keyboard or mouse commands the user can easily navigate through events
-and interactions, search, and perform a number of other actions for browsing the
-diagram.
+charts intended primaritly for debugging of logs/traces obtained from concurrent systems.
 
-In a design phase the user can write a concise description of one or
-more flows in the inpujt language,load it in the tool, and export an image to 
-be used for documentation.
+The tool loads a text file and interprets lines containing well known keywords representing
+events and interactions occurring in entities. Lines not containing the known keywords are
+ignored. From the interpreted lines a model is constructed in memory. In the GUI the tool 
+shows the list of all entities for which events exist. From this list the user can 
+select a subset to be shown in a sequence diagram chart. Through keyboard or mouse commands
+the user can easily navigate through events and interactions, rearrange entities, search, 
+and perform a number of other actions for browsing the diagram.
 
-By instrumenting certain point in the program or application with syslogs,
-printf, traces or any other mechanism avaliable, the user can generate run the
-application and generate the input file for \prog{}. In this case the input
-file contains flows corresponding to actual executions, which could be visually
-inspected for verification.
+In addition to using the tool for visualization of traces for existing 
+systems, during a design phase the user can write a concise description of one or
+more flow\footnote{a formal definiton of flow will be provided later in this document.
+For the time being consider it a sequence of events across one or more entities} 
+in the input language, load it in the tool, and export an image to 
+be used for documentation. Later on, the implemented system should produce diagrams
+similar to the one defined at design time, hence this approach can be used to confirm
+the system behaves as designed.
 
-Visual inspection of flows from execution logs is useful, but doesn't scale for
-debugging, as it requires a human operator familiar with the expected flows.
+In order for a system to produce the required data for \prog{}, the program code 
+need to be instrumented with syslogs, printf, traces or any other mechanism avaliable,
+using the format expected by the tool for the messages.
+The user can run the application and generate the input file for \prog{}, possibly
+by merging together multiple generated files. 
+
+Visual inspection of the system behavior from execution logs is useful, but doesn't
+scale for debugging, as it requires a human operator familiar with the expected behavior.
 When applications are large enough, their development might be distributed
-across multiple teams, with only few members fully aware of cross-component
-flows. To address this problem \prog{} is integrated with a Python interpreter
-and supports execution of scripts which can browse the model and perform any
-sort of validation. In addition, a set of classes is provided to support a
-concise description of expected flows. With these mechanism the user can create
-validation script to be executed in the tool on the model created from execution
-logs, automatically validating their correctness. Scripts can also be executed
-from command line, without any GUI visualization, supporting batch validations
-and product smoke-testing.
+across multiple teams, and possibly even geographically, with only few members
+fully aware of cross-component flows. To address this problem \prog{} is 
+integrated with a Python interpreter and supports execution of scripts which 
+can browse the model and perform any sort of validation. In addition, a set
+of classes is provided to support a concise description of expected flows.
+With these mechanism the user can create script to be executed in
+the tool on the model created from execution logs, automatically validating 
+their correctness. Scripts can also be executed from command line, without 
+any GUI visualization, supporting batch validations and product smoke-testing.
 
 \section{Message Sequence Charts and Flows}
 A large class of products and application is composed by multiple concurrent
@@ -178,7 +197,7 @@ logging into a server which stores users information in a database.
 In complex concurrent system multiple homogeneous or heterogeneous flows
 spawning tens or hundreds of entities may be in execution at any point in time.  
   
-When designing, implementing and debugging such a complex system flows play a
+When designing, implementing and debugging such a complex system, flows play a
 very important role in the entire development cycle. 
 
 In the design phase is fairly common to represent expected flows in a design
@@ -457,7 +476,7 @@ On the second node a single instance of \texttt{DS} is running, with ID
 It's worth mentioning that \prog{} does not have any semantic knowledge of
 concept such as nodes, processes, or threads, and the model could be used to
 represent any kind of problem domain. \prog{} understands only the concept of
-hyerarchical IDS and names where elements in the hyerarchy are separated by
+hierarchical IDS and names where elements in the hierarchy are separated by
 slashes.
 
 Some entities can have an extra attribute characterizing them as clock sources.
@@ -844,7 +863,50 @@ The toolbar contains the following buttons:
 \end{center}
 
 \chapter{Pyhton API}
-For an API reference on the Pyhon API, please consult the \texttt{doc/python-api/mscviewer-python-api.pdf} file.
+One of the most powerful aspects of \prog{} is the integration with a Python interpreter
+which allows to access programmatically both model as wel as GUI.
+
+One use of this feature
+consist in writing validation scripts that can browse model data and report whether a 
+particular computational flow is present or not, it respects certain timing constraints, etc. 
+Because the script is written once and then applied to traces produced by running the 
+system multiple times, this scales the effort of an activity that otherwise would have to be
+performed by one or more human beings. 
+
+Python scripts can also be used to drive the GUI. For example, the screen captures in this 
+manual are all generated automatically a build time by a Python script which loads a model,
+open some entities in the sequence diagram, captures screenshots and saves them.
+
+The interaction between the user Python script and the tool is done through APIs 
+collected in a few Python files the script can import. The Python language doesn't 
+have a concept of private vs. public API, and the technology used to integrate the 
+Python interpreted in \prog{} (which is written in Java) results in all the Java 
+classes being actually visible and accessible from the Python code. However the 
+user should restrict itself to using the API documented in the next few sections,
+as this provides better guarantees of not being modified in the future. No such 
+claims are made agains any of the Java classes. 
+
+The API is currently divided in the following modules:
+\begin{itemize}
+\item \texttt{msc.model} -- provides API to access entities, events and interactions in the model
+\item \texttt{msc.gui} -- provides API to access the GUI 
+\item \texttt{msc.utils} -- provides some utility API 
+\item \texttt{msc.graph} -- provides API to access the graphing capabilities (experimental). 
+\item \texttt{msc.flowdef} -- provides API to implement compact definition of expected flows and apply them
+                              to the current model
+\end{itemize}                              
+\section{Model API}
+
+\input{generated/python-api-model.tex}
+
+\section{GUI API}
+\input{generated/python-api-gui.tex}
+
+\section{Flows API}
+\input{generated/python-api-flowdef.tex}
+
+\section{Graph API}
+\input{generated/python-api-graph.tex}
 
 \chapter{Customizing \prog}
 \section{Icons}

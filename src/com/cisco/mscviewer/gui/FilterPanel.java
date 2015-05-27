@@ -11,27 +11,28 @@
  */
 package com.cisco.mscviewer.gui;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import com.cisco.mscviewer.expression.ParsedExpression;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 @SuppressWarnings("serial")
 class FilterPanel extends JPanel {
     final private MainFrame mf;
-    private JToggleButton enable;
-    private RuleComponent fc;
+    private final JToggleButton enable;
+    private final RuleComponent fc;
+
     public FilterPanel(MainFrame mf) {
         this.mf = mf;
         setLayout(new BorderLayout());
 
-        JLabel jl = new JLabel("Filter:");
-        add(jl,BorderLayout.WEST);
+        final JLabel jl = new JLabel("Filter:");
+        add(jl, BorderLayout.WEST);
 
         fc = new RuleComponent();
         add(fc, BorderLayout.CENTER);
@@ -39,7 +40,7 @@ class FilterPanel extends JPanel {
         enable = new JToggleButton("!");
         add(enable, BorderLayout.EAST);
 
-        enable.addActionListener(new ActionListener() {			
+        enable.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FilterPanel.this.mf.getMainPanel().updateViewForFilter();

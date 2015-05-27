@@ -11,7 +11,6 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-
 public class BlockInteractionRenderer extends RectangleInteractionRenderer {
     public BlockInteractionRenderer() {
         setup(null, null);

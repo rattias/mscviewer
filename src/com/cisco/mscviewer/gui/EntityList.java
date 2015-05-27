@@ -10,8 +10,6 @@
  * @since  Jan 2012
  */
 package com.cisco.mscviewer.gui;
-import com.cisco.mscviewer.util.Utils;
-import com.cisco.mscviewer.model.*;
 
 import java.awt.event.ActionEvent;
 import java.util.Collections;
@@ -25,6 +23,11 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.EntityHeaderModelListener;
+import com.cisco.mscviewer.model.ViewModel;
+import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
 class EntityListModel extends AbstractListModel<Entity> {
@@ -46,7 +49,6 @@ class EntityListModel extends AbstractListModel<Entity> {
         return root;
     }
 
-
     @Override
     public int getSize() {
         return data.size();
@@ -62,21 +64,21 @@ class EntityListModel extends AbstractListModel<Entity> {
     }
 
     public void modelChanged() {
-        Vector<Entity> v = new Vector<Entity>();
-        for(int i=0; i<eh.entityCount(); i++) {
+        final Vector<Entity> v = new Vector<Entity>();
+        for (int i = 0; i < eh.entityCount(); i++) {
             v.add(eh.get(i));
         }
         if (sorted)
-            Collections.sort(v, new Comparator<Entity>(){
+            Collections.sort(v, new Comparator<Entity>() {
                 @Override
                 public int compare(Entity o1, Entity o2) {
                     return o1.getPath().compareTo(o2.getPath());
-                }});
+                }
+            });
         data = v;
-        fireContentsChanged(this, 0, getSize()-1);
+        fireContentsChanged(this, 0, getSize() - 1);
     }
 }
-
 
 @SuppressWarnings("serial")
 class EntityList extends JList<Entity> implements EntityHeaderModelListener {
@@ -88,72 +90,78 @@ class EntityList extends JList<Entity> implements EntityHeaderModelListener {
         getActionMap().put("flipState", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EntityListModel elm = (EntityListModel)getModel();
-                ViewModel ehm = elm.getEntityHeaderModel();
-                Entity sel[] = ehm.getSelectedEntities();
-                for (Entity sel1 : sel) {
+                final EntityListModel elm = (EntityListModel) getModel();
+                final ViewModel ehm = elm.getEntityHeaderModel();
+                final Entity sel[] = ehm.getSelectedEntities();
+                for (final Entity sel1 : sel) {
                     ehm.remove(sel1);
                 }
-            }			
-        });
-
-        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                EntityListModel elm = (EntityListModel)getModel();
-                ViewModel ehm = elm.getEntityHeaderModel();
-                // sometimes we geta spurious event
-                for(int i = e.getFirstIndex(); i<=Math.min(e.getLastIndex(),elm.getSize()-1); i++) {
-                    boolean sel = isSelectedIndex(i);
-                    Entity en = elm.getElementAt(i);
-                    int idx = ehm.indexOf(en);
-                    Utils.trace(Utils.EVENTS, "LIST idx "+en.getName()+", model idx= "+idx+",list idx="+i+",sel ="+sel);
-                    if (idx>=0)
-                        ehm.setSelected(elm.getElementAt(i), sel);
-                }
-
             }
-
         });
-        //		addMouseListener(new MouseAdapter() {
-        //			public void mouseClicked(MouseEvent me) {
-        //				if (me.getClickCount() ==2) {
-        //					TreePath tp = getPathForLocation(me.getX(), me.getY());
-        //					flipNodeState(tp);
-        //				}
-        //			}
-        //		});
+
+        getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        final EntityListModel elm = (EntityListModel) getModel();
+                        final ViewModel ehm = elm.getEntityHeaderModel();
+                        // sometimes we geta spurious event
+                        for (int i = e.getFirstIndex(); i <= Math.min(
+                                e.getLastIndex(), elm.getSize() - 1); i++) {
+                            final boolean sel = isSelectedIndex(i);
+                            final Entity en = elm.getElementAt(i);
+                            final int idx = ehm.indexOf(en);
+                            Utils.trace(Utils.EVENTS,
+                                    "LIST idx " + en.getName()
+                                            + ", model idx= " + idx
+                                            + ",list idx=" + i + ",sel =" + sel);
+                            if (idx >= 0)
+                                ehm.setSelected(elm.getElementAt(i), sel);
+                        }
+
+                    }
+
+                });
+        // addMouseListener(new MouseAdapter() {
+        // public void mouseClicked(MouseEvent me) {
+        // if (me.getClickCount() ==2) {
+        // TreePath tp = getPathForLocation(me.getX(), me.getY());
+        // flipNodeState(tp);
+        // }
+        // }
+        // });
     }
 
     @Override
     public void entityAdded(ViewModel eh, Entity en, int idx) {
-        ((EntityListModel)getModel()).modelChanged();		
+        ((EntityListModel) getModel()).modelChanged();
     }
 
     @Override
     public void entityRemoved(ViewModel eh, Entity parentEn, Entity en, int idx) {
-        ((EntityListModel)getModel()).modelChanged();		
+        ((EntityListModel) getModel()).modelChanged();
     }
-
 
     @Override
     public void entitySelectionChanged(ViewModel eh, Entity en, int idx) {
         Utils.trace(Utils.EVENTS, "entered");
-        EntityListModel elm = (EntityListModel)getModel();
-        int listIdx = elm.getElementIndex(en);
-        if (listIdx <0) {
-            Utils.trace(Utils.EVENTS, "element "+en.getName()+" is not in list!");
+        final EntityListModel elm = (EntityListModel) getModel();
+        final int listIdx = elm.getElementIndex(en);
+        if (listIdx < 0) {
+            Utils.trace(Utils.EVENTS, "element " + en.getName()
+                    + " is not in list!");
             return;
         }
-        boolean enSel = eh.isSelected(en); 
-        boolean lsSel = (isSelectedIndex(listIdx));
+        final boolean enSel = eh.isSelected(en);
+        final boolean lsSel = (isSelectedIndex(listIdx));
         if (enSel != lsSel) {
-            Utils.trace(Utils.EVENTS, "selecting "+en.getName()+", "+enSel);
-            if (enSel){
+            Utils.trace(Utils.EVENTS, "selecting " + en.getName() + ", "
+                    + enSel);
+            if (enSel) {
                 setSelectedIndex(listIdx);
             } else {
-                int elidx = elm.getElementIndex(en);
-                removeSelectionInterval(elidx,elidx);
+                final int elidx = elm.getElementIndex(en);
+                removeSelectionInterval(elidx, elidx);
             }
         }
     }
@@ -164,17 +172,14 @@ class EntityList extends JList<Entity> implements EntityHeaderModelListener {
     }
 
     @Override
-    public void boundsChanged(ViewModel entityHeaderModel, Entity en,
-            int idx) {
+    public void boundsChanged(ViewModel entityHeaderModel, Entity en, int idx) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
     public void entityMoved(ViewModel eh, Entity en, int toIdx) {
-        
+
     }
-
-
 
 }

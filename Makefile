@@ -26,7 +26,7 @@ JAVA = $(JAVA_BIN)/java
 JAR  = $(JAVA_BIN)/jar
 endif
 
-JYTHON_JAR:=jython-standalone-2.5.4-rc1.jar
+JYTHON_JAR:=jython-standalone-2.7-rc2.jar
 SWINGX_JAR:=swingx-all-1.6.4.jar
 UNAME:=$(shell uname -s)
 MSCVER = $(shell cat src/com/cisco/mscviewer/Main.java |\
@@ -60,28 +60,17 @@ endif
 
 .PHONY: all clean install jar distrib
 
-distrib: banner jar manual-images manual-pdf manual-html manual-python-api
-	$(eval $(call setup_install_vars))
-	#@echo "*** Installing mscviewer_$(MSCVER) in $(INSTALL_PREFIX)..."
+distrib: banner jar manual-pdf release-help
+	@#$(eval $(call setup_install_vars))
 	@mkdir -p $(INSTALL_DIR)
 	@cp -rf bin batch examples licenses third-parties $(INSTALL_DIR)
 	@mkdir -p $(INSTALL_DIR)/doc/user-guide
-	@mkdir -p $(INSTALL_DIR)/doc/python-api
+	@#mkdir -p $(INSTALL_DIR)/doc/python-api
 	@cp -rf doc/manual/mscviewer.pdf $(INSTALL_DIR)/doc/user-guide
-	@cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/user-guide
-	@cp -rf doc/python-api/build/html/* $(INSTALL_DIR)/doc/python-api/
-	@cp -rf doc/python-api/build/latex/mscviewer_python_api.pdf $(INSTALL_DIR)/doc/python-api/
+	@#cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/user-guide
+	@#cp -rf doc/python-api/build/html/* $(INSTALL_DIR)/doc/python-api/
+	@#cp -rf doc/python-api/build/latex/mscviewer_python_api.pdf $(INSTALL_DIR)/doc/python-api/
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
-	@echo $(JAVA)\
-	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-          com.cisco.mscviewer.io.ConvertFormat \
-	  '$$@' >$(INSTALL_DIR)/bin/mscupgrade
-
-	@echo $(JAVA)\
-	  -cp "$(INSTALL_DIR_N_FS)/mscviewer.jar" \
-          com.cisco.mscviewer.io.ConvertFormat \
-          '%*' >$(INSTALL_DIR)/bin/mscupgrade.bat
-                        
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(INSTALL_DIR)/.[a-z]*
 	@echo "*** Creating tgz distribution..."
@@ -89,9 +78,14 @@ distrib: banner jar manual-images manual-pdf manual-html manual-python-api
 	@echo "*** Creating zip distribution..."
 	@cd $(INSTALL_PREFIX) ; zip -r $(VERSIONED_NAME).zip $(VERSIONED_NAME) &>$(CURDIR)/.log/zip.log
 	@mv $(INSTALL_PREFIX)/$(VERSIONED_NAME).zip .
-	@echo "*** removing temporary dir $(INSTALL_DIR)..."
+	@echo "*** removing temporary files..."
 	@rm -rf $(INSTALL_DIR)
 	@echo "Distribution creation completed."
+
+release-help:
+	@echo "*** Generating Release Help..."
+	@mkdir -p doc
+	@java -jar third-parties/jython-standalone-2.7.0.jar bin/github_milestones_history.py V2.0.0 >doc/release.html
 
 banner:
 	@echo "Creating MSCViewer distribution. In case of error please"
@@ -103,28 +97,41 @@ build:
 	@find  src -name *.java >.srclist
 	@mkdir -p classes
 	@$(JAVAC) -g -Xlint -classpath "src$Pthird-parties/$(SWINGX_JAR)$Pthird-parties/$(JYTHON_JAR)" -d classes @.srclist &>.log/java-build.log
+	@$(JAVAC) -g -Xlint:-options -classpath "src" -d classes -source 1.3 src/com/cisco/mscviewer/TestVersion.java
 	@mkdir -p classes/com/cisco/mscviewer
 	-@cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
+	@echo "*** Generating Release Help..."
 
 
-manual-images: jar 
-	@echo "*** Capturing GUI screenshot for manual..."
-	@bin/mscviewer --script batch/gen_manual_captures.py
 
-manual-pdf:
-	@mkdir -p .log
+manual-pdf: jar
+	@rm -rf .log ; mkdir -p .log
+	@mkdir -p doc/manual/generated; 
 	@echo "*** Building PDF manual..."
+	@echo "    - Capturing GUI screenshot for manual..."
+	@bin/mscviewer --script batch/gen_manual_captures.py
+	@echo "    - Generating title page..."
+	@sed 's/\%VERSION\%/$(MSCVER)/g' doc/manual/titlepage.tex >doc/manual/generated/titlepage.tex
+	@echo "    - Generating model API documentation..."
+	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.model >doc/manual/generated/python-api-model.tex	
+	@echo "    - Generating GUI API documentation..."
+	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.gui >doc/manual/generated/python-api-gui.tex
+	@echo "    - Generating graph API documentation..."
+	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.graph >doc/manual/generated/python-api-graph.tex   
+	@echo "    - Generating flow API documentation..."
+	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.flowdef >doc/manual/generated/python-api-flowdef.tex   
+	@echo "    - compiling documentation..."       
 	@cd doc/manual ; echo "\tableofcontents" >tocnotoc.tex; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-1.log; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-2.log
 	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
 
 manual-html:
-	@mkdir -p .log
+	@rm -rf .log ; mkdir -p .log
 	@echo "*** Building HTML manual..."
 	@cd doc/manual/ ; echo "" >tocnotoc.tex ; htlatex mscviewer.tex "" "" "" $(TEXFLAGS) &> ../../.log/manual-html.log
 	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
 
 manual-python-api:
-	@mkdir -p .log
+	@rm -rf .log ; mkdir -p .log
 	@echo "*** Building Python API documentation..."
 	@cd doc/python-api ; ./buildit.sh latexpdf &>../../.log/manual-python-api-latexpdf.log
 	@cd doc/python-api ; ./buildit.sh html &> ../../.log/manual-python-api-html.log
@@ -132,10 +139,11 @@ manual-python-api:
 
 clean:
 	-@rm -rf classes .srclist
-	-@rm -rf doc/manual/*.svg doc/manual/*.html doc/manual/*.png doc/manual/*.pdf doc/manual/tocnotoc.tex
+	-@rm -rf doc/manual/*.svg doc/manual/*.html doc/manual/*.png doc/manual/*.pdf doc/manual/tocnotoc.tex 
 	-@rm -rf $(INSTALL_DIR)
 	-@rm -f $(WS_TOOLS_DIR)/host_tools.$(TARGET).sentinel 
 	-@rm -f mscviewer*.tgz mscviewer*.zip mscviewer*.jar
+	-@rm -f *.tmp
 
 jar: build 
 	@echo "*** Packaging classes to jar file..."

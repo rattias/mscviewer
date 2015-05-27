@@ -18,16 +18,18 @@ import java.awt.geom.Rectangle2D;
  * @author rattias
  */
 public class Rect extends Primitive {
-    private float x, y, w, h;
-    
+    private final float x, y, w, h;
+
     public Rect(float x, float y, float w, float h) {
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
     }
-    
+
+    @Override
     public void setContainerDimension(int width, int height) {
-        setShape(new Rectangle2D.Float(x*width, y*height, w*width, h*height));
+        setShape(new Rectangle2D.Float(x * width, y * height, w * width, h
+                * height));
     }
 }

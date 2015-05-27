@@ -22,30 +22,29 @@ import javax.swing.JScrollBar;
 import javax.swing.plaf.ScrollBarUI;
 
 import com.cisco.mscviewer.model.Entity;
-import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.model.EntityHeaderModelListener;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;
-
+import com.cisco.mscviewer.model.ViewModel;
 
 @SuppressWarnings("serial")
-class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListener {
+class MarkerBar extends JPanel implements EntityHeaderModelListener,
+        MouseListener {
     final static int markHeight = 4;
     final static int markWidth = 16;
     private final ViewModel viewModel;
     private final EntityHeader entityHeader;
     private final MSCDataModel model;
-    private int topOffset=0, btmOffset=0; 
+    private int topOffset = 0, btmOffset = 0;
     private final MSCRenderer r;
 
     MarkerBar(EntityHeader eh, ViewModel m, MSCRenderer r) {
         this.entityHeader = eh;
-        this.viewModel = m;        
+        this.viewModel = m;
         this.r = r;
         this.model = MSCDataModel.getInstance();
         addMouseListener(this);
     }
-
 
     @Override
     public Dimension getPreferredSize() {
@@ -55,44 +54,45 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        JScrollBar jsb = new JScrollBar();
-        ScrollBarUI uui = jsb.getUI();
-        Dimension d = uui.getPreferredSize(jsb);
+        final JScrollBar jsb = new JScrollBar();
+        final ScrollBarUI uui = jsb.getUI();
+        final Dimension d = uui.getPreferredSize(jsb);
         if (d != null) {
-            topOffset = (int)d.getWidth()+entityHeader.getHeight();
-            btmOffset = (int)d.getWidth();
+            topOffset = (int) d.getWidth() + entityHeader.getHeight();
+            btmOffset = (int) d.getWidth();
         }
 
         if (model == null)
             return;
         g.setColor(Color.gray);
-        g.drawLine(0, topOffset-1, getWidth(), topOffset-1);
-        g.drawLine(0, getHeight()-btmOffset-1, getWidth(), getHeight()-btmOffset-1);
+        g.drawLine(0, topOffset - 1, getWidth(), topOffset - 1);
+        g.drawLine(0, getHeight() - btmOffset - 1, getWidth(), getHeight()
+                - btmOffset - 1);
 
-        int h = getHeight()-(topOffset+btmOffset);
-        int evCount = viewModel.getEventCount();
+        final int h = getHeight() - (topOffset + btmOffset);
+        final int evCount = viewModel.getEventCount();
         if (evCount == 0)
             return;
-        int markerCellCount= h/markHeight+1;
+        final int markerCellCount = h / markHeight + 1;
         int prevCellIndex = -1;
         Marker[] um = null;
-        for(int i=0; i<evCount; i++) {
-            Event ev = viewModel.getEventAt(i);
-            int cellIndex = i*markerCellCount/evCount;
+        for (int i = 0; i < evCount; i++) {
+            final Event ev = viewModel.getEventAt(i);
+            final int cellIndex = i * markerCellCount / evCount;
             // flush pending marker
             if (cellIndex != prevCellIndex) {
                 if (um != null) {
-                    int cnt=0;
-                    for (Marker um1 : um) {
+                    int cnt = 0;
+                    for (final Marker um1 : um) {
                         if (um1 != null) {
                             cnt++;
                         }
                     }
                     if (cnt != 0) {
-                        int y = topOffset+cellIndex*h/markerCellCount;                    
-                        int mx=0;
-                        int w = markWidth/cnt;
-                        for (Marker um1 : um) {
+                        final int y = topOffset + cellIndex * h / markerCellCount;
+                        int mx = 0;
+                        final int w = markWidth / cnt;
+                        for (final Marker um1 : um) {
                             if (um1 != null) {
                                 g.setColor(um1.getColor());
                                 g.fillRect(mx, y, w, markHeight);
@@ -104,9 +104,9 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
                 }
                 um = null;
             }
-            if (viewModel.indexOf(ev.getEntity())< 0)
+            if (viewModel.indexOf(ev.getEntity()) < 0)
                 continue;
-            Marker m = ev.getMarker();
+            final Marker m = ev.getMarker();
             if (m == null)
                 continue;
             if (um == null)
@@ -116,32 +116,32 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
     }
 
     private int getEventIndexAt(int xx, int yy) {
-        JScrollBar jsb = new JScrollBar();
-        ScrollBarUI uui = jsb.getUI();
-        Dimension d = uui.getPreferredSize(jsb);
+        final JScrollBar jsb = new JScrollBar();
+        final ScrollBarUI uui = jsb.getUI();
+        final Dimension d = uui.getPreferredSize(jsb);
         if (d != null) {
-            topOffset = (int)d.getWidth()+entityHeader.getHeight();
-            btmOffset = (int)d.getWidth();
+            topOffset = (int) d.getWidth() + entityHeader.getHeight();
+            btmOffset = (int) d.getWidth();
         }
 
         if (model == null)
             return -1;
 
-        int h = getHeight()-(topOffset+btmOffset);
-        int evCount = viewModel.getEventCount();
+        final int h = getHeight() - (topOffset + btmOffset);
+        final int evCount = viewModel.getEventCount();
         if (evCount == 0)
             return -1;
-        int markerCellCount= h/markHeight+1;
-        for(int i=0; i<evCount; i++) {
-            Event ev = viewModel.getEventAt(i);
+        final int markerCellCount = h / markHeight + 1;
+        for (int i = 0; i < evCount; i++) {
+            final Event ev = viewModel.getEventAt(i);
             if (viewModel.indexOf(ev.getEntity()) < 0)
                 continue;
-            Marker m = ev.getMarker();
+            final Marker m = ev.getMarker();
             if (m == null)
                 continue;
-            int cellIndex = i*markerCellCount/evCount;
-            int y = topOffset+cellIndex*h/markerCellCount;                    
-            if (xx>=0 && xx <markWidth && yy>=y && yy<y+markHeight) {
+            final int cellIndex = i * markerCellCount / evCount;
+            final int y = topOffset + cellIndex * h / markerCellCount;
+            if (xx >= 0 && xx < markWidth && yy >= y && yy < y + markHeight) {
                 return i;
             }
         }
@@ -150,9 +150,9 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        //		int idx = getEventIndexAt(e.getX(), e.getY());
-        //		if (idx >=0)
-        //			//dataModel.
+        // int idx = getEventIndexAt(e.getX(), e.getY());
+        // if (idx >=0)
+        // //dataModel.
     }
 
     @Override
@@ -163,8 +163,8 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        int idx = getEventIndexAt(e.getX(), e.getY());
-        if (idx >=0)
+        final int idx = getEventIndexAt(e.getX(), e.getY());
+        if (idx >= 0)
             r.setSelectedEventByViewIndex(idx);
 
     }
@@ -204,10 +204,8 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
         return 0;
     }
 
-
     @Override
-    public void boundsChanged(ViewModel entityHeaderModel, Entity en,
-            int idx) {
+    public void boundsChanged(ViewModel entityHeaderModel, Entity en, int idx) {
         // TODO Auto-generated method stub
 
     }
@@ -215,7 +213,5 @@ class MarkerBar extends JPanel implements EntityHeaderModelListener, MouseListen
     @Override
     public void entityMoved(ViewModel eh, Entity en, int toIdx) {
     }
-
-
 
 }

@@ -25,15 +25,16 @@ public class Config {
     static String ATTR_MARKER_LINE = "line";
     static String ATTR_MARKER_COLOR = "color";
     static String ATTR_MARKER_NOTE = "note";
-    static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss"); 
+    static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
     public static String getDateString(long t) {
-        Date d = new Date(t);
-        String dateString = sdf.format(d);
+        final Date d = new Date(t);
+        final String dateString = sdf.format(d);
         return dateString;
     }
 
-    public static long getTimeSinceEpoch(String dateString) throws ParseException {
+    public static long getTimeSinceEpoch(String dateString)
+            throws ParseException {
         return sdf.parse(dateString).getTime();
     }
 }

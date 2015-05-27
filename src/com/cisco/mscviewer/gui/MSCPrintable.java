@@ -29,24 +29,27 @@ class MSCPrintable implements Printable {
 
     private void init(Graphics g, PageFormat pf) {
         // compute page layout
-        double pageWidthInInches = pf.getImageableWidth()/72;
-        double pageHeightInInches = pf.getImageableHeight()/72;
-        int totalWidthInPixels = r.getWidth();
-        int totalHeightInPixels = r.getHeight();
-        int totalWidthInInches = totalWidthInPixels / resolution;
-        int totalHeightInInches = totalHeightInPixels / resolution;
-        pageRows = (int)Math.ceil(totalWidthInInches/pageWidthInInches);
-        pageCols = (int)Math.ceil(totalHeightInInches/pageHeightInInches);
-        System.out.println("twp = "+totalWidthInPixels+", thi="+totalHeightInPixels);
-        System.out.println("twi = "+totalWidthInInches+", thi="+totalHeightInInches);
-        System.out.println("pwi = "+pageWidthInInches+", phi="+pageHeightInInches);
-        System.out.println("rows = "+pageRows+", cols = "+pageCols);
+        final double pageWidthInInches = pf.getImageableWidth() / 72;
+        final double pageHeightInInches = pf.getImageableHeight() / 72;
+        final int totalWidthInPixels = r.getWidth();
+        final int totalHeightInPixels = r.getHeight();
+        final int totalWidthInInches = totalWidthInPixels / resolution;
+        final int totalHeightInInches = totalHeightInPixels / resolution;
+        pageRows = (int) Math.ceil(totalWidthInInches / pageWidthInInches);
+        pageCols = (int) Math.ceil(totalHeightInInches / pageHeightInInches);
+        System.out.println("twp = " + totalWidthInPixels + ", thi="
+                + totalHeightInPixels);
+        System.out.println("twi = " + totalWidthInInches + ", thi="
+                + totalHeightInInches);
+        System.out.println("pwi = " + pageWidthInInches + ", phi="
+                + pageHeightInInches);
+        System.out.println("rows = " + pageRows + ", cols = " + pageCols);
     }
 
     @Override
     public int print(Graphics g, PageFormat pf, int page)
-    throws PrinterException {
-        if (!initDone) 
+            throws PrinterException {
+        if (!initDone)
             init(g, pf);
         // We have only one page, and 'page'
         // is zero-based
@@ -58,7 +61,7 @@ class MSCPrintable implements Printable {
         // imageable area, so we must translate
         // by the X and Y values in the PageFormat
         // to avoid clipping.
-        Graphics2D g2d = (Graphics2D)g;
+        final Graphics2D g2d = (Graphics2D) g;
         g2d.translate(pf.getImageableX(), pf.getImageableY());
 
         // Now we perform our rendering

@@ -26,36 +26,35 @@ public class Resources {
 
     public static void init(String plugins) {
         imgRenderers = new HashMap<String, ImageRenderer>();
-  
-        String sz = "/32x32/";
+
+        final String sz = "/32x32/";
         readDefaultRenderers();
         if (plugins == null)
             return;
-        for(String path: plugins.split(File.pathSeparator)) {
-            File f = new File(path+"/renderer");
+        for (final String path : plugins.split(File.pathSeparator)) {
+            final File f = new File(path + "/renderer");
             if (f.isDirectory()) {
-                String[] icons = f.list();
-                for(String s: icons) {
-                    int dotIdx = s.lastIndexOf('.');
-                    String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
-    
+                final String[] icons = f.list();
+                for (final String s : icons) {
+                    final int dotIdx = s.lastIndexOf('.');
+                    final String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
+
                     try {
-                        ImageRenderer ir = new ImageRenderer(key, ImageIO.read(new File(f, s)));
+                        final ImageRenderer ir = new ImageRenderer(key,
+                                ImageIO.read(new File(f, s)));
                         imgRenderers.put(key, ir);
-                    } catch (IOException ex) {
-                        Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (final IOException ex) {
+                        Logger.getLogger(ImageRenderer.class.getName()).log(
+                                Level.SEVERE, null, ex);
                     }
                 }
             }
         }
     }
 
-
-
-
     public static ImageIcon getImageIcon(String path, String description) {
         java.net.URL imgURL;
-        String filePath;
+        final String filePath;
         if (imgIcons == null)
             imgIcons = new HashMap<String, ImageIcon>();
         ImageIcon im = imgIcons.get(RESOURCE_PATH + path);
@@ -65,10 +64,12 @@ public class Resources {
                 imgURL = ClassLoader.getSystemResource(ICON_PATH + "/" + path);
             }
             if (imgURL == null) {
-                System.err.println("Couldn't find image icon " + RESOURCE_PATH + path+" or "+ICON_PATH + "/" + path);
-                StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-                for(StackTraceElement el: ste)
-                	System.out.println(el);
+                System.err.println("Couldn't find image icon " + RESOURCE_PATH
+                        + path + " or " + ICON_PATH + "/" + path);
+                final StackTraceElement[] ste = Thread.currentThread()
+                        .getStackTrace();
+                for (final StackTraceElement el : ste)
+                    System.out.println(el);
                 return null;
             }
             im = new ImageIcon(imgURL, description);
@@ -78,58 +79,61 @@ public class Resources {
     }
 
     private static void readDefaultRenderers() {
-        URL resourceURL = ClassLoader.getSystemResource(RENDERER_PATH);
-        String urlStr = resourceURL.getPath(); 
-        int idx = urlStr.indexOf(".jar!"); 
+        final URL resourceURL = ClassLoader.getSystemResource(RENDERER_PATH);
+        final String urlStr = resourceURL.getPath();
+        final int idx = urlStr.indexOf(".jar!");
         try {
             if (idx != -1) {
-                String jarPath = urlStr.substring(5, idx+4); // strip leading "file:" and trailing !....
+                final String jarPath = urlStr.substring(5, idx + 4); // strip leading
+                                                               // "file:" and
+                                                               // trailing !....
                 URL jar;
                 jar = new File(jarPath).toURI().toURL();
-                ZipInputStream zip = new ZipInputStream(jar.openStream());
-                while(true) {
-                    ZipEntry e = zip.getNextEntry();
+                final ZipInputStream zip = new ZipInputStream(jar.openStream());
+                while (true) {
+                    final ZipEntry e = zip.getNextEntry();
                     if (e == null)
                         break;
-                    String name = e.getName();
+                    final String name = e.getName();
                     if (name.startsWith(RENDERER_PATH)) {
-                        int dotIdx = name.lastIndexOf('.');
-                        int l = RENDERER_PATH.length()+1;
-                        String key = dotIdx >= 0 ? name.substring(l, dotIdx) : name.substring(l);                        
+                        final int dotIdx = name.lastIndexOf('.');
+                        final int l = RENDERER_PATH.length() + 1;
+                        final String key = dotIdx >= 0 ? name.substring(l, dotIdx)
+                                : name.substring(l);
                         try {
-                            ImageRenderer ir = new ImageRenderer(key, ImageIO.read(ClassLoader.getSystemResource(name).openStream()));                            
+                            final ImageRenderer ir = new ImageRenderer(key,
+                                    ImageIO.read(ClassLoader.getSystemResource(
+                                            name).openStream()));
                             imgRenderers.put(key, ir);
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (final IOException ex) {
+                            Logger.getLogger(ImageRenderer.class.getName())
+                                    .log(Level.SEVERE, null, ex);
                         }
                     }
                 }
             } else {
-                File f = new File(resourceURL.toURI());
-                String[] files = f.list();
-                for(String img: files) {
-                    File ff = new File(f, img);
-                    int dotIdx = img.lastIndexOf('.');
-                    String key = dotIdx >= 0 ? img.substring(0, dotIdx) : img;
-                    ImageRenderer ir = new ImageRenderer(key, ImageIO.read(ff));
+                final File f = new File(resourceURL.toURI());
+                final String[] files = f.list();
+                for (final String img : files) {
+                    final File ff = new File(f, img);
+                    final int dotIdx = img.lastIndexOf('.');
+                    final String key = dotIdx >= 0 ? img.substring(0, dotIdx) : img;
+                    final ImageRenderer ir = new ImageRenderer(key, ImageIO.read(ff));
                     imgRenderers.put(key, ir);
                 }
             }
-        }catch(MalformedURLException ex) {                        
+        } catch (final MalformedURLException ex) {
             ex.printStackTrace();
-        } catch (URISyntaxException ex) {
-            ex.printStackTrace();            
-        }catch(IOException ex) { 
+        } catch (final URISyntaxException ex) {
+            ex.printStackTrace();
+        } catch (final IOException ex) {
             ex.printStackTrace();
         }
     }
 
-
-
-
-    public static EventRenderer getImageRenderer(String t) {    	
-        EventRenderer r = imgRenderers.get(t);
+    public static EventRenderer getImageRenderer(String t) {
+        final EventRenderer r = imgRenderers.get(t);
         return r;
     }
-    
+
 }

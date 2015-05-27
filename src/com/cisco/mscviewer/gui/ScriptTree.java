@@ -43,10 +43,11 @@ class Script {
         } else if (f.getName().endsWith(".py")) {
             if (pyEngine == null)
                 pyEngine = factory.getEngineByName("Python");
-        } 
+        }
     }
 
-    public Object eval(MSCDataModel dm) throws FileNotFoundException, ScriptException, NoSuchMethodException {		
+    public Object eval(MSCDataModel dm) throws FileNotFoundException,
+            ScriptException, NoSuchMethodException {
         Invocable inv = null;
         if (f.getName().endsWith(".js")) {
             jsEngine.eval(new FileReader(f));
@@ -55,9 +56,10 @@ class Script {
             pyEngine.eval(new FileReader(f));
             inv = (Invocable) jsEngine;
         } else
-            throw new ScriptException("File "+f.getName()+" is neither js nor py");
+            throw new ScriptException("File " + f.getName()
+                    + " is neither js nor py");
         // invoke the global function named "hello"
-        Object res = inv.invokeFunction("isValid", dm);
+        final Object res = inv.invokeFunction("isValid", dm);
         return res;
     }
 
@@ -74,22 +76,24 @@ class ScriptTree extends JTree {
     private MSCDataModel dm;
 
     public ScriptTree() {
-        DefaultTreeModel dtm = (DefaultTreeModel) getModel();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Scripts");
+        final DefaultTreeModel dtm = (DefaultTreeModel) getModel();
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Scripts");
         dtm.setRoot(root);
 
-        File d = new File(dir);
-        if (! d.exists()) {
-            System.err.println("script directory "+d+" does not exist");
+        final File d = new File(dir);
+        if (!d.exists()) {
+            System.err.println("script directory " + d + " does not exist");
             return;
         }
-        if (! d.isDirectory()) {
-            System.err.println("script directory "+d+" exists, but it's not a directory");
+        if (!d.isDirectory()) {
+            System.err.println("script directory " + d
+                    + " exists, but it's not a directory");
             return;
         }
-        for (File f:d.listFiles()) {
+        for (final File f : d.listFiles()) {
             if (f.getName().endsWith(".js") || f.getName().endsWith(".py")) {
-                DefaultMutableTreeNode child = new DefaultMutableTreeNode(new Script(f));
+                final DefaultMutableTreeNode child = new DefaultMutableTreeNode(
+                        new Script(f));
                 root.add(child);
                 dtm.nodeStructureChanged(root);
             }
@@ -98,22 +102,27 @@ class ScriptTree extends JTree {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
-                if (me.getClickCount() ==2 && dm != null) {
-                    TreePath tp = getPathForLocation(me.getX(), me.getY());
-                    DefaultMutableTreeNode tn = (DefaultMutableTreeNode )tp.getLastPathComponent();
-                    Script s = (Script) tn.getUserObject();
+                if (me.getClickCount() == 2 && dm != null) {
+                    final TreePath tp = getPathForLocation(me.getX(), me.getY());
+                    final DefaultMutableTreeNode tn = (DefaultMutableTreeNode) tp
+                            .getLastPathComponent();
+                    final Script s = (Script) tn.getUserObject();
                     try {
-                        String res = (String)s.eval(dm);
+                        final String res = (String) s.eval(dm);
                         if (res != null) {
-                            JOptionPane.showMessageDialog(null, "Error: "+res);							
+                            JOptionPane
+                                    .showMessageDialog(null, "Error: " + res);
                         } else
-                            JOptionPane.showMessageDialog(null, "Success");							
-                    } catch (FileNotFoundException e) {
-                        JOptionPane.showMessageDialog(null, "Script file not found");
-                    } catch (ScriptException e) {
-                        JOptionPane.showMessageDialog(null, "Script Exception: "+e.getMessage());
-                    } catch (NoSuchMethodException e) {
-                        JOptionPane.showMessageDialog(null, "No such Method Exception: "+e.getMessage());
+                            JOptionPane.showMessageDialog(null, "Success");
+                    } catch (final FileNotFoundException e) {
+                        JOptionPane.showMessageDialog(null,
+                                "Script file not found");
+                    } catch (final ScriptException e) {
+                        JOptionPane.showMessageDialog(null,
+                                "Script Exception: " + e.getMessage());
+                    } catch (final NoSuchMethodException e) {
+                        JOptionPane.showMessageDialog(null,
+                                "No such Method Exception: " + e.getMessage());
                     }
                 }
             }

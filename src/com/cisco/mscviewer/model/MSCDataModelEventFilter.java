@@ -11,6 +11,6 @@
  */
 package com.cisco.mscviewer.model;
 
-abstract public interface MSCDataModelEventFilter {	
-    boolean filter(Event ev); 
+abstract public interface MSCDataModelEventFilter {
+    boolean filter(Event ev);
 }

@@ -11,18 +11,18 @@
  */
 package com.cisco.mscviewer.expression;
 
- public class ParsedExpression {
-     private final Token token;
+public class ParsedExpression {
+    private final Token token;
 
-     ParsedExpression(Token t) {
-         token = t;
-     }
+    ParsedExpression(Token t) {
+        token = t;
+    }
 
-     public void printRPN() {
-         token.printRPN();
-     }
+    public void printRPN() {
+        token.printRPN();
+    }
 
-     public Token getFirstToken() {
-         return token;
-     }
- }
+    public Token getFirstToken() {
+        return token;
+    }
+}

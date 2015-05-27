@@ -20,22 +20,24 @@ import javax.swing.JScrollPane;
 
 @SuppressWarnings("serial")
 class HelpFrame extends JFrame {
-    private final JScrollPane scrollPane;  
-    private final JEditorPane editorPane;  
+    private final JScrollPane scrollPane;
+    private final JEditorPane editorPane;
 
-    public HelpFrame(){  
+    public HelpFrame() {
         setBounds(100, 100, 600, 400);
         setTitle("MSCViewer Help");
 
-        editorPane=new JEditorPane();  
-        try {  
-            URL url = ClassLoader.getSystemResource("com/cisco/mscviewer/doc/help_home.html");
-            editorPane.setPage(url);  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }  
+        editorPane = new JEditorPane();
+        editorPane.setEditable(false);
+        try {
+            final URL url = ClassLoader
+                    .getSystemResource("com/cisco/mscviewer/doc/help_home.html");
+            editorPane.setPage(url);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
 
-        scrollPane=new JScrollPane(editorPane);
+        scrollPane = new JScrollPane(editorPane);
         setContentPane(scrollPane);
-    }  
+    }
 }

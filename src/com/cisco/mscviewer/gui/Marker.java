@@ -15,11 +15,8 @@ import java.awt.Color;
 
 public enum Marker {
 
-    ERROR(Color.red),
-    RED(Color.red),
-    YELLOW(new Color(0xFFFF99)),
-    BLUE(new Color(0x99FFFF)),
-    GREEN(new Color(0x29FF29));
+    ERROR(Color.red), RED(Color.red), YELLOW(new Color(0xFFFF99)), BLUE(
+            new Color(0x99FFFF)), GREEN(new Color(0x29FF29));
 
     private Color transparentColor;
     private final Color color;
@@ -34,7 +31,8 @@ public enum Marker {
 
     public Color getTransparentColor() {
         if (transparentColor == null)
-            transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 128);
+            transparentColor = new Color(color.getRed(), color.getGreen(),
+                    color.getBlue(), 128);
         return transparentColor;
     }
 

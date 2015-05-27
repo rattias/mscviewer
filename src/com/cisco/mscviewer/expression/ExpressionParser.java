@@ -19,6 +19,7 @@ import javax.script.ScriptException;
 
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
+
 /**
  * Parser for the expression grammar accepted by search fields. THe grammar is 
  * as follows:
@@ -45,105 +46,120 @@ import com.cisco.mscviewer.model.Interaction;
 public class ExpressionParser {
     private static ScriptEngine engine;
     static {
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        List<ScriptEngineFactory> factories = mgr.getEngineFactories();
-        for (ScriptEngineFactory factory: factories) {
-            String langName = factory.getLanguageName();
-//            String langVersion = factory.getLanguageVersion();
+        final ScriptEngineManager mgr = new ScriptEngineManager();
+        final List<ScriptEngineFactory> factories = mgr.getEngineFactories();
+        for (final ScriptEngineFactory factory : factories) {
+            final String langName = factory.getLanguageName();
+            // String langVersion = factory.getLanguageVersion();
             if (langName.equals("ECMAScript")) {
                 engine = factory.getScriptEngine();
-                break;	
+                break;
             }
         }
         if (engine == null) {
             throw new Error("Unable to retrieve JavaScript engine.");
-        }		
+        }
     }
 
-    final static int LEFT=0;
-    final static int RIGHT=1;
+    final static int LEFT = 0;
+    final static int RIGHT = 1;
+
     /*
-     * start ::= 'event' [type=event] 'where' orexp | 'interaction' [type=int] 'where' orexp 
-     * orexp ::= andexp ( 'or' orexp)*
-     * andexp ::= unexp (and andexp)*
-     *  unexp ::= term | '(' orexp ')' | 'not' orexp
-     *   term ::= stringcomp | ?[type==event] timecomp | ?[type==int] durcomp 
-     * stringcomp::= 'label' ('is' | 'contains' | 'starts-with' | 'ends-with') STRINGVAL
-     * timecomp ::= 'time' ('=' | '<' | '>' | '<=' | '>=') TIME
-     * durcomp ::= 'duration' ('=' | '<' | '>' | '<=' | '>=') LONG ('ns' | 'us' | 'ms' | 's')
+     * start ::= 'event' [type=event] 'where' orexp | 'interaction' [type=int]
+     * 'where' orexp orexp ::= andexp ( 'or' orexp)* andexp ::= unexp (and
+     * andexp)* unexp ::= term | '(' orexp ')' | 'not' orexp term ::= stringcomp
+     * | ?[type==event] timecomp | ?[type==int] durcomp stringcomp::= 'label'
+     * ('is' | 'contains' | 'starts-with' | 'ends-with') STRINGVAL timecomp ::=
+     * 'time' ('=' | '<' | '>' | '<=' | '>=') TIME durcomp ::= 'duration' ('=' |
+     * '<' | '>' | '<=' | '>=') LONG ('ns' | 'us' | 'ms' | 's')
      */
 
-
     public static void main(String args[]) {
-        ParserState ps = new ParserState(args[0]);
-        ParsedExpression expr = new ExpressionParser().parse(ps);
+        final ParserState ps = new ParserState(args[0]);
+        final ParsedExpression expr = new ExpressionParser().parse(ps);
         if (expr != null) {
             expr.printRPN();
             System.out.println();
             System.out.println(toJS(expr.getFirstToken()));
         }
-        if (args[0].endsWith(""+Token.COMPL_CHAR)) {
-            ArrayList<String> compl = ps.getCompletions();
+        if (args[0].endsWith("" + Token.COMPL_CHAR)) {
+            final ArrayList<String> compl = ps.getCompletions();
             System.out.println("completions:");
-            for(String tt : compl) {
-                System.out.println("    "+tt);
+            for (final String tt : compl) {
+                System.out.println("    " + tt);
             }
         }
     }
 
     public static String toJS(Token t) {
-        switch(t.type) {
-        //		case Token.TT.EVENT:
-        //		case Token.TT.INTERACTION:
-        //		case Token.TT.WHERE: return toJS(t.l);
+        switch (t.type) {
+        // case Token.TT.EVENT:
+        // case Token.TT.INTERACTION:
+        // case Token.TT.WHERE: return toJS(t.l);
 
-        case OPEN: return "(" + toJS(t.l) + ")";
-        case AND:  return toJS(t.l) + " && " + toJS(t.r);
-        case OR:   return toJS(t.l) + " || " + toJS(t.r); 
-        case NOT:  return "!" + toJS(t.l);
-        case CONTAINS: return "("+toJS(t.l)+".indexOf("+toJS(t.r)+") >= 0)";
-        case ENDSWITH: return "("+toJS(t.l)+".match("+toJS(t.r)+"$) == "+toJS(t.r)+")";
-        case STARTSWITH: return "("+toJS(t.l)+".indexOf("+toJS(t.r)+") == 0)";
-        case STRING: return t.string;
-        case NUM: return ""+t.num;
+        case OPEN:
+            return "(" + toJS(t.l) + ")";
+        case AND:
+            return toJS(t.l) + " && " + toJS(t.r);
+        case OR:
+            return toJS(t.l) + " || " + toJS(t.r);
+        case NOT:
+            return "!" + toJS(t.l);
+        case CONTAINS:
+            return "(" + toJS(t.l) + ".indexOf(" + toJS(t.r) + ") >= 0)";
+        case ENDSWITH:
+            return "(" + toJS(t.l) + ".match(" + toJS(t.r) + "$) == "
+                    + toJS(t.r) + ")";
+        case STARTSWITH:
+            return "(" + toJS(t.l) + ".indexOf(" + toJS(t.r) + ") == 0)";
+        case STRING:
+            return t.string;
+        case NUM:
+            return "" + t.num;
         case EQ:
-            if (t.l.type == Token.TT.LABEL )
-                return "("+toJS(t.l) + " == " + toJS(t.r)+")";
+            if (t.l.type == Token.TT.LABEL)
+                return "(" + toJS(t.l) + " == " + toJS(t.r) + ")";
             else if (t.l.type == Token.TT.TYPE)
-                return "("+toJS(t.l) + " == " + toJS(t.r)+")";
+                return "(" + toJS(t.l) + " == " + toJS(t.r) + ")";
             else if (t.l.type == Token.TT.TIME)
-                return toJS(t.l) + ".equals(DateFormat.parse(" + toJS(t.r)+"))";
+                return toJS(t.l) + ".equals(DateFormat.parse(" + toJS(t.r)
+                        + "))";
             else if (t.l.type == Token.TT.DURATION)
                 return toJS(t.l) + "==" + toJS(t.r);
             else
                 throw new Error("Unsupported field type");
-        case LABEL: return "label";
-        case TYPE: return "type";
-        case TIME: return "time";
-        case UNKNOWN: return "{" + t.string + "}";
-        default: return "[" + t.type + "]";
+        case LABEL:
+            return "label";
+        case TYPE:
+            return "type";
+        case TIME:
+            return "time";
+        case UNKNOWN:
+            return "{" + t.string + "}";
+        default:
+            return "[" + t.type + "]";
 
-        }		
+        }
     }
-
 
     public boolean evaluateAsJavaScriptonEvent(Event ev, ParsedExpression expr) {
         try {
             engine.put("label", ev.getLabel());
             engine.put("type", ev.getType());
             engine.put("time", ev.getTimestampRepr());
-            String type = ev.getType();
+            final String type = ev.getType();
             engine.put("type", type);
-            String js = toJS(expr.getFirstToken());
-            boolean b = (Boolean)engine.eval(js);
+            final String js = toJS(expr.getFirstToken());
+            final boolean b = (Boolean) engine.eval(js);
             return b;
-        } catch (ScriptException e) {
+        } catch (final ScriptException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public boolean evaluateAsJavaScriptonInteraction(Interaction in, ParsedExpression expr) {
+    public boolean evaluateAsJavaScriptonInteraction(Interaction in,
+            ParsedExpression expr) {
         try {
             Event ev = in.getFromEvent();
             if (ev != null) {
@@ -159,22 +175,22 @@ public class ExpressionParser {
                 engine.put("sink.time", ev.getTimestampRepr());
                 engine.put("sink.type", ev.getType());
             }
-            String js = toJS(expr.getFirstToken());
-            boolean b = (Boolean)engine.eval(js);
+            final String js = toJS(expr.getFirstToken());
+            final boolean b = (Boolean) engine.eval(js);
             return b;
-        } catch (ScriptException e) {
+        } catch (final ScriptException e) {
             e.printStackTrace();
         }
         return false;
     }
 
     /*
-     * start   ::= evorexp | orexp 
+     * start ::= evorexp | orexp
      */
     public ParsedExpression parse(ParserState ps) {
-        int pos = ps.getPos();
-        Token l = evorexp(ps); 
-        if (l != null) 
+        final int pos = ps.getPos();
+        Token l = evorexp(ps);
+        if (l != null)
             return new ParsedExpression(l);
         l = orexp(ps);
         if (l != null)
@@ -184,26 +200,27 @@ public class ExpressionParser {
     }
 
     /**
-     *  orexp ::= andexp ( 'or' orexp)*
+     * orexp ::= andexp ( 'or' orexp)*
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token orexp(ParserState ps) {
-        int pos = ps.getPos();
-        Token l = andexp(ps); 
+        final int pos = ps.getPos();
+        final Token l = andexp(ps);
         if (l == null) {
             ps.setPos(pos);
             return null;
-        }		
+        }
         try {
             ps.next();
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.prev();
             return l;
         }
-        Token op = ps.tok(); 
+        final Token op = ps.tok();
         if (op.type == Token.TT.OR) {
-            Token r = orexp(ps);
+            final Token r = orexp(ps);
             if (r == null) {
                 ps.setPos(pos);
                 return null;
@@ -220,26 +237,27 @@ public class ExpressionParser {
     }
 
     /**
-     *  evorexp ::= evandexp ( 'or' evorexp)*
+     * evorexp ::= evandexp ( 'or' evorexp)*
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token evorexp(ParserState ps) {
-        int pos = ps.getPos();
-        Token l = evandexp(ps); 
+        final int pos = ps.getPos();
+        final Token l = evandexp(ps);
         if (l == null) {
             ps.setPos(pos);
             return null;
-        }		
+        }
         try {
             ps.next();
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.prev();
             return l;
         }
-        Token op = ps.tok(); 
+        final Token op = ps.tok();
         if (op.type == Token.TT.OR) {
-            Token r = evorexp(ps);
+            final Token r = evorexp(ps);
             if (r == null) {
                 ps.setPos(pos);
                 return null;
@@ -257,12 +275,13 @@ public class ExpressionParser {
 
     /**
      * andexp ::= unexp (and andexp)*
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token andexp(ParserState ps) {
-        int pos = ps.getPos();
-        Token l = unexp(ps);
+        final int pos = ps.getPos();
+        final Token l = unexp(ps);
         if (l == null) {
             ps.setPos(pos);
             return null;
@@ -270,19 +289,19 @@ public class ExpressionParser {
 
         try {
             ps.next();
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.prev();
             return l;
-        }		
-        Token op = ps.tok();
+        }
+        final Token op = ps.tok();
         if (op.type == Token.TT.AND) {
-            Token r = andexp(ps);  
+            final Token r = andexp(ps);
             if (r == null) {
                 ps.setPos(pos);
                 return null;
             } else {
                 op.l = l;
-                op.r = r;				
+                op.r = r;
                 return op;
             }
         } else {
@@ -294,12 +313,13 @@ public class ExpressionParser {
 
     /**
      * evandexp ::= evunexp (and evandexp)*
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token evandexp(ParserState ps) {
-        int pos = ps.getPos();
-        Token l = evunexp(ps);
+        final int pos = ps.getPos();
+        final Token l = evunexp(ps);
         if (l == null) {
             ps.setPos(pos);
             return null;
@@ -307,19 +327,19 @@ public class ExpressionParser {
 
         try {
             ps.next();
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.prev();
             return l;
-        }		
-        Token op = ps.tok();
+        }
+        final Token op = ps.tok();
         if (op.type == Token.TT.AND) {
-            Token r = evandexp(ps);  
+            final Token r = evandexp(ps);
             if (r == null) {
                 ps.setPos(pos);
                 return null;
             } else {
                 op.l = l;
-                op.r = r;				
+                op.r = r;
                 return op;
             }
         } else {
@@ -330,23 +350,25 @@ public class ExpressionParser {
     }
 
     /**
-     *  unexp ::= term | '(' orexp ')' | 'not' orexp
+     * unexp ::= term | '(' orexp ')' | 'not' orexp
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token unexp(ParserState ps) {
-        int pos = ps.getPos();
+        final int pos = ps.getPos();
         try {
             Token l = term(ps);
-            if (l != null) return l;
+            if (l != null)
+                return l;
             ps.next();
-            Token op = ps.tok();
+            final Token op = ps.tok();
             if (op.type == Token.TT.OPEN) {
                 if ((l = orexp(ps)) != null) {
                     if (ps.next().type == Token.TT.CLOSE) {
                         op.l = l;
                         return op;
-                    }  else {
+                    } else {
                         ps.compl(Token.TT.CLOSE.toString());
                         ps.setPos(pos);
                         return null;
@@ -355,38 +377,39 @@ public class ExpressionParser {
             } else {
                 ps.compl(Token.TT.OPEN.toString());
             }
-            if (op.type == Token.TT.NOT &&
-                    (l = orexp(ps)) != null) {
+            if (op.type == Token.TT.NOT && (l = orexp(ps)) != null) {
                 op.l = l;
                 return op;
             } else
                 ps.compl(Token.TT.NOT.toString());
             ps.setPos(pos);
             return null;
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.setPos(pos);
             return null;
         }
     }
 
     /**
-     *  evunexp ::= evterm | '(' evorexp ')' | 'not' evorexp
+     * evunexp ::= evterm | '(' evorexp ')' | 'not' evorexp
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token evunexp(ParserState ps) {
-        int pos = ps.getPos();
+        final int pos = ps.getPos();
         try {
             Token l = evterm(ps);
-            if (l != null) return l;
+            if (l != null)
+                return l;
             ps.next();
-            Token op = ps.tok();
+            final Token op = ps.tok();
             if (op.type == Token.TT.OPEN) {
                 if ((l = evorexp(ps)) != null) {
                     if (ps.next().type == Token.TT.CLOSE) {
                         op.l = l;
                         return op;
-                    }  else {
+                    } else {
                         ps.compl(Token.TT.CLOSE.toString());
                         ps.setPos(pos);
                         return null;
@@ -395,114 +418,119 @@ public class ExpressionParser {
             } else {
                 ps.compl(Token.TT.OPEN.toString());
             }
-            if (op.type == Token.TT.NOT &&
-                    (l = evorexp(ps)) != null) {
+            if (op.type == Token.TT.NOT && (l = evorexp(ps)) != null) {
                 op.l = l;
                 return op;
             } else
                 ps.compl(Token.TT.NOT.toString());
             ps.setPos(pos);
             return null;
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.setPos(pos);
             return null;
         }
     }
 
     /**
-     *   term ::= stringcomp | timecomp  
+     * term ::= stringcomp | timecomp
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token term(ParserState ps) {
-        Token l = stringcomp(ps); 
-        if (l != null) return l;
-        if ((l=timecomp(ps)) != null)
+        Token l = stringcomp(ps);
+        if (l != null)
+            return l;
+        if ((l = timecomp(ps)) != null)
             return l;
         return null;
     }
 
     /**
-     *   evterm ::= durterm | 'source' orexp | 'sink' orexp 
+     * evterm ::= durterm | 'source' orexp | 'sink' orexp
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token evterm(ParserState ps) {
-        Token l = durcomp(ps);
-        if (l != null) return l;
-        System.out.println("evterm(): pos = "+ps.getPos());
-        int pos = ps.getPos();
+        final Token l = durcomp(ps);
+        if (l != null)
+            return l;
+        System.out.println("evterm(): pos = " + ps.getPos());
+        final int pos = ps.getPos();
 
         try {
             ps.next();
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.compl(Token.TT.SOURCE.toString());
             ps.compl(Token.TT.SINK.toString());
             ps.setPos(pos);
             return null;
-        } 			
+        }
 
-        Token tt = ps.tok();
+        final Token tt = ps.tok();
         Token tt1, tt2;
         if ((tt.type == Token.TT.SOURCE || tt.type == Token.TT.SINK)) {
             try {
                 ps.next();
-            }catch(NoMoreTokensException ex) {
+            } catch (final NoMoreTokensException ex) {
                 ps.compl(Token.TT.OPEN_SQUARE.toString());
                 ps.setPos(pos);
                 return null;
-            } 			
+            }
             tt1 = ps.tok();
             if (tt1.type != Token.TT.OPEN_SQUARE) {
                 ps.compl(Token.TT.OPEN_SQUARE.toString());
                 ps.setPos(pos);
-                return null;			
-            }					
+                return null;
+            }
             tt2 = orexp(ps);
             if (tt2 != null) {
                 try {
                     ps.next();
-                }catch(NoMoreTokensException ex) {
+                } catch (final NoMoreTokensException ex) {
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);
                     return null;
-                } 			
+                }
                 if (ps.tok().type != Token.TT.CLOSE_SQUARE) {
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);
-                    System.out.println("evterm(): missing ], pos = "+ps.getPos());
+                    System.out.println("evterm(): missing ], pos = "
+                            + ps.getPos());
                     return null;
                 }
                 tt.l = tt2;
                 return tt;
             } else {
                 ps.setPos(pos);
-                return null;			
+                return null;
             }
         } else {
             ps.compl(Token.TT.SOURCE.toString());
             ps.compl(Token.TT.SINK.toString());
             ps.setPos(pos);
-            return null;			
+            return null;
         }
     }
 
     /**
-     *   stringcomp::= ('label' | 'type') ('=' | 'contains' | 'startswith' | 'endswith') STRINGVAL 
+     * stringcomp::= ('label' | 'type') ('=' | 'contains' | 'startswith' |
+     * 'endswith') STRINGVAL
+     * 
      * @param ps
-     * @return 
+     * @return
      */
     public Token stringcomp(ParserState ps) {
-        int pos = ps.getPos();			
+        final int pos = ps.getPos();
 
         try {
-            Token l = ps.next();
+            final Token l = ps.next();
             if (l.type == Token.TT.LABEL || l.type == Token.TT.TYPE) {
-                Token op = ps.next();
-                if (op.type != Token.TT.EQ &&
-                        op.type != Token.TT.STARTSWITH &&
-                        op.type != Token.TT.ENDSWITH &&
-                        op.type != Token.TT.CONTAINS) {
+                final Token op = ps.next();
+                if (op.type != Token.TT.EQ && op.type != Token.TT.STARTSWITH
+                        && op.type != Token.TT.ENDSWITH
+                        && op.type != Token.TT.CONTAINS) {
                     ps.compl(Token.TT.EQ.toString());
                     ps.compl(Token.TT.STARTSWITH.toString());
                     ps.compl(Token.TT.ENDSWITH.toString());
@@ -510,14 +538,14 @@ public class ExpressionParser {
                     ps.setPos(pos);
                     return null;
                 }
-                Token r = ps.next();
+                final Token r = ps.next();
                 if (r.type != Token.TT.STRING) {
                     ps.compl("\"\"");
                     ps.setPos(pos);
                     return null;
                 }
-                if (ps.tok().string.charAt(0) != '"' || 
-                        ps.tok().string.charAt(ps.tok().string.length()-1) != '"') {
+                if (ps.tok().string.charAt(0) != '"'
+                        || ps.tok().string.charAt(ps.tok().string.length() - 1) != '"') {
                     ps.setPos(pos);
                     return null;
                 }
@@ -530,27 +558,26 @@ public class ExpressionParser {
             }
             ps.setPos(pos);
             return null;
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.setPos(pos);
             return null;
-        } 			
+        }
     }
-    /**
+
+/**
      * timecomp ::= 'time' ('=' | '<' | '>' | '<=' | '>=') TIME
      * @param ps
      * @return 
      */
     public Token timecomp(ParserState ps) {
-        int pos = ps.getPos();			
+        final int pos = ps.getPos();
         try {
-            Token l = ps.next();
-            if (l.type == Token.TT.TIME) {				
-                Token op = ps.next();
-                if (op.type != Token.TT.EQ &&
-                        op.type != Token.TT.LT &&
-                        op.type != Token.TT.GT &&
-                        op.type != Token.TT.LEQ &&
-                        op.type != Token.TT.GEQ) {
+            final Token l = ps.next();
+            if (l.type == Token.TT.TIME) {
+                final Token op = ps.next();
+                if (op.type != Token.TT.EQ && op.type != Token.TT.LT
+                        && op.type != Token.TT.GT && op.type != Token.TT.LEQ
+                        && op.type != Token.TT.GEQ) {
                     ps.compl(Token.TT.EQ.toString());
                     ps.compl(Token.TT.LT.toString());
                     ps.compl(Token.TT.GT.toString());
@@ -559,17 +586,17 @@ public class ExpressionParser {
                     ps.setPos(pos);
                     return null;
                 }
-                Token r = ps.next();
+                final Token r = ps.next();
                 if (r.type != Token.TT.STRING) {
                     ps.compl("\"\"");
                     ps.setPos(pos);
                     return null;
                 }
-                if (r.string.charAt(0) != '"' || 
-                        r.string.charAt(ps.tok().string.length()-1) != '"') {
+                if (r.string.charAt(0) != '"'
+                        || r.string.charAt(ps.tok().string.length() - 1) != '"') {
                     ps.setPos(pos);
                     return null;
-                }				
+                }
                 op.l = l;
                 op.r = r;
                 return op;
@@ -577,27 +604,26 @@ public class ExpressionParser {
                 ps.compl(Token.TT.TIME.toString());
             ps.setPos(pos);
             return null;
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.setPos(pos);
             return null;
-        } 			
+        }
     }
-    /**
+
+/**
      * durcomp ::= 'duration' ('=' | '<' | '>' | '<=' | '>=') LONG ('ns' | 'us' | 'ms' | 's')
      * @param ps
      * @return 
      */
     public Token durcomp(ParserState ps) {
-        int pos = ps.getPos();
+        final int pos = ps.getPos();
         try {
-            Token l = ps.next();
+            final Token l = ps.next();
             if (l.type == Token.TT.DURATION) {
-                Token op = ps.next();
-                if (op.type != Token.TT.EQ &&
-                        op.type != Token.TT.LT &&
-                        op.type != Token.TT.GT &&
-                        op.type != Token.TT.LEQ &&
-                        op.type != Token.TT.GEQ) {
+                final Token op = ps.next();
+                if (op.type != Token.TT.EQ && op.type != Token.TT.LT
+                        && op.type != Token.TT.GT && op.type != Token.TT.LEQ
+                        && op.type != Token.TT.GEQ) {
                     ps.compl(Token.TT.EQ.toString());
                     ps.compl(Token.TT.LT.toString());
                     ps.compl(Token.TT.GT.toString());
@@ -606,18 +632,16 @@ public class ExpressionParser {
                     ps.setPos(pos);
                     return null;
                 }
-                Token v = ps.next();
+                final Token v = ps.next();
                 if (v.type != Token.TT.NUM) {
                     ps.compl("<number>");
                     ps.setPos(pos);
                     return null;
                 }
-                Token r = ps.next();
-                if (r.type != Token.TT.EQ &&
-                        r.type != Token.TT.NS &&
-                        r.type != Token.TT.US &&
-                        r.type != Token.TT.MS &&
-                        r.type != Token.TT.S) {
+                final Token r = ps.next();
+                if (r.type != Token.TT.EQ && r.type != Token.TT.NS
+                        && r.type != Token.TT.US && r.type != Token.TT.MS
+                        && r.type != Token.TT.S) {
                     ps.compl(Token.TT.NS.toString());
                     ps.compl(Token.TT.US.toString());
                     ps.compl(Token.TT.MS.toString());
@@ -627,17 +651,16 @@ public class ExpressionParser {
                 }
                 op.l = l;
                 op.r = r;
-                r.l =  v;
+                r.l = v;
                 return op;
             } else
                 ps.compl("duration");
             ps.setPos(pos);
             return null;
-        }catch(NoMoreTokensException ex) {
+        } catch (final NoMoreTokensException ex) {
             ps.setPos(pos);
             return null;
-        }				
+        }
     }
 
 }
-

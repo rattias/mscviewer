@@ -12,7 +12,7 @@
 package com.cisco.mscviewer.model;
 
 public abstract class AbstractEntityHeaderModelListener implements
-EntityHeaderModelListener {
+        EntityHeaderModelListener {
 
     @Override
     public int getEntityHeaderModelNotificationPriority() {

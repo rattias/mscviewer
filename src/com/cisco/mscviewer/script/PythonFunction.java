@@ -20,27 +20,27 @@ import org.python.core.PyTuple;
 
 public class PythonFunction {
     private final String name;
-    private String[] argNames;
+    private final String[] argNames;
     private String[] argDefaults;
-    private String[] argValues;
+    private final String[] argValues;
     private String doc;
     private boolean wasSet;
-    private Python python;
-    private String pkg;
-    
+    private final Python python;
+    private final String pkg;
+
     public PythonFunction(Python p, String pkg, String name) {
-    	this.pkg = pkg;
+        this.pkg = pkg;
         this.name = name;
         python = p;
-        PyObject args = p.eval("inspect.getargspec("+pkg+"."+name+")");
-        PyTuple t = (PyTuple) args;
+        final PyObject args = p.eval("inspect.getargspec(" + pkg + "." + name + ")");
+        final PyTuple t = (PyTuple) args;
         PyObject[] objs = ((PyList) t.get(0)).getArray();
         argNames = new String[objs.length];
         for (int i = 0; i < argNames.length; i++) {
             argNames[i] = objs[i].toString();
         }
         argValues = new String[objs.length];
-        Object l = t.get(3);
+        final Object l = t.get(3);
         if (l != null) {
             objs = ((PyTuple) l).getArray();
             argDefaults = new String[objs.length];
@@ -50,10 +50,10 @@ public class PythonFunction {
 
         for (int i = 0; i < argDefaults.length; i++) {
             argDefaults[i] = objs[i].toString();
-            int idx = argNames.length - argDefaults.length + i;
+            final int idx = argNames.length - argDefaults.length + i;
             argValues[idx] = argDefaults[i];
         }
-        PyString d = (PyString) p.get(name + ".__doc__");
+        final PyString d = (PyString) p.get(name + ".__doc__");
         if (d != null)
             doc = d.toString();
     }
@@ -62,10 +62,10 @@ public class PythonFunction {
         return name;
     }
 
-//    public void setDoc(String d) {
-//        doc = d;
-//    }
-//
+    // public void setDoc(String d) {
+    // doc = d;
+    // }
+    //
     public String getDoc() {
         return doc;
     }
@@ -93,14 +93,15 @@ public class PythonFunction {
     }
 
     public String getInvocation() {
-        StringBuilder sb = new StringBuilder();
-        int regArgCount = argValues.length - argDefaults.length;
+        final StringBuilder sb = new StringBuilder();
+        final int regArgCount = argValues.length - argDefaults.length;
         sb.append(name).append("(");
         for (int i = 0; i < regArgCount; i++)
             sb.append(argValues[i]);
         for (int i = 0; i < argDefaults.length; i++) {
             if (argValues[regArgCount + i] == null)
-                sb.append(argNames[regArgCount + i]).append("=").append(argValues[regArgCount + i]);
+                sb.append(argNames[regArgCount + i]).append("=")
+                        .append(argValues[regArgCount + i]);
             if (i < argNames.length - 1)
                 sb.append(", ");
         }
@@ -109,7 +110,7 @@ public class PythonFunction {
     }
 
     public boolean canBeInvoked() {
-        int regArgCount = argValues.length - argDefaults.length;
+        final int regArgCount = argValues.length - argDefaults.length;
         for (int i = 0; i < regArgCount; i++) {
             if (argValues[i] == null)
                 return false;
@@ -118,36 +119,37 @@ public class PythonFunction {
     }
 
     public void invoke() throws ScriptException {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(pkg).append('.').append(name).append("(");
-        StringBuffer args = new StringBuffer();
-        int regArgCount = argValues.length - argDefaults.length;
+        final StringBuffer args = new StringBuffer();
+        final int regArgCount = argValues.length - argDefaults.length;
         for (int i = 0; i < regArgCount; i++) {
             if (args.length() != 0)
                 args.append(", ");
-            if (argValues[i]!= null)
+            if (argValues[i] != null)
                 args.append(argValues[i]);
             else
                 args.append("None");
         }
         for (int i = 0; i < argDefaults.length; i++) {
-            String v = argValues[regArgCount + i]; 
-            if (! v.equals(argDefaults[i])) {
+            final String v = argValues[regArgCount + i];
+            if (!v.equals(argDefaults[i])) {
                 if (args.length() != 0)
                     args.append(", ");
-                args.append(argNames[regArgCount + i]).append("=").append((v != null)? v : "None");
+                args.append(argNames[regArgCount + i]).append("=")
+                        .append((v != null) ? v : "None");
             }
         }
         sb.append(args);
         sb.append(")");
-        String f = sb.toString(); 
-        ScriptResult res = new ScriptResult();
+        final String f = sb.toString();
+        final ScriptResult res = new ScriptResult();
         python.eval(f, res);
     }
 
     @Override
     public String toString() {
-        return name+"("+(argNames.length > 0 ? "...)" : ")");
+        return name + "(" + (argNames.length > 0 ? "...)" : ")");
     }
 
     public boolean wasSet() {

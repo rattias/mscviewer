@@ -47,6 +47,7 @@ class FlowError(Exception):
                                             	
 class flow_base:
     """
+    $ignore
     Base class for all flow declaration constructs
     """
     traversed = False
@@ -226,6 +227,9 @@ class flow_base:
         return res
            
     def get_min_model_index(self):
+        """$descr{returns the minimum among the index of the events this flow 
+        definition has been annotated with.}
+        """
         res = sys.maxint
         if self.traversed:
             if isinstance(self, fev) and self.model_idx >= 0:
@@ -238,9 +242,22 @@ class flow_base:
      
         
 class fev(flow_base):
+    """$descr{Instances of this class represent a single event.}"""
+    
     def __init__(self, entity, label, 
                  predicate=None, predicate_arg=None, action=None, 
-                 action_arg=None, descr=None, nomatch_action=None, nomatch_action_arg=None):
+                 action_arg=None, descr=None):
+        """$descr{creates an instance of the class}
+        $header{Parameters}
+        $param{entity}{String}{The string or regexp representing the ID of the entity for the event to be matched.}
+        $param{label}{String}{The string or regexp representing the ID of the event to be matched}
+        $param{predicate}{function}{an optional function that should return True for the comparison to succeed (in
+        addition to entity and label comparison)}
+        $param{predicate_arg}{any}{An argument to be passed to the predicate function when it's called}
+        $param{action}{function}{An optional function to be called if a match is found}
+        $param{action_arg}{any}{A parameter to be passed to the action function when it's called}
+        $param{desc}{String}{A description of the element}
+        """
         self.model = None
         self.description = descr
         self.entity = Template(entity)          
@@ -249,10 +266,9 @@ class fev(flow_base):
         self.predicate_arg = predicate_arg
         self.action = action
         self.action_arg = action_arg
-        self.nomatch_action = nomatch_action
-        self.nomatch_action_arg = nomatch_action_arg
-
+ 
     def get_model(self, arr=[], dbg=False):
+        """$descr{returns a tuple of model element that have annotated this flow (see flow_match())}"""
         if dbg:
             print "--->DBG: traversed=", self.traversed, str(self), "model = ", msc_model_2_str(self.model)
         if (not self.traversed) or self.model == None:
@@ -337,10 +353,7 @@ class fev(flow_base):
 
 def is_sink(fev, ev, vars, arg):
     return ev.getIncomingInteractions() != None
-        
-def fconn_to(client_entity,server_entity):
-    return fev(client_entity, "<"+server_entity+"_init>", predicate=is_sink, descr="connecting to "+server_entity)
-           
+                   
 def fint(src, dst, label, 
           src_predicate=None, src_predicate_arg=None,
           dst_predicate=None, dst_predicate_arg=None,
@@ -348,8 +361,27 @@ def fint(src, dst, label,
           dst_action=None, dst_action_arg=None,
           src_description=None, dst_description=None,
           src_flow=None, dst_flow=None):
-          
-         
+    """$descr{returns a flow specification for an interaction.}
+    $header{Parameters}
+    $param{src}{String}{regexp for source entity ID}
+    $param{dst}{String}{regexp for destination entity ID}
+    $param{dst}{String}{regexp for label associated to source and destination event}
+    $param{src_predicate}{function}{optional boolean function to be invoked on the source event in addition to matching entity and label}
+    $param{src_predicate_arg}{any}{a value passed to the src_predicate function}
+    $param{dst_predicate}{function}{optional boolean function to be invoked on the destinatione vent in addition to matching entity and label}
+    $param{dst_predicate_arg}{any}{a value passed to the dst_predicate function}
+    $param{src_description}{String}{optional human readable representation of the source event}
+    $param{dst_description}{String}{optional human readable representation of the destination event}
+    $param{src_flow}{String}{An interaction creates a new branch on a flow. This element allow to specify the branch continuing on the source entity}
+    $param{dst_flow}{String}{An interaction creates a new branch on a flow. This element allow to specify the branch continuing on the destination entity}
+    $header{Example}
+    Suppose entity $e{S} sends a message to entity $e{D} on label $e{msg}. After that $e{S} has an event 
+    with label $e{e1} and $e{D} has an event on label $e{e2}. This can be expressed as follows:
+    $code{fint("S", "D", "msg",
+        src_flow=fev("S", "e1"),
+        dst_flow=fev("S", "e2"))
+    }
+    """     
     def is_source(fev, ev, vars, dstfev):
         ints = ev.getOutgoingInteractions()
         for inter in ints:            
@@ -437,7 +469,16 @@ def ftran(entity, from_state, to_state, predicate=None, predicate_arg=None, acti
      
             
 class fseq(flow_base):
-    
+    """$descr{class representing a sequence of flows. for a $e{fseq} to match a sequence of events in the model, each
+    sub-flow must match a set of events, and the first matching event in a subflow must follow (but not necessarily 
+    immediately) the last matching event in the previous flow.}
+    $header{Parameters}
+    $param{*args}{flows}{the flows to be matched in sequence}
+    $header{Example}
+    $descr{Suppose the model has a sequence of events on entity $e{A} and on labels $e{e1}..$e{e5}. The following flow
+    definition would match events with odd indices:}
+    $code{fseq(fev("A", "e1"), fev("A", "e3"), fev("A", "e5"))}
+    """
     def match_internal(self, model, idx, count, progress=None):
         self.traversed = True
         self._matched = False
@@ -470,7 +511,16 @@ class fseq(flow_base):
 
 
 class fany(flow_base):
-
+    """$descr{class representing an alternative of flows. for a $e{fany} to match a sequence of events in the model, at
+    least one of the sub-flow must match a set of events.}
+    $header{Parameters}
+    $param{*args}{flows}{the flows alternatives}
+    $header{Example}
+    $descr{Suppose the model has a sequence of events on entity $e{A} and on labels $e{e1}..$e{e5}. The following flow
+    definition would match events $e{e4} and $e{e5}:}
+    $code{fany(fseq(fev("A", "e1"), fev("A", "e6")), 
+          fseq(fev("A", "e4"), fev("A", "e5"))}
+    """
     def match_internal(self, model, idx, count, progress=None):
         self.traversed = True
         self._matched = False
@@ -511,7 +561,18 @@ class fany(flow_base):
 
 
 class fall(flow_base):
-
+    """$descr{class representing an concurrent flows. for a $e{fall} to match a sequence of events in the model, all
+    of the flows must match}
+    $header{Parameters}
+    $param{*args}{flows}{the concurrent flows}
+    $header{Example}
+    $descr{Suppose the model has a sequence of events on label $e{e1}..$e{e3} on entity $e{A} and
+    on labels $e{e4}..$e{e6} on entity $e{B}. The following flow definition would match all those events,
+    regardless of the order between events on $e{A} and $e{B}:}
+    $code{fall(fseq(fev("A", "e1"), fev("A", "e2"), fev("A", "e2")), 
+          fseq(fev("B", "e4"), fev("B", "e5"), fev("B", "e6"))}
+    """      
+             
     def match_internal(self, model, idx, count, progress=None):
         self.traversed = True
         self._matched = False
@@ -541,10 +602,20 @@ class fall(flow_base):
 
 
 class frep(flow_base):
+
     min=1
     max=sys.maxint
     
-    def __init__(self, children, min=1, max=sys.maxint):
+    def __init__(self, subflow, min=1, max=sys.maxint):
+        """$descr{class representing an iteration of flows. for a $e{frep} the sub-flow
+        of the flows must match a number of times between $e{min} and $e{max}, included}
+        $header{Parameters}
+        $param{subflow}{flows}{the repeated flows}
+        $header{Example}
+        $descr{Suppose the model has a sequence of events with label $e{e1}, $e{e2}, $e{e1}, $e{e2}, $e{e1}.
+        The following flow definition matches the first four events:}
+        $code{frep(fseq(fev("A", "e1"), fev("A", "e2")), min=1, max=5)}
+        """      
         raise Exception("SHOULD NOT USE")
         flow_base.__init__(self, (children))
         self.min = min
@@ -612,34 +683,7 @@ def msc_flow_print():
             else:
                 prt += "\"" + ev.getLabel() + "\""
     print prt + ")"
-        
-def msc_grab_remote_entity(fev, ev, fvars, varname):
-    if ev.getIncomingInteractions() != None: 
-        en = ev.getIncomingInteractions()[0].getToEvent().getEntity().getPath();
-    else:    
-        en = ev.getOutgoingInteractions()[0].getToEvent().getEntity().getPath();
-    dict = {}
-    dict[varname] = en
-    fvars.update(dict)
-
-def msc_grab_entity(fev, ev, fvars, varname):
-    en = ev.getEntity().getPath();
-    dict = {}
-    dict[varname] = en
-    fvars.update(dict)
-
-def msc_grab_entities(fev, ev, fvars, varnames):
-    if ev.getIncomingInteractions() != None: 
-        dst_en = ev.getEntity().getPath();
-        src_en = ev.getIncomingInteractions()[0].getFromEvent().getEntity().getPath();
-    else:    
-        src_en = ev.getEntity().getPath();
-        dst_en = ev.getOutgoingInteractions()[0].getToEvent().getEntity().getPath();
-    dict = {}
-    dict[varnames[0]] = src_en
-    dict[varnames[1]] = dst_en
-    fvars.update(dict)
-    
+ 
     
 def flow_show(evs, marker=None):
     for el in evs:
@@ -651,7 +695,12 @@ def flow_show(evs, marker=None):
     #scroll to first entity/event
     gui.show(evs[0])
 
+
 def flow_mark(evs, color):
+    """Marks all events in the $e{evs} list with the specified
+    color. Also, if an event has an incoming interaction, the interaction
+    is marked too.
+    """
     for el in evs:
         if color != None:
             el.setMarker(color)
@@ -674,6 +723,7 @@ def msc_model_2_str(m):
     else:
         res = "("+m.getEntity().getPath()+", "+m.getLabel()+")"
     return res
+
 
 def results_add_flow(f, valid=True, human_friendly=False, msg=None):
     if gui.is_batch_mode():

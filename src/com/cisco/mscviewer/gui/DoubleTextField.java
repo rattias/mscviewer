@@ -15,53 +15,56 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 
-import javax.swing.text.AttributeSet;
 import javax.swing.JTextField;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
 @SuppressWarnings("serial")
 class DoubleTextField extends JTextField {
-    private DecimalFormat zfFormat;
-    private DecimalFormat zfFormatE;
-    private double minNonExp;
+    private final DecimalFormat zfFormat;
+    private final DecimalFormat zfFormatE;
+    private final double minNonExp;
 
     public DoubleTextField(double initVal, int decimalDigits) {
         super("" + initVal);
         String fmt = "####.";
-        for(int i=0; i<decimalDigits; i++)
+        for (int i = 0; i < decimalDigits; i++)
             fmt += "#";
         zfFormat = new DecimalFormat(fmt);
-        minNonExp = 1.0/Math.pow(10,decimalDigits);
+        minNonExp = 1.0 / Math.pow(10, decimalDigits);
         fmt += "E0";
         zfFormatE = new DecimalFormat(fmt);
         addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
-                double v = Double.parseDouble(getText());
+                final double v = Double.parseDouble(getText());
                 setValue(v);
             }
         });
 
     }
 
+    @Override
     protected Document createDefaultModel() {
         return new DoubleTextDocument();
     }
 
+    @Override
     public boolean isValid() {
         try {
             Double.parseDouble(getText());
             return true;
-        } catch (NumberFormatException e) {
-            String s = getText();
-            if (! s.endsWith("."))
+        } catch (final NumberFormatException e) {
+            final String s = getText();
+            if (!s.endsWith("."))
                 return false;
-            for(int i=0; i<s.length()-1; i++)
-                if (s.charAt(i)<'0' || s.charAt(i)>'9')
+            for (int i = 0; i < s.length() - 1; i++)
+                if (s.charAt(i) < '0' || s.charAt(i) > '9')
                     return false;
             return true;
-        }catch(NullPointerException ex) {
+        } catch (final NullPointerException ex) {
             return true;
         }
     }
@@ -69,7 +72,7 @@ class DoubleTextField extends JTextField {
     public double getValue() {
         try {
             return Double.parseDouble(getText());
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             return 0;
         }
     }
@@ -82,17 +85,18 @@ class DoubleTextField extends JTextField {
     }
 
     class DoubleTextDocument extends PlainDocument {
+        @Override
         public void insertString(int offs, String str, AttributeSet a)
-        throws BadLocationException {
+                throws BadLocationException {
             if (str == null)
                 return;
-            String oldString = getText(0, getLength());
-            String newString = oldString.substring(0, offs) + str
-            + oldString.substring(offs);
+            final String oldString = getText(0, getLength());
+            final String newString = oldString.substring(0, offs) + str
+                    + oldString.substring(offs);
             try {
-                Double.parseDouble(newString+"0");
+                Double.parseDouble(newString + "0");
                 super.insertString(offs, str, a);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
             }
         }
     }

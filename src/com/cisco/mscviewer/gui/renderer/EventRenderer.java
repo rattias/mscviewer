@@ -11,11 +11,12 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 abstract public class EventRenderer {
     public final static Color SELECTION_COLOR = Color.red;
@@ -27,7 +28,7 @@ abstract public class EventRenderer {
      * @param props
      */
     public void initialize(JSonObject props) {
-//        this.ev = ev;
+        // this.ev = ev;
         setup(props);
     }
 
@@ -36,7 +37,7 @@ abstract public class EventRenderer {
      * @param b
      */
     protected void setScaleSource(boolean b) {
-        scaleSource = b;		
+        scaleSource = b;
     }
 
     /**
@@ -47,33 +48,36 @@ abstract public class EventRenderer {
         return scaleSource;
     }
 
-//    public Event getEvent() {
-//        return ev;
-//    }
+    // public Event getEvent() {
+    // return ev;
+    // }
 
     /**
      *
      * @param props
      */
     public void setup(JSonObject obj) {
-//        String style = props.getProperty("label_style");
-//        if (style != null) {
-//            if (style.equals("bold"))
-//                labelStyle = Font.BOLD;
-//            else if (style.equals("italic"))
-//                labelStyle = Font.ITALIC;
-//            else if (style.equals("plain"))
-//                labelStyle = Font.PLAIN;
-//        }
+        // String style = props.getProperty("label_style");
+        // if (style != null) {
+        // if (style.equals("bold"))
+        // labelStyle = Font.BOLD;
+        // else if (style.equals("italic"))
+        // labelStyle = Font.ITALIC;
+        // else if (style.equals("plain"))
+        // labelStyle = Font.PLAIN;
+        // }
     }
 
-//    public int getLabelStyle() {
-//        return labelStyle;
-//    }
-    /** renders the event. (x,y) is the center
-     * @param g2d	
-     * @param maxDim	
-     * @param isSelected */	
+    // public int getLabelStyle() {
+    // return labelStyle;
+    // }
+    /**
+     * renders the event. (x,y) is the center
+     * 
+     * @param g2d
+     * @param maxDim
+     * @param isSelected
+     */
     abstract public void render(Graphics2D g2d, Dimension maxDim);
 
     /**
@@ -84,16 +88,21 @@ abstract public class EventRenderer {
      * @param bb
      * @return
      */
-    abstract public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb);
+    abstract public Rectangle getBoundingBox(Dimension maxDim, int x, int y,
+            Rectangle bb);
 
-    /** return true if (px,py) lies within the figure, false otherwise
+    /**
+     * return true if (px,py) lies within the figure, false otherwise
+     * 
      * @param x
      * @param y
      * @param maxDim
      * @param px
      * @param py
-     * @return  */
-    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px, int py) {
-        return getBoundingBox(maxDim, x, y, new Rectangle()).contains(px, py);		
+     * @return
+     */
+    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px,
+            int py) {
+        return getBoundingBox(maxDim, x, y, new Rectangle()).contains(px, py);
     }
 }

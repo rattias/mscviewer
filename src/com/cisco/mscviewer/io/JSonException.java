@@ -21,7 +21,8 @@ public class JSonException extends Exception {
         super(msg);
     }
 
-    public JSonException(String file, int line, int column, String input, String msg) {
+    public JSonException(String file, int line, int column, String input,
+            String msg) {
         super(msg);
         this.file = file;
         this.line = line;
@@ -31,9 +32,9 @@ public class JSonException extends Exception {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append('\n').append(input).append('\n');
-        for(int i=0; i<column; i++)
+        for (int i = 0; i < column; i++)
             sb.append(' ');
         sb.append("^\n");
         if (file != null) {

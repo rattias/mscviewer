@@ -11,10 +11,9 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.JSonStringValue;
-
 
 public class BirthInteractionRenderer extends DefaultInteractionRenderer {
 
@@ -23,6 +22,7 @@ public class BirthInteractionRenderer extends DefaultInteractionRenderer {
      * @param props
      * @param ev
      */
+    @Override
     public void setup(JSonObject props, Event ev) {
         props.clear();
         props.set("color", new JSonStringValue("000000"));

@@ -15,14 +15,14 @@ import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
 /**
  * @author Roberto Attias
- * @since  Jan 2012
+ * @since Jan 2012
  */
 @SuppressWarnings("serial")
-class BottomRightPane extends JTabbedPane implements PNGSnapshotTarget{
+class BottomRightPane extends JTabbedPane implements PNGSnapshotTarget {
     public BottomRightPane() {
         setName("BottomRightPane");
     }
-    
+
     @Override
     public Component getPNGSnapshotClient() {
         return null;

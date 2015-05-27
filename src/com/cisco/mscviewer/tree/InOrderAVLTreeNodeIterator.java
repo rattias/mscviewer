@@ -19,20 +19,20 @@ import java.util.Iterator;
  * @author rattias
  */
 public class InOrderAVLTreeNodeIterator implements Iterator<AVLTreeNode> {
-    private ArrayList<AVLTreeNode> stack = new ArrayList<AVLTreeNode>();
-    
+    private final ArrayList<AVLTreeNode> stack = new ArrayList<AVLTreeNode>();
+
     public InOrderAVLTreeNodeIterator(IntervalTree tree) {
         if (tree.getRoot() != null)
             pushLefts(tree.getRoot());
     }
 
     private void pushLefts(AVLTreeNode tn) {
-        while(tn != null) {
+        while (tn != null) {
             stack.add(tn);
             tn = tn.getLeft();
         }
     }
-        
+
     @Override
     public boolean hasNext() {
         if (stack.isEmpty())
@@ -43,8 +43,8 @@ public class InOrderAVLTreeNodeIterator implements Iterator<AVLTreeNode> {
 
     @Override
     public AVLTreeNode next() {
-        AVLTreeNode tn = stack.remove(stack.size()-1);
-        AVLTreeNode r = tn.getRight();
+        final AVLTreeNode tn = stack.remove(stack.size() - 1);
+        final AVLTreeNode r = tn.getRight();
         if (r != null)
             pushLefts(r);
         return tn;
@@ -52,8 +52,7 @@ public class InOrderAVLTreeNodeIterator implements Iterator<AVLTreeNode> {
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("remove not supported."); 
+        throw new UnsupportedOperationException("remove not supported.");
     }
-    
-}
 
+}

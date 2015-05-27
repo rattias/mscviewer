@@ -18,7 +18,7 @@ import javax.swing.JTabbedPane;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
 @SuppressWarnings("serial")
-class TopLeftPane extends JTabbedPane implements PNGSnapshotTarget{
+class TopLeftPane extends JTabbedPane implements PNGSnapshotTarget {
     public TopLeftPane() {
         setName("TopLeftPane");
     }

@@ -12,17 +12,11 @@
 package com.cisco.mscviewer.model;
 
 public enum Unit {
-    NS("ns"),
-    US("us"),
-    MS("ms"),
-    S("s"),
-    M("m"),
-    H("h"),
-    D("d");
+    NS("ns"), US("us"), MS("ms"), S("s"), M("m"), H("h"), D("d");
 
     private final String str;
 
-    private Unit(String s){
+    private Unit(String s) {
         str = s;
     }
 

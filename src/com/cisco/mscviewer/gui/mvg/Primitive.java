@@ -11,9 +11,10 @@
  */
 package com.cisco.mscviewer.gui.mvg;
 
-import java.awt.BasicStroke;
 import static java.awt.BasicStroke.CAP_SQUARE;
 import static java.awt.BasicStroke.JOIN_MITER;
+
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
@@ -30,18 +31,18 @@ abstract public class Primitive {
     private Color fillColor;
     private Shape s;
     private Stroke stroke;
-    
+
     private static Stroke getStroke(float w, float[] dashes) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(Float.toString(w));
         if (dashes != null) {
             sb.append('-');
-            for(float v: dashes) {
+            for (final float v : dashes) {
                 sb.append(Float.toString(v));
                 sb.append('-');
             }
         }
-        String key = sb.toString();
+        final String key = sb.toString();
         Stroke s = strokes.get(key);
         if (s == null) {
             s = new BasicStroke(w, CAP_SQUARE, JOIN_MITER, 10.0f, dashes, 0.0f);
@@ -49,12 +50,13 @@ abstract public class Primitive {
         }
         return s;
     }
-    
+
     protected void setShape(Shape s) {
-        this.s = s;        
+        this.s = s;
     }
+
     public abstract void setContainerDimension(int width, int height);
-            
+
     protected Shape getShape() {
         return s;
     }
@@ -74,24 +76,23 @@ abstract public class Primitive {
     public Color getStrokeColor() {
         return strokeColor;
     }
-    
+
     public void setFillColor(Color c) {
         fillColor = c;
     }
-    
+
     public Color getFillColor() {
         return fillColor;
     }
 
-    
     public void render(Graphics2D g2d) {
         if (s == null)
-            throw new Error(getClass().getName()+": it's null!");
+            throw new Error(getClass().getName() + ": it's null!");
         if (fillColor != null) {
             g2d.setColor(fillColor);
             g2d.fill(s);
         }
-        if (strokeColor != null) 
+        if (strokeColor != null)
             g2d.setColor(strokeColor);
 
         if (stroke != null) {

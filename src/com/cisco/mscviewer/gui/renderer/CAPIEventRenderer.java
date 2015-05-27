@@ -11,7 +11,6 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -19,6 +18,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 public class CAPIEventRenderer extends EventRenderer {
     static Rectangle2D r;
@@ -36,27 +37,28 @@ public class CAPIEventRenderer extends EventRenderer {
 
     public void drawText(Graphics2D g2d, int H) {
         if (r == null) {
-            FontMetrics fm = g2d.getFontMetrics();
+            final FontMetrics fm = g2d.getFontMetrics();
             r = fm.getStringBounds(str, g2d);
             ascent = fm.getAscent();
         }
-        AffineTransform tf = g2d.getTransform();
+        final AffineTransform tf = g2d.getTransform();
         g2d.scale(.7, .7);
         g2d.setColor(Color.black);
-        g2d.drawString(str, (int)-(r.getWidth()/2), (int)(0+H/2+r.getHeight()+r.getY()));
+        g2d.drawString(str, (int) -(r.getWidth() / 2),
+                (int) (0 + H / 2 + r.getHeight() + r.getY()));
         g2d.setTransform(tf);
     }
 
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        int H = maxDim.height*2/3;
-        int W = maxDim.height;
-        g2d.setColor(Color.white);		
-        g2d.fillRect(0-W/2, 0-H/2, W, H);
-        g2d.setColor(Color.gray);		
-        g2d.drawRect(0-W/2, 0-H/2, W, H);
-        g2d.drawLine(0-W/2, 0-H/2, 0-W/2+3, 0-H/2+3);
-        g2d.drawLine(0+W/2, 0-H/2, 0+W/2-3, 0-H/2+3);
+        final int H = maxDim.height * 2 / 3;
+        final int W = maxDim.height;
+        g2d.setColor(Color.white);
+        g2d.fillRect(0 - W / 2, 0 - H / 2, W, H);
+        g2d.setColor(Color.gray);
+        g2d.drawRect(0 - W / 2, 0 - H / 2, W, H);
+        g2d.drawLine(0 - W / 2, 0 - H / 2, 0 - W / 2 + 3, 0 - H / 2 + 3);
+        g2d.drawLine(0 + W / 2, 0 - H / 2, 0 + W / 2 - 3, 0 - H / 2 + 3);
         drawText(g2d, H);
     }
 
@@ -72,8 +74,8 @@ public class CAPIEventRenderer extends EventRenderer {
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        bb.x = x-maxDim.height/2;
-        bb.y = y-maxDim.height/2;
+        bb.x = x - maxDim.height / 2;
+        bb.y = y - maxDim.height / 2;
         bb.width = maxDim.height;
         bb.height = maxDim.height;
         return bb;

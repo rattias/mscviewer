@@ -11,39 +11,43 @@
  */
 package com.cisco.mscviewer.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.script.*;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.*;
 
 @SuppressWarnings("serial")
 class JScriptPanel extends JPanel {
     private ScriptEngine engine;
-    private JTextArea scriptTA;
-    private JTextArea errorTA;
-    private Timer t;
+    private final JTextArea scriptTA;
+    private final JTextArea errorTA;
+    private final Timer t;
     private String scriptContext;
 
     public JScriptPanel() {
-        JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        final JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         setLayout(new BorderLayout());
         add(jsp, BorderLayout.CENTER);
         jsp.setResizeWeight(.7);
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        List<ScriptEngineFactory> factories = mgr.getEngineFactories();
-        for (ScriptEngineFactory factory: factories) {
-            String langName = factory.getLanguageName();
-            String langVersion = factory.getLanguageVersion();
-            if (langName.equals("ECMAScript") && 
-                    langVersion.equals("1.6")) {
+        final ScriptEngineManager mgr = new ScriptEngineManager();
+        final List<ScriptEngineFactory> factories = mgr.getEngineFactories();
+        for (final ScriptEngineFactory factory : factories) {
+            final String langName = factory.getLanguageName();
+            final String langVersion = factory.getLanguageVersion();
+            if (langName.equals("ECMAScript") && langVersion.equals("1.6")) {
                 engine = factory.getScriptEngine();
-                break;	
+                break;
             }
         }
         if (engine == null) {
@@ -56,7 +60,7 @@ class JScriptPanel extends JPanel {
         errorTA.setEditable(false);
         jsp.setBottomComponent(new JScrollPane(errorTA));
 
-        TimerTask tt = new TimerTask() {
+        final TimerTask tt = new TimerTask() {
             @Override
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -65,7 +69,7 @@ class JScriptPanel extends JPanel {
                         try {
                             engine.eval(getScript());
                             errorTA.setText("");
-                        } catch (ScriptException e) {
+                        } catch (final ScriptException e) {
                             errorTA.setText(e.getMessage());
                         }
                     }
@@ -73,8 +77,8 @@ class JScriptPanel extends JPanel {
             }
         };
         t = new Timer();
-        t.schedule(tt, 1000, 1000);		
-    }	
+        t.schedule(tt, 1000, 1000);
+    }
 
     public String getScript() {
         return scriptContext.replace("$$", scriptTA.getText());
@@ -85,4 +89,3 @@ class JScriptPanel extends JPanel {
 
     }
 }
-

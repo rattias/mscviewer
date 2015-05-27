@@ -13,7 +13,10 @@ package com.cisco.mscviewer.gui;
 
 import com.cisco.mscviewer.expression.ExpressionParser;
 import com.cisco.mscviewer.expression.ParsedExpression;
-import com.cisco.mscviewer.model.*;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.MSCDataModelEventFilter;
+import com.cisco.mscviewer.model.ViewModel;
 
 class JSViewFilter implements MSCDataModelEventFilter {
     private final boolean filterEvents;
@@ -24,13 +27,15 @@ class JSViewFilter implements MSCDataModelEventFilter {
     public JSViewFilter(MSCDataModel dm, ViewModel ehm, ParsedExpression e) {
         this.ehm = ehm;
         this.expr = e;
-        filterEvents =  (expr != null); // && expr.getFirstToken().toString().equals("event");
+        filterEvents = (expr != null); // &&
+                                       // expr.getFirstToken().toString().equals("event");
     }
 
     @Override
     public boolean filter(Event ev) {
-        return ehm.indexOf(ev.getEntity()) != -1 && 
-        (filterEvents ? exp.evaluateAsJavaScriptonEvent(ev, expr) : true);
+        return ehm.indexOf(ev.getEntity()) != -1
+                && (filterEvents ? exp.evaluateAsJavaScriptonEvent(ev, expr)
+                        : true);
     }
 
 }

@@ -22,9 +22,10 @@ public class EventRange {
     }
 
     public int getSize() {
-        return toIdx-fromIdx+1;
+        return toIdx - fromIdx + 1;
     }
+
     public Event getEventAtIndex(int idx) {
-        return dm.getEventAt(fromIdx+idx);
+        return dm.getEventAt(fromIdx + idx);
     }
 }

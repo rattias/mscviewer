@@ -11,6 +11,12 @@
  */
 package com.cisco.mscviewer.gui;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -18,23 +24,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 @SuppressWarnings("serial")
 class FindSourcePanel extends JPanel {
-    private final JList<String> list;   
+    private final JList<String> list;
 
     public FindSourcePanel(final JList<String> list) {
         this.list = list;
         setLayout(new BorderLayout());
-        JLabel jl = new JLabel("Find:");
+        final JLabel jl = new JLabel("Find:");
         add(jl, BorderLayout.WEST);
 
-        JPanel p = new JPanel();
+        final JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         add(p, BorderLayout.CENTER);
         final JButton prev = new JButton("<");
@@ -45,10 +46,10 @@ class FindSourcePanel extends JPanel {
         p.add(tf, BorderLayout.CENTER);
         p.add(next, BorderLayout.EAST);
 
-        tf.addActionListener(new ActionListener() {			
+        tf.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String expr = tf.getText();
+                final String expr = tf.getText();
                 findNext(expr);
             }
         });
@@ -56,36 +57,37 @@ class FindSourcePanel extends JPanel {
         prev.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String  txt = tf.getText();
+                final String txt = tf.getText();
                 findPrev(txt);
             }
-        });		
+        });
 
         next.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String txt = tf.getText();
+                final String txt = tf.getText();
                 findNext(txt);
             }
-        });		
+        });
     }
 
     private Pattern getPattern(String txt) {
         try {
             return Pattern.compile(txt);
-        }catch(PatternSyntaxException ex) {
-            String msg = ex.getMessage();
-            JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (final PatternSyntaxException ex) {
+            final String msg = ex.getMessage();
+            JOptionPane.showMessageDialog(this, msg, "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
         return null;
     }
 
     private void findNext(String txt) {
         if (txt != null) {
-            Pattern p = getPattern(txt);
-            ListModel<String> m = list.getModel();
-            int idx = list.getSelectedIndex()+1;
-            while(idx<m.getSize()) {
+            final Pattern p = getPattern(txt);
+            final ListModel<String> m = list.getModel();
+            int idx = list.getSelectedIndex() + 1;
+            while (idx < m.getSize()) {
                 if (p.matcher(m.getElementAt(idx)).find()) {
                     list.setSelectedIndex(idx);
                     list.ensureIndexIsVisible(idx);
@@ -93,20 +95,22 @@ class FindSourcePanel extends JPanel {
                 }
                 idx++;
             }
-            JOptionPane.showMessageDialog(this, "No more elements matching expression", "Error", JOptionPane.ERROR_MESSAGE);
-        }		
+            JOptionPane.showMessageDialog(this,
+                    "No more elements matching expression", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void findPrev(String txt) {
         if (txt != null) {
-            Pattern p = getPattern(txt);
-            ListModel<String> m = list.getModel();
+            final Pattern p = getPattern(txt);
+            final ListModel<String> m = list.getModel();
             int idx = list.getSelectedIndex();
-            if (idx<0)
-                idx = m.getSize()-1;
+            if (idx < 0)
+                idx = m.getSize() - 1;
             else
                 idx--;
-            while(idx >= 0) {
+            while (idx >= 0) {
                 if (p.matcher(m.getElementAt(idx)).find()) {
                     list.setSelectedIndex(idx);
                     list.ensureIndexIsVisible(idx);
@@ -114,7 +118,9 @@ class FindSourcePanel extends JPanel {
                 }
                 idx--;
             }
-            JOptionPane.showMessageDialog(this, "No more elements matching expression", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "No more elements matching expression", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
     }

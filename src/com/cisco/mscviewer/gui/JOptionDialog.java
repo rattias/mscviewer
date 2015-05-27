@@ -16,5 +16,5 @@ package com.cisco.mscviewer.gui;
  * @author rattias
  */
 class JOptionDialog {
-    
+
 }

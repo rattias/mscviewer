@@ -32,7 +32,8 @@ public class TBGen {
     static int entityCount, evCount;
 
     private static void usage() {
-        System.out.println("java TBGen <entity-count> <ev-count> [<file name>]");
+        System.out
+                .println("java TBGen <entity-count> <ev-count> [<file name>]");
     }
 
     public static void main(String args[]) throws FileNotFoundException {
@@ -49,38 +50,45 @@ public class TBGen {
         }
         try {
             for (int i = 0; i < entityCount; i++) {
-                out.println("@msc_entity id=\"en" + i + "\" display_name=\"en/" + i + "\"");
+                out.println("@msc_entity id=\"en" + i + "\" display_name=\"en/"
+                        + i + "\"");
             }
-            ArrayList<FromEv> al = new ArrayList<FromEv>();
+            final ArrayList<FromEv> al = new ArrayList<FromEv>();
             int t = 0;
             int id = 0;
             do {
                 int l = al.size();
                 boolean cons;
                 do {
-                    double f = Math.random();
+                    final double f = Math.random();
                     cons = (l > 10 || f < l / 10.0);
                     if (cons) {
-                        int dstEnIdx = (int) (Math.random() * entityCount);
-                        FromEv ev = al.remove(0);
-                        out.println("@msc_event type=\"sink\" entity_id=\"en" + dstEnIdx + "\" time=\"" + t + "\" pairing_id=\"" + ev.pairingId + "\"");
+                        final int dstEnIdx = (int) (Math.random() * entityCount);
+                        final FromEv ev = al.remove(0);
+                        out.println("@msc_event type=\"sink\" entity_id=\"en"
+                                + dstEnIdx + "\" time=\"" + t
+                                + "\" pairing_id=\"" + ev.pairingId + "\"");
                         t += 1 + (int) (10 * Math.random());
                         l--;
                     }
                 } while (cons);
-                double r = Math.random();
-                int enIdx = (int) (r * entityCount);
-                out.println("@msc_event type=\"source\" entity_id=\"en" + enIdx + "\" time=\"" + t + "\" label=\"foo" + id + "\" pairing_id=\"en" + enIdx + "/" + id + "\"");
+                final double r = Math.random();
+                final int enIdx = (int) (r * entityCount);
+                out.println("@msc_event type=\"source\" entity_id=\"en" + enIdx
+                        + "\" time=\"" + t + "\" label=\"foo" + id
+                        + "\" pairing_id=\"en" + enIdx + "/" + id + "\"");
                 al.add(new FromEv("en" + enIdx, "en" + enIdx + "/" + id));
                 id++;
                 t += 1 + (int) (10 * Math.random());
             } while (id < evCount);
-            for (FromEv ev : al) {
-                int dstEnIdx = (int) ((Math.random()) * entityCount);
-                out.println("@msc_event type=\"sink\" entity_id=\"en" + dstEnIdx + "\" time=\"" + t + "\" pairing_id=\"" + ev.pairingId + "\"");
+            for (final FromEv ev : al) {
+                final int dstEnIdx = (int) ((Math.random()) * entityCount);
+                out.println("@msc_event type=\"sink\" entity_id=\"en"
+                        + dstEnIdx + "\" time=\"" + t + "\" pairing_id=\""
+                        + ev.pairingId + "\"");
                 t += 1 + (int) (10 * Math.random());
             }
-        }finally {
+        } finally {
             if (out != System.out)
                 out.close();
         }

@@ -11,11 +11,12 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 public class CITCEventRenderer extends EventRenderer {
 
@@ -28,17 +29,16 @@ public class CITCEventRenderer extends EventRenderer {
         super.setup(props);
     }
 
-
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        int H = maxDim.height*2/3;
-        int W = maxDim.height;
-        g2d.setColor(Color.white);		
-        g2d.fillRect(-W/2, -H/2, W, H);
-        g2d.setColor(Color.gray);		
-        g2d.drawRect(-W/2, -H/2, W, H);
-        for(int x=-W/2+4; x<W/2; x+=4)
-            g2d.drawLine(x, -H/2+1, x, H/2);
+        final int H = maxDim.height * 2 / 3;
+        final int W = maxDim.height;
+        g2d.setColor(Color.white);
+        g2d.fillRect(-W / 2, -H / 2, W, H);
+        g2d.setColor(Color.gray);
+        g2d.drawRect(-W / 2, -H / 2, W, H);
+        for (int x = -W / 2 + 4; x < W / 2; x += 4)
+            g2d.drawLine(x, -H / 2 + 1, x, H / 2);
     }
 
     /**
@@ -53,8 +53,8 @@ public class CITCEventRenderer extends EventRenderer {
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        bb.x = x-maxDim.height/2;
-        bb.y = y-maxDim.height/2;
+        bb.x = x - maxDim.height / 2;
+        bb.y = y - maxDim.height / 2;
         bb.width = maxDim.height;
         bb.height = maxDim.height;
         return bb;

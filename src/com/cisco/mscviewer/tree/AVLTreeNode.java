@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *------------------------------------------------------------------*/
+ *------------------------------------------------------------------*/ 
 /**
  * @author Roberto Attias
  * @since  Aug 2014
@@ -13,48 +13,49 @@ package com.cisco.mscviewer.tree;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
- * This class implements an Interval Tree (actually, an Augmented Tree).
- * The implementation is slightly tweaked towards its use for storing 
- * interactions: the binary tree sorting criteria is the end of the interval,
- * because in our model events can have multiple outgoing interaction but only
- * one incoming one. This allows us to use a single IntervalInfo to store
- * interval in nodes instead of an array.
+ * This class implements an Interval Tree (actually, an Augmented Tree). The
+ * implementation is slightly tweaked towards its use for storing interactions:
+ * the binary tree sorting criteria is the end of the interval, because in our
+ * model events can have multiple outgoing interaction but only one incoming
+ * one. This allows us to use a single IntervalInfo to store interval in nodes
+ * instead of an array.
+ * 
  * @author rattias
  */
-public class AVLTreeNode {    
+public class AVLTreeNode {
     protected Value data;
     protected AVLTreeNode left;
     protected AVLTreeNode right;
     private int height;
-    public static AVLTreeNode singleton;
 
     public AVLTreeNode(Value d) {
-        data = d;      
+        data = d;
         height = 1;
-    }    
+    }
 
     public AVLTreeNode getLeft() {
         return left;
     }
-    
+
     public AVLTreeNode getRight() {
         return right;
     }
-    
+
     public Value getData() {
         return data;
     }
-    
+
     public int getHeight() {
         return height;
     }
- 
+
     public String nodeRep() {
-        return data.toString()+":"+height;
+        return data.toString() + ":" + height;
     }
-    
+
     public void print() {
         System.out.println(nodeRep());
     }
@@ -67,23 +68,22 @@ public class AVLTreeNode {
             v = right.count(v);
         return v;
     }
-            
+
     @SuppressWarnings("unused")
     private void format(ArrayList<String>[] s, int level) {
         if (s[level] == null)
             s[level] = new ArrayList<String>();
         s[level].add(nodeRep());
         if (left != null)
-            left.format(s, level+1);
-        else if  (level+1 < s.length && s[level+1] != null)
-            s[level+1].add("");
-        if (right != null && level < height-1)
-            right.format(s, level+1);
-        else if  (level+1 < s.length && s[level+1] != null)
-            s[level+1].add("");
+            left.format(s, level + 1);
+        else if (level + 1 < s.length && s[level + 1] != null)
+            s[level + 1].add("");
+        if (right != null && level < height - 1)
+            right.format(s, level + 1);
+        else if (level + 1 < s.length && s[level + 1] != null)
+            s[level + 1].add("");
     }
-    
-    
+
     protected int getMaxWidth() {
         int l = nodeRep().length();
         if (left != null)
@@ -91,23 +91,22 @@ public class AVLTreeNode {
         if (right != null)
             l = Math.max(l, right.getMaxWidth());
         return l;
-    }   
-    
-        
+    }
 
-        
-    protected void verify(AVLTreeNode root, HashSet<Object> set, String msg, int min, int max) {
+    protected void verify(AVLTreeNode root, HashSet<Object> set, String msg,
+            int min, int max) {
         if (data.getValue() < min || data.getValue() > max) {
-            ArrayList<String> al = new ArrayList<String>();
+            final List<String> al = new ArrayList<String>();
             root.pathsToValue(data.getValue(), "", al);
             System.err.println("Exception: current tree: ");
-            throw new Error(msg+":"+al.get(0)+": "+data.getValue()+" should be in range ("+min+","+max+")");
+            throw new Error(msg + ":" + al.get(0) + ": " + data.getValue()
+                    + " should be in range (" + min + "," + max + ")");
         }
         if (set.contains(this))
-            throw new Error("Circular Link: "+msg);
+            throw new Error("Circular Link: " + msg);
         set.add(this);
         if (set.contains(data))
-            throw new Error("Duplicated value: "+msg);
+            throw new Error("Duplicated value: " + msg);
         set.add(data);
         if (left != null) {
             left.verify(root, set, msg, min, data.getValue());
@@ -116,9 +115,7 @@ public class AVLTreeNode {
             right.verify(root, set, msg, data.getValue(), max);
         }
     }
- 
-    
-    
+
     protected void add(AVLTreeNode tn) {
         tn.left = tn.right = null;
         if (tn.data.getValue() < data.getValue()) {
@@ -128,38 +125,41 @@ public class AVLTreeNode {
                 left.add(tn);
             }
         } else if (tn.data.getValue() > data.getValue()) {
-            if (right  == null) {
+            if (right == null) {
                 right = tn;
             } else {
                 right.add(tn);
             }
-        } else 
-            System.err.println("Unexpected repeated value "+tn.data.getValue());
-//        HashSet hs = new HashSet();
-//        verify(this, hs, "added "+tn.data.getValue()+", before balance", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } else
+            System.err.println("Unexpected repeated value "
+                    + tn.data.getValue());
+        // HashSet hs = new HashSet();
+        // verify(this, hs, "added "+tn.data.getValue()+", before balance",
+        // Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         balance();
-        
-//        hs = new HashSet();
-//        verify(this, hs, "added "+tn.data.getValue()+", after balance", Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+        // hs = new HashSet();
+        // verify(this, hs, "added "+tn.data.getValue()+", after balance",
+        // Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
- 
+
     protected void balance() {
         int lh = left != null ? left.height : 0;
-        int rh = right  != null ? right.height : 0;
-        if (lh-rh > 1) {
-            int llh = left.left != null ? left.left.height : 0;
-            int lrh = left.right != null ? left.right.height : 0;
-            int d = llh - lrh;
+        int rh = right != null ? right.height : 0;
+        if (lh - rh > 1) {
+            final int llh = left.left != null ? left.left.height : 0;
+            final int lrh = left.right != null ? left.right.height : 0;
+            final int d = llh - lrh;
             if (d >= 0) {
                 rotateLL();
             } else
                 rotateLR();
             lh--;
-        } else if (lh-rh < -1) {
-            int rlh = right.left != null ? right.left.height : 0;
-            int rrh = right.right != null ? right.right.height : 0;
-            int d = rlh - rrh;
+        } else if (lh - rh < -1) {
+            final int rlh = right.left != null ? right.left.height : 0;
+            final int rrh = right.right != null ? right.right.height : 0;
+            final int d = rlh - rrh;
             if (d >= 0) {
                 rotateRL();
             } else
@@ -168,32 +168,31 @@ public class AVLTreeNode {
         }
         height = Math.max(lh, rh) + 1;
     }
-    
-    protected void rotateLL() { 
-        AVLTreeNode L = left;
-        AVLTreeNode R = right;
-        AVLTreeNode LL = left.left;
-        AVLTreeNode LR = left.right;
-        Value tmp = data;
-        data  = L.data;
+
+    protected void rotateLL() {
+        final AVLTreeNode L = left;
+        final AVLTreeNode R = right;
+        final AVLTreeNode LL = left.left;
+        final AVLTreeNode LR = left.right;
+        final Value tmp = data;
+        data = L.data;
         left = LL;
         right = L;
         right.data = tmp;
         right.left = LR;
         right.right = R;
         right.height = Math.max(right.left != null ? right.left.height : 0,
-                                right.right != null? right.right.height: 0)
-                       + 1;
-        height = Math.max(left.height, right.height)+1;
-        //verify("LL");
+                right.right != null ? right.right.height : 0) + 1;
+        height = Math.max(left.height, right.height) + 1;
+        // verify("LL");
     }
-    
+
     protected void rotateLR() {
-        AVLTreeNode R = right;
-        AVLTreeNode LR = left.right;
-        AVLTreeNode LRL = left.right.left;
-        AVLTreeNode LRR = left.right.right;
-        Value tmp = data;
+        final AVLTreeNode R = right;
+        final AVLTreeNode LR = left.right;
+        final AVLTreeNode LRL = left.right.left;
+        final AVLTreeNode LRR = left.right.right;
+        final Value tmp = data;
         data = LR.data;
         left.right = LRL;
         right = LR;
@@ -201,21 +200,19 @@ public class AVLTreeNode {
         right.left = LRR;
         right.right = R;
         left.height = Math.max(left.left != null ? left.left.height : 0,
-                               left.right != null? left.right.height: 0)
-                      + 1;
+                left.right != null ? left.right.height : 0) + 1;
         right.height = Math.max(right.left != null ? right.left.height : 0,
-                                right.right != null? right.right.height: 0)
-                       + 1;
-        height = Math.max(left.height, right.height)+1;        
-        //verify("LR");
+                right.right != null ? right.right.height : 0) + 1;
+        height = Math.max(left.height, right.height) + 1;
+        // verify("LR");
     }
 
-    protected void rotateRR() { 
-        AVLTreeNode L = left;
-        AVLTreeNode R = right;
-        AVLTreeNode RL = right.left;
-        AVLTreeNode RR = right.right;
-        Value tmp = data;
+    protected void rotateRR() {
+        final AVLTreeNode L = left;
+        final AVLTreeNode R = right;
+        final AVLTreeNode RL = right.left;
+        final AVLTreeNode RR = right.right;
+        final Value tmp = data;
         data = R.data;
         left = R;
         left.data = tmp;
@@ -223,18 +220,17 @@ public class AVLTreeNode {
         left.right = RL;
         right = RR;
         left.height = Math.max(left.left != null ? left.left.height : 0,
-                               left.right!= null ? left.right.height: 0)
-                +1;
-        height = Math.max(left.height, right.height)+1;
-        //verify("RR");
+                left.right != null ? left.right.height : 0) + 1;
+        height = Math.max(left.height, right.height) + 1;
+        // verify("RR");
     }
 
     protected void rotateRL() {
-        AVLTreeNode L = left;
-        AVLTreeNode RL = right.left;
-        AVLTreeNode RLL = right.left.left;
-        AVLTreeNode RLR = right.left.right;
-        Value tmp = data;
+        final AVLTreeNode L = left;
+        final AVLTreeNode RL = right.left;
+        final AVLTreeNode RLL = right.left.left;
+        final AVLTreeNode RLR = right.left.right;
+        final Value tmp = data;
         data = RL.data;
         left = RL;
         left.data = tmp;
@@ -242,73 +238,70 @@ public class AVLTreeNode {
         left.right = RLL;
         right.left = RLR;
         left.height = Math.max(left.left != null ? left.left.height : 0,
-                               left.right!= null ? left.right.height : 0)
-                +1;
+                left.right != null ? left.right.height : 0) + 1;
         right.height = Math.max(right.left != null ? right.left.height : 0,
-                                right.right != null? right.right.height : 0)+1;
-        height = Math.max(left.height, right.height)+1;        
-        //verify("RL");
+                right.right != null ? right.right.height : 0) + 1;
+        height = Math.max(left.height, right.height) + 1;
+        // verify("RL");
     }
-        
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void visit(ArrayList<Value> al) {
+    public void visit(List<Value> al) {
         if (left != null)
             left.visit(al);
-        if (al.size()>0) {
-            Comparable el1 = data.getValue();
-            Comparable el2 = al.get(al.size()-1).getValue();
+        if (! al.isEmpty()) {
+            final Comparable el1 = data.getValue();
+            final Comparable el2 = al.get(al.size() - 1).getValue();
             if (el1.compareTo(el2) < 0)
-                throw new Error("NO : el1="+el1+", el2="+el2);
+                throw new Error("NO : el1=" + el1 + ", el2=" + el2);
         }
         al.add(data);
         if (right != null)
             right.visit(al);
     }
 
-    protected boolean pathToNode(AVLTreeNode node, ArrayList<Object> al) {
+    protected boolean pathToNode(AVLTreeNode node, List<Object> al) {
         if (node == this) {
             al.add(this);
             return true;
         }
-        if (left != null) {
-            if (left.pathToNode(node, al)) {
-                al.add("-L->");
-                return true;
-            }            
+        if (left != null && left.pathToNode(node, al)) {
+            al.add("-L->");
+            return true;
         }
         if (right != null) {
             al.add("-R->");
-            if (right.pathToNode(node, al)) 
+            if (right.pathToNode(node, al))
                 return true;
             else {
-                al.remove(al.size()-1);
+                al.remove(al.size() - 1);
             }
         }
-        if (al.size() > 0 && al.get(al.size()-1).toString().endsWith("->"))
-            al.remove(al.size()-1);
+        if ((!al.isEmpty()) && al.get(al.size() - 1).toString().endsWith("->"))
+            al.remove(al.size() - 1);
         return false;
     }
 
-
-    protected String pathsToValue(int v, String currPath, ArrayList<String> paths) {
-        String np = currPath + this;
+    protected String pathsToValue(int v, String currPath,
+            List<String> paths) {
+        final String np = currPath + this;
         if (data.getValue() == v) {
             paths.add(np);
         }
         if (left != null) {
-            ((IntervalTreeNode)left).pathsToValue(v, np + "-L->", paths);
+            ((IntervalTreeNode) left).pathsToValue(v, np + "-L->", paths);
         }
-        if (right  != null) {
-            ((IntervalTreeNode)right).pathsToValue(v, np + "-R->", paths);
+        if (right != null) {
+            ((IntervalTreeNode) right).pathsToValue(v, np + "-R->", paths);
         }
-        return paths.size()>0 ? paths.get(0) : "<none>";
+        return (!paths.isEmpty()) ? paths.get(0) : "<none>";
     }
-    
+
     @SuppressWarnings("unused")
     public static void main(String args[]) {
         class Info implements Value {
-            private int start, end;
-            
+            private final int start, end;
+
             public int getStart() {
                 return start;
             }
@@ -316,38 +309,39 @@ public class AVLTreeNode {
             public int getEnd() {
                 return end;
             }
-            
+
             @Override
             public int getValue() {
                 return getEnd();
             }
-            
+
             public Info(int s, int e) {
                 start = s;
                 end = e;
             }
-            
+
             @Override
             public String toString() {
-                return ""+end;
+                return "" + end;
             }
         }
         AVLTree t;
-        if (false) {
+        boolean b = false;
+        if (b) {
             int r = (int) (Math.random() * 100);
             t = new AVLTree("test0");
             t.add(new Info(0, r));
-            for(int i=0; i<32; i++) {
+            for (int i = 0; i < 32; i++) {
                 do {
-                    r = (int)(Math.random()*100);
-                } while(t.find(r) != null);
+                    r = (int) (Math.random() * 100);
+                } while (t.find(r) != null);
                 t.add(new Info(0, r));
             }
         } else {
-            int[] vals = {1, 5, 20, 8, 7, 4, 10};
+            final int[] vals = { 1, 5, 20, 8, 7, 4, 10 };
             t = new AVLTree("test1");
             t.add(new Info(0, 9));
-            for (int v : vals) {
+            for (final int v : vals) {
                 t.add(new Info(0, v));
             }
         }
@@ -355,7 +349,7 @@ public class AVLTreeNode {
         t.remove(7);
         System.out.println("removed 7");
         t.layout(System.out);
-        System.out.println();        
+        System.out.println();
     }
 
     public void detachChildren() {
@@ -364,22 +358,18 @@ public class AVLTreeNode {
     }
 
     public boolean preorder(Visitor v) {
-        return v.visit(this) || 
-                (left != null && left.preorder(v)) || 
-                (right != null && right.preorder(v));
+        return v.visit(this) || (left != null && left.preorder(v))
+                || (right != null && right.preorder(v));
     }
 
     public boolean inorder(Visitor v) {
-        return (left != null && left.inorder(v)) ||
-                v.visit(this) || 
-                (right != null && right.inorder(v));
+        return (left != null && left.inorder(v)) || v.visit(this)
+                || (right != null && right.inorder(v));
     }
 
     public boolean postorder(Visitor v) {
-        return (left != null && left.postorder(v)) ||
-                (right != null && right.postorder(v)) || 
-                v.visit(this);
+        return (left != null && left.postorder(v))
+                || (right != null && right.postorder(v)) || v.visit(this);
     }
 
 }
-

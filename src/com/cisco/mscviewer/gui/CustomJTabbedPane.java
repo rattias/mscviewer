@@ -8,13 +8,14 @@
 package com.cisco.mscviewer.gui;
 
 import java.awt.Component;
-import javax.swing.JTabbedPane;
-import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
+import javax.swing.JTabbedPane;
+
+import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
 /**
  * @author Roberto Attias
- * @since  Aug 2014
+ * @since Aug 2014
  */
 @SuppressWarnings("serial")
 class CustomJTabbedPane extends JTabbedPane implements PNGSnapshotTarget {

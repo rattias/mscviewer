@@ -10,8 +10,6 @@
  * @since  Jan 2012
  */
 package com.cisco.mscviewer.gui.renderer;
-import com.cisco.mscviewer.gui.Marker;
-import com.cisco.mscviewer.model.*;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,11 +17,17 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 
+import com.cisco.mscviewer.gui.Marker;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.JSonBooleanValue;
+import com.cisco.mscviewer.model.JSonNumberValue;
+import com.cisco.mscviewer.model.JSonObject;
+
 public class RectangleInteractionRenderer extends InteractionRenderer {
-//    private final static int ARROW_TIP_SIDE = 10;
-//    private final static float ARROW_TIP_WIDTH = 2.8f;
-    private final static int STUB_LEN=40; 
-//    private final static int ARC_BB_WIDTH = 40;
+    // private final static int ARROW_TIP_SIDE = 10;
+    // private final static float ARROW_TIP_WIDTH = 2.8f;
+    private final static int STUB_LEN = 40;
+    // private final static int ARC_BB_WIDTH = 40;
     private boolean dashed = false;
     Color color = Color.blue;
     BasicStroke basic, basic2, dashedStroke, thickStroke;
@@ -37,84 +41,81 @@ public class RectangleInteractionRenderer extends InteractionRenderer {
     public void setup(JSonObject props, Event ev) {
         float strokeWidth = 1.0f;
         if (props != null) {
-            JSonNumberValue stroke = (JSonNumberValue)props.get("stroke_width");
+            final JSonNumberValue stroke = (JSonNumberValue) props
+                    .get("stroke_width");
             if (stroke != null)
                 strokeWidth = stroke.floatValue();
-            JSonBooleanValue ds = (JSonBooleanValue)props.get("dashed");
+            final JSonBooleanValue ds = (JSonBooleanValue) props.get("dashed");
             if (ds != null && ds.value())
                 dashed = true;
-            String col = props.get("color").toString();
+            final String col = props.get("color").toString();
             if (col != null) {
-                int c = Integer.parseInt(col, 16);
+                final int c = Integer.parseInt(col, 16);
                 color = new Color(c);
             }
         }
-        if (! dashed) {
+        if (!dashed) {
             basic = new BasicStroke(strokeWidth);
-            basic2 = new BasicStroke(strokeWidth+4);
+            basic2 = new BasicStroke(strokeWidth + 4);
         } else {
-            basic = new BasicStroke(strokeWidth,
-                    BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_BEVEL, 1.0f,
-                    new float[] { 3.0f, 3.0f, 3.0f, 3.0f },
-                    0.0f);
-            basic2 = new BasicStroke(strokeWidth+4,
-                    BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_BEVEL, 1.0f,
-                    new float[] { 3.0f, 3.0f, 3.0f, 3.0f },
-                    0.0f);
+            basic = new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT,
+                    BasicStroke.JOIN_BEVEL, 1.0f, new float[] { 3.0f, 3.0f,
+                            3.0f, 3.0f }, 0.0f);
+            basic2 = new BasicStroke(strokeWidth + 4, BasicStroke.CAP_BUTT,
+                    BasicStroke.JOIN_BEVEL, 1.0f, new float[] { 3.0f, 3.0f,
+                            3.0f, 3.0f }, 0.0f);
         }
-        dashedStroke =  new BasicStroke(strokeWidth, 
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_BEVEL, 1.0f,
-                new float[] { 3.0f, 3.0f, 3.0f, 3.0f },
-                0.0f);
-        thickStroke= new BasicStroke(strokeWidth+6);
+        dashedStroke = new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_BEVEL, 1.0f, new float[] { 3.0f, 3.0f, 3.0f,
+                        3.0f }, 0.0f);
+        thickStroke = new BasicStroke(strokeWidth + 6);
     }
 
-
     @SuppressWarnings("unused")
-    private void getSegment(Event fev, Rectangle b1, Event tev, Rectangle b2, Segment s) {
-        boolean self = (fev != null && tev != null && fev.getEntity() == tev.getEntity());
+    private void getSegment(Event fev, Rectangle b1, Event tev, Rectangle b2,
+            Segment s) {
+        final boolean self = (fev != null && tev != null && fev.getEntity() == tev
+                .getEntity());
         if (self) {
-            s.x1 = b1.x+b1.width/2;
-            s.y1 = b1.y+b1.height;
-            s.x2 = b2.x+b2.width/2;
+            s.x1 = b1.x + b1.width / 2;
+            s.y1 = b1.y + b1.height;
+            s.x2 = b2.x + b2.width / 2;
             s.y2 = b2.y;
         } else if (b1.x >= 0 && b2.x >= 0) {
-            s.x1 = b1.x+b1.width;
-            s.y1 = b1.y+b1.height/2;
-            s.x2 = b2.x+b2.width;
-            if (s.x1<s.x2) {
+            s.x1 = b1.x + b1.width;
+            s.y1 = b1.y + b1.height / 2;
+            s.x2 = b2.x + b2.width;
+            if (s.x1 < s.x2) {
                 s.x2 = b2.x;
-                s.y2 = b2.y+b2.height/2;
-            } else if (s.x1>s.x2){
+                s.y2 = b2.y + b2.height / 2;
+            } else if (s.x1 > s.x2) {
                 s.x1 = b1.x;
-                s.y2 = b2.y+b2.height/2;
+                s.y2 = b2.y + b2.height / 2;
             } else {
-                s.y2 = b2.y+b2.height/2;
+                s.y2 = b2.y + b2.height / 2;
             }
-        } else if (b1.x >=0) {
-            s.x1 = b1.x+b1.width;
-            s.y1 = b1.y+b1.height/2;
+        } else if (b1.x >= 0) {
+            s.x1 = b1.x + b1.width;
+            s.y1 = b1.y + b1.height / 2;
             s.x2 = s.x1 + STUB_LEN;
-            s.y2 = b1.y + b1.height;			
+            s.y2 = b1.y + b1.height;
         } else {
             s.x2 = b2.x;
-            s.y2 = b2.y+b2.height/2;
+            s.y2 = b2.y + b2.height / 2;
             s.x1 = s.x2 - STUB_LEN;
             s.y1 = b2.y;
-        }		
+        }
     }
 
     @Override
-    public void render(Rectangle b1,Rectangle b2, Graphics2D g2d, boolean isSelected, Marker m) {
+    public void render(Rectangle b1, Rectangle b2, Graphics2D g2d,
+            boolean isSelected, Marker m) {
         Rectangle r;
         if (b1.x >= 0) {
             r = new Rectangle(b1);
-            if (b2.x >= 0) 
+            if (b2.x >= 0)
                 r.add(b2);
-        } else { 
+        } else {
             if (b2.x >= 0)
                 r = new Rectangle(b2);
             else {
@@ -126,7 +127,7 @@ public class RectangleInteractionRenderer extends InteractionRenderer {
         r.width++;
         g2d.setColor(Color.white);
         g2d.fill(r);
-        Stroke st = g2d.getStroke();
+        final Stroke st = g2d.getStroke();
         if (isSelected) {
             g2d.setStroke(basic2);
             g2d.setColor(EventRenderer.SELECTION_COLOR);
@@ -135,8 +136,8 @@ public class RectangleInteractionRenderer extends InteractionRenderer {
         g2d.setColor(color);
         g2d.setStroke(basic);
         g2d.draw(r);
-        if (m!=null) {
-            Color c = m.getTransparentColor();
+        if (m != null) {
+            final Color c = m.getTransparentColor();
             g2d.setColor(c);
             g2d.setStroke(thickStroke);
             g2d.draw(r);
@@ -144,9 +145,9 @@ public class RectangleInteractionRenderer extends InteractionRenderer {
         g2d.setStroke(st);
     }
 
-
     @Override
-    public boolean inSelectionArea(Rectangle b1, Rectangle b2, int px, int py, boolean self) {
+    public boolean inSelectionArea(Rectangle b1, Rectangle b2, int px, int py,
+            boolean self) {
         return false;
     }
 

@@ -15,7 +15,8 @@ package com.cisco.mscviewer.tree;
  *
  * @author rattias
  */
-public interface Interval  extends Value {
-    int  getStart();
-    int  getEnd();    
+public interface Interval extends Value {
+    int getStart();
+
+    int getEnd();
 }

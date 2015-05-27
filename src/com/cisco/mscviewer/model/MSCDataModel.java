@@ -18,9 +18,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
+import javax.swing.ListModel;
+
 import com.cisco.mscviewer.graph.Graph;
-import com.cisco.mscviewer.graph.GraphSeries;
-import com.cisco.mscviewer.gui.graph.HeatGraphWindow;
 import com.cisco.mscviewer.model.graph.TopologyError;
 import com.cisco.mscviewer.model.graph.TopologyGraph;
 import com.cisco.mscviewer.tree.AVLTreeNode;
@@ -36,7 +36,7 @@ class EventTimestampComparator implements Comparator<Event> {
     @Override
     public int compare(Event ev0, Event ev1) {
         // TODO Auto-generated metod stub
-        return (int)(ev1.getTimestamp()-ev0.getTimestamp());
+        return (int) (ev1.getTimestamp() - ev0.getTimestamp());
     }
 }
 
@@ -45,28 +45,29 @@ class KeyEvent extends Event {
         super(null, timestamp, null, null, 0, null, null);
     }
 }
-       
+
 /**
- * An <code>MSCDataModel</code> contains {@link Entity}s, {@link Event}s and 
- * {@link Interaction}s for a data model. 
+ * An <code>MSCDataModel</code> contains {@link Entity}s, {@link Event}s and
+ * {@link Interaction}s for a data model.
+ * 
  * @author rattias
  */
 public final class MSCDataModel {
     private static MSCDataModel singleton;
-	private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<String, Entity>();
+    private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<String, Entity>();
     private final ArrayList<Entity> rootEntities;
     private ArrayList<Event> events;
     private IntervalTree interactions;
     private IntervalTree blocks;
     private EventTimestampComparator eventTimestampComparator;
-    private final ArrayList<String> data;
     private final Vector<MSCDataModelListener> listeners;
-    //    private MSCDataModelEventFilter filter;
+    // private MSCDataModelEventFilter filter;
     private String path;
     private boolean notificationEnabled;
     private String openPath;
-    private ArrayList<Graph> graphs = new ArrayList<Graph>(); 
-    
+    private final ArrayList<Graph> graphs = new ArrayList<Graph>();
+    private LogListModel llm = new LogListModel();
+
     /**
      * Instantiate a data model
      */
@@ -74,7 +75,7 @@ public final class MSCDataModel {
         this.listeners = new Vector<MSCDataModelListener>();
         this.events = new ArrayList<Event>();
         this.rootEntities = new ArrayList<Entity>();
-        this.data = new ArrayList<String>();
+//        this.data = new ArrayList<String>();
         this.interactions = new IntervalTree("interactions");
         this.blocks = new IntervalTree("blocks");
 
@@ -91,12 +92,14 @@ public final class MSCDataModel {
         interactions = new IntervalTree("interactions");
         blocks = new IntervalTree("blocks");
         notifyModelChanged();
-        data.clear();
+//        data.clear();
+        llm.reset();
     }
 
     /**
      * sets the path of the input file this data model is generated from.
-     * @param fname 
+     * 
+     * @param fname
      */
     public void setFilePath(String fname) {
         this.path = fname;
@@ -107,25 +110,27 @@ public final class MSCDataModel {
     }
 
     /**
-     * Adds an {@link Entity} to the model. 
+     * Adds an {@link Entity} to the model.
      * 
-     * If an entity with the specified entityPath does not exists, then it
-     * adds one. If it does, it just sets the displayName
+     * If an entity with the specified entityPath does not exists, then it adds
+     * one. If it does, it just sets the displayName
      * 
-     * @param entityPath the fully-qualified path of the entity
-     * @param displayName the display name
-     * @return 
+     * @param entityPath
+     *            the fully-qualified path of the entity
+     * @param displayName
+     *            the display name
+     * @return
      */
     public Entity addEntity(String entityPath, String displayName) {
         Entity en;
-        synchronized(this) {
+        synchronized (this) {
             en = entities.get(entityPath);
             if (en != null) {
                 if (displayName != null)
                     en.setName(displayName);
                 return en;
-            }        
-            String parentPath = Entity.getParentId(entityPath);
+            }
+            final String parentPath = Entity.getParentId(entityPath);
             if (parentPath != null) {
                 Entity parent = entities.get(parentPath);
                 if (parent == null) {
@@ -138,13 +143,14 @@ public final class MSCDataModel {
             }
             entities.put(entityPath, en);
         }
-        //notifyEntityAdded(en);
+        // notifyEntityAdded(en);
         return en;
     }
-    
+
     /**
      * returns the number of entities in this model
-     * @return 
+     * 
+     * @return
      */
     public int getEntityCount() {
         return entities.size();
@@ -152,8 +158,9 @@ public final class MSCDataModel {
 
     /**
      * returns the entity with the specified ID.
+     * 
      * @param id
-     * @return 
+     * @return
      */
     public Entity getEntity(String id) {
         return entities.get(id);
@@ -161,7 +168,8 @@ public final class MSCDataModel {
 
     /**
      * returns the number of root entities.
-     * @return 
+     * 
+     * @return
      */
     public int getRootEntityCount() {
         return rootEntities.size();
@@ -171,8 +179,9 @@ public final class MSCDataModel {
      * returns the <code>idx</code>-th top-level entity.
      * 
      * A top-level entity is an entity with null parent.
+     * 
      * @param idx
-     * @return 
+     * @return
      */
     public Entity getRootEntityAt(int idx) {
         return rootEntities.get(idx);
@@ -180,35 +189,39 @@ public final class MSCDataModel {
 
     /**
      * returns an iterator on all entities in this model.
-     * @return 
+     * 
+     * @return
      */
     public Iterator<Entity> getEntityIterator(boolean rootOnly) {
-        return rootOnly ? rootEntities.iterator() : entities.values().iterator();
+        return rootOnly ? rootEntities.iterator() : entities.values()
+                .iterator();
     }
 
     /**
-     * adds an event to the model. 
+     * adds an event to the model.
+     * 
      * @param ev
      * @return the index of the event in the data model
      */
     public int addEvent(Event ev) {
-        synchronized(this) {
-            int idx = events.size();
+        synchronized (this) {
+            final int idx = events.size();
             events.add(ev);
-            Entity en = ev.getEntity();
+            final Entity en = ev.getEntity();
             if (en.getFirstEventIndex() == -1)
                 en.setFirstEventIndex(idx);
             en.setLastEventIndex(idx);
             ev.setIndex(idx);
             return idx;
         }
-        //notifyEventAdded(ev);		
+        // notifyEventAdded(ev);
     }
 
-        /**
+    /**
      * returns the <code>idx</code>-th event in the data model.
+     * 
      * @param idx
-     * @return 
+     * @return
      */
     public Event getEventAt(int idx) {
         if (idx == -1)
@@ -219,10 +232,11 @@ public final class MSCDataModel {
     public int getEventIndex(Event ev) {
         return events.indexOf(ev);
     }
-    
+
     /**
      * returns the number of events in the data model.
-     * @return 
+     * 
+     * @return
      */
     public int getEventCount() {
         return events.size();
@@ -230,12 +244,14 @@ public final class MSCDataModel {
 
     /**
      * returns the event with the specified timestamp
+     * 
      * @param timestamp
-     * @return 
+     * @return
      */
     public Event getEventWithTimestamp(long timestamp) {
-        Event kev = new KeyEvent(timestamp);
-        int idx = Collections.binarySearch(events, kev, eventTimestampComparator);
+        final Event kev = new KeyEvent(timestamp);
+        final int idx = Collections.binarySearch(events, kev,
+                eventTimestampComparator);
         if (idx >= 0)
             return events.get(idx);
         else
@@ -243,69 +259,68 @@ public final class MSCDataModel {
     }
 
     /**
-     * returns an iterator on all events contained in the 
-     * specified range of timestamps
+     * returns an iterator on all events contained in the specified range of
+     * timestamps
+     * 
      * @param ts0
      * @param ts1
      * @return
      */
     public EventRange getEventRangeInTimeWindow(long ts0, long ts1) {
-        Event k0 = new KeyEvent(ts0);
-        Event k1 = new KeyEvent(ts1);
-        int idx0 = Collections.binarySearch(events, k0, eventTimestampComparator);
-        int idx1 = Collections.binarySearch(events, k1, eventTimestampComparator);
-        return new EventRange(this, 
-                idx0>=0 ? idx0 : -(idx0+1),
-                        idx1>=0 ? idx1 : (-(idx1+1))-1);
+        final Event k0 = new KeyEvent(ts0);
+        final Event k1 = new KeyEvent(ts1);
+        final int idx0 = Collections.binarySearch(events, k0,
+                eventTimestampComparator);
+        final int idx1 = Collections.binarySearch(events, k1,
+                eventTimestampComparator);
+        return new EventRange(this, idx0 >= 0 ? idx0 : -(idx0 + 1),
+                idx1 >= 0 ? idx1 : (-(idx1 + 1)) - 1);
     }
 
-
-
-
-    
-//    public void insertEvent(int newIdx, Event ev) {
-//        synchronized(this) {
-//            events.add(newIdx, ev);
-//            ev.setIndex(newIdx);
-//            if (ev.getRenderer() instanceof BirthRenderer)
-//                ev.getEntity().setFirstEventIndex(newIdx);
-//            if (ev.getRenderer() instanceof DeathRenderer)
-//                ev.getEntity().setLastEventIndex(newIdx);
-//            for(int i=newIdx; i<events.size(); i++)
-//                events.get(i).setIndex(i);
-//        }
-//        //notifyEventAdded(ev);              
-//    }
+    // public void insertEvent(int newIdx, Event ev) {
+    // synchronized(this) {
+    // events.add(newIdx, ev);
+    // ev.setIndex(newIdx);
+    // if (ev.getRenderer() instanceof BirthRenderer)
+    // ev.getEntity().setFirstEventIndex(newIdx);
+    // if (ev.getRenderer() instanceof DeathRenderer)
+    // ev.getEntity().setLastEventIndex(newIdx);
+    // for(int i=newIdx; i<events.size(); i++)
+    // events.get(i).setIndex(i);
+    // }
+    // //notifyEventAdded(ev);
+    // }
 
     /**
      * Adds an interaction to the data model
-     * @param inter 
+     * 
+     * @param inter
      */
     public void addInteraction(Interaction inter) {
         interactions.add(inter);
     }
-    
+
     public void addBlock(Interval block) {
-        blocks.add(block);        
+        blocks.add(block);
     }
 
-    
     /**
      * returns the number of interactions in this data model.
-     * @return 
+     * 
+     * @return
      */
     public int getInteractionCount() {
         return interactions.count();
     }
 
-    
     public Iterator<Interaction> getInteractionIterator() {
         class InteractionIterator implements Iterator<Interaction> {
-            private InOrderAVLTreeNodeIterator it;
+            private final InOrderAVLTreeNodeIterator it;
+
             public InteractionIterator(InOrderAVLTreeNodeIterator it) {
                 this.it = it;
             }
-            
+
             @Override
             public boolean hasNext() {
                 return it.hasNext();
@@ -313,26 +328,28 @@ public final class MSCDataModel {
 
             @Override
             public Interaction next() {
-                return (Interaction)it.next().getData();
+                return (Interaction) it.next().getData();
             }
 
             @Override
             public void remove() {
                 it.remove();
-            }            
+            }
         }
-        
-        return new InteractionIterator(new InOrderAVLTreeNodeIterator(interactions));
+
+        return new InteractionIterator(new InOrderAVLTreeNodeIterator(
+                interactions));
     }
-    
-//    public void setEvent(int index, Event ev) {
-//        events.set(index, ev);
-//        ev.setIndex(index);
-//    }
+
+    // public void setEvent(int index, Event ev) {
+    // events.set(index, ev);
+    // ev.setIndex(index);
+    // }
     /**
      * returns an array of interactions having <code>ev</code> as sink event.
+     * 
      * @param ev
-     * @return 
+     * @return
      */
     public Interaction[] getIncomingInteractions(Event ev) {
         return getIncomingInteractions(ev.getIndex());
@@ -340,265 +357,273 @@ public final class MSCDataModel {
 
     /**
      * returns an array of interactions having <code>ev</code> as source event.
+     * 
      * @param ev
-     * @return 
+     * @return
      */
     public Interaction[] getOutgoingInteractions(Event ev) {
         return getOutgoingInteractions(ev.getIndex());
     }
 
     /**
-     * returns an array of interactions having the event at the specified
-     * index as source event.
+     * returns an array of interactions having the event at the specified index
+     * as source event.
+     * 
      * @param fromEventIdx
-     * @return 
+     * @return
      */
     public Interaction[] getOutgoingInteractions(int fromEventIdx) {
-        ArrayList<Interval> al = new ArrayList<Interval>();
+        final ArrayList<Interval> al = new ArrayList<Interval>();
         interactions.getIntervalsWithStartBound(fromEventIdx, al);
-        for(Iterator<Interval> it = al.iterator(); it.hasNext();) {
-            Interval in = it.next();
-            if (((Interaction)in).getFromIndex() == -1)
+        for (final Iterator<Interval> it = al.iterator(); it.hasNext();) {
+            final Interval in = it.next();
+            if (((Interaction) in).getFromIndex() == -1)
                 it.remove();
         }
         return al.toArray(new Interaction[al.size()]);
     }
 
-        
     /**
-     * returns an array of interactions having the event at the specified
-     * index as sink event.
+     * returns an array of interactions having the event at the specified index
+     * as sink event.
+     * 
      * @param toEventIdx
-     * @return 
+     * @return
      */
     public Interaction[] getIncomingInteractions(int toEventIdx) {
-        ArrayList<Interval> al = new ArrayList<Interval>();
+        final ArrayList<Interval> al = new ArrayList<Interval>();
         interactions.getIntervalsWithEndBound(toEventIdx, al);
-        for(Iterator<Interval> it = al.iterator(); it.hasNext();) {
-            Interval in = it.next();
-            if (((Interaction)in).getToIndex() == -1)
+        for (final Iterator<Interval> it = al.iterator(); it.hasNext();) {
+            final Interval in = it.next();
+            if (((Interaction) in).getToIndex() == -1)
                 it.remove();
         }
         return al.toArray(new Interaction[al.size()]);
     }
-    
+
     /**
-     * returns an array of interactions whose source event has
-     * index <= <code>modelIdx</code> and sink event has index
-     * >= <code>modelIdx</code>.
+     * returns an array of interactions whose source event has index <=
+     * <code>modelIdx</code> and sink event has index >= <code>modelIdx</code>.
      * For interactions whose source/sink is <code>null<code>, 
      * this method assumes the interaction source/sink index has the
      * same value as the corresponding sink/source. In other words, 
      * the interval of indices span by the Interaction is just one point.
+     * 
      * @param modelIdx
-     * @return 
+     * @return
      */
     public Interaction[] getInteractionsSurrounding(int modelIdx) {
-        ArrayList<Interval> al = new ArrayList<Interval>();
+        final ArrayList<Interval> al = new ArrayList<Interval>();
         interactions.getContainingIntervals(modelIdx, al);
         return al.toArray(new Interaction[al.size()]);
     }
 
     /**
-     * returns an array of interactions whose source event has
-     * index <= <code>modelMinIdx</code> and sink event has index
-     * >= <code>modelMaxIdx</code>.
-     * For interactions whose source/sink is <code>null<code>, 
+     * returns an array of interactions whose source event has index <=
+     * <code>modelMinIdx</code> and sink event has index >=
+     * <code>modelMaxIdx</code>. For interactions whose source/sink is
+     * <code>null<code>, 
      * this method assumes the interaction source/sink index has the
      * same value as the corresponding sink/source. In other words, 
      * the interval of indices span by the Interaction is just one point.
+     * 
      * @param modelMinIdx
      * @param modelMaxIdx
-     * @return 
+     * @return
      */
     @SuppressWarnings("unchecked")
-    public ArrayList<Interaction> getInteractionsInInterval(int modelMinIdx, int modelMaxIdx) {
-        ArrayList<Interval> al = new ArrayList<Interval>();
+    public ArrayList<Interaction> getInteractionsInInterval(int modelMinIdx,
+            int modelMaxIdx) {
+        final ArrayList<Interval> al = new ArrayList<Interval>();
         interactions.getIntersectingIntervals(modelMinIdx, modelMaxIdx, al);
         // need to clone just to make generics happy!
-        return (ArrayList<Interaction>)al.clone();
+        return (ArrayList<Interaction>) al.clone();
     }
 
-    public ArrayList<Interval> getBlocksInInterval(int modelMinIdx, int modelMaxIdx) {
-        boolean debug = true;
-        ArrayList<Interval> al = new ArrayList<Interval>();
+    public ArrayList<Interval> getBlocksInInterval(int modelMinIdx,
+            int modelMaxIdx) {
+        final boolean debug = true;
+        final ArrayList<Interval> al = new ArrayList<Interval>();
         blocks.getIntersectingIntervals(modelMinIdx, modelMaxIdx, al);
         if (debug) {
             int min = Integer.MAX_VALUE;
             int max = Integer.MIN_VALUE;
-            for(Interval in : al) {
-                if (in.getStart()<min)
+            for (final Interval in : al) {
+                if (in.getStart() < min)
                     min = in.getStart();
-                if (in.getEnd()>max)
+                if (in.getEnd() > max)
                     max = in.getEnd();
             }
         }
         return al;
     }
 
-    
     /**
      * adds a line of the input source file to the model.
-     * @param line 
+     * 
+     * @param line
      */
-    public void addDataLine(String line) {
-        data.add(line);		
+    public void addSourceLine(String line) {
+        llm.add(line);
     }
 
+    public int getSourceLineCount() {
+        return llm.getSize();
+    }
+    
     /**
-     * returns the list of lines of the input file.
-     * @return 
+     * returns a line from the input file.
+     * 
+     * @return
      */
-    public ArrayList<String> getData() {
-        return data;
+    public String getSourceLine(int index) {
+        return llm.getElementAt(index);
     }
 
+    // public MSCDataModelEventFilter getFilter() {
+    // return filter;
+    // }
 
-    //    public MSCDataModelEventFilter getFilter() {
-    //        return filter;
-    //    }
+    // public void updateFilteredEvents() {
+    // synchronized(this) {
+    // if (filter != null) {
+    // int sz = events.size();
+    // filteredEvents = new ArrayList<Event>();
+    // // reset all interaction indexes to -1
+    // for(int i=0; i<sz; i++) {
+    // Event ev = events.get(i);
+    // if (filter.filter(ev)) {
+    // Interaction[] outgoing = ev.getOutgoingInteractions();
+    // Interaction incoming = ev.getIncomingInteraction();
+    // if (outgoing != null) {
+    // for(int j=0; j<outgoing.length; j++) {
+    // outgoing[j].fromIndex = -1;
+    // outgoing[j].toIndex = -1;
+    // }
+    // }
+    // if (incoming != null) {
+    // incoming.fromIndex = -1;
+    // incoming.toIndex = -1;
+    // }
+    // }
+    // }
+    // // add filtered events and compute all indexes
+    // int curIdx = 0;
+    // for(int i=0; i<sz; i++) {
+    // Event ev = events.get(i);
+    // if (filter.filter(ev)) {
+    // filteredEvents.add(ev);
+    // Entity en = ev.getEntity();
+    // if (ev.getRenderer() instanceof BirthRenderer) {
+    // en.setFilteredBirthIndex(curIdx);
+    // }
+    // if (ev.getRenderer() instanceof DeathRenderer)
+    // en.setFilteredDeathIndex(curIdx);
+    // Interaction[] outgoing = ev.getOutgoingInteractions();
+    // Interaction incoming = ev.getIncomingInteraction();
+    // if (outgoing != null) {
+    // for(int j=0; j<outgoing.length; j++) {
+    // outgoing[j].fromIndex = curIdx;
+    // }
+    // }
+    // if (incoming != null) {
+    // incoming.toIndex = curIdx;
+    // }
+    // curIdx++;
+    //
+    // }
+    // }
+    //
+    // } else {
+    // // restore indexes
+    // int sz = events.size();
+    // filteredEvents = events;
+    // for(int i=0; i<sz; i++) {
+    // Event ev = events.get(i);
+    // Interaction[] outgoing = ev.getOutgoingInteractions();
+    // Interaction incoming = ev.getIncomingInteraction();
+    // if (outgoing != null) {
+    // for(int j=0; j<outgoing.length; j++) {
+    // outgoing[j].toIndex = -1;
+    // outgoing[j].fromIndex = i;
+    // }
+    // }
+    // if (incoming != null) {
+    // incoming.toIndex = i;
+    // if (incoming.getFromEvent() != null) {
+    // for(int j=filteredEvents.size()-1; j>=0; j--) {
+    // Event ev1 = filteredEvents.get(j);
+    // if (ev1 == incoming.getFromEvent() ) {
+    // incoming.fromIndex = j;
+    // break;
+    // }
+    // }
+    // }
+    // }
+    // }
+    // }
+    // }
+    // notifyEventsChanged();
+    // }
 
-    //    public void updateFilteredEvents() {
-    //    	synchronized(this) {
-    //	        if (filter != null) {
-    //	            int sz = events.size();
-    //	            filteredEvents = new ArrayList<Event>();
-    //	            // reset all interaction indexes to -1
-    //	            for(int i=0; i<sz; i++) {
-    //	                Event ev = events.get(i);
-    //	                if (filter.filter(ev)) {
-    //	                    Interaction[] outgoing = ev.getOutgoingInteractions();
-    //	                    Interaction incoming = ev.getIncomingInteraction();
-    //	                    if (outgoing != null) {
-    //	                        for(int j=0; j<outgoing.length; j++) {
-    //	                            outgoing[j].fromIndex = -1;
-    //	                            outgoing[j].toIndex = -1;
-    //	                        }
-    //	                    }
-    //	                    if (incoming != null) {
-    //	                        incoming.fromIndex = -1;
-    //	                        incoming.toIndex = -1;
-    //	                    }
-    //	                }
-    //	            }
-    //	            // add filtered events and compute all indexes
-    //	            int curIdx = 0;
-    //	            for(int i=0; i<sz; i++) {
-    //	                Event ev = events.get(i);
-    //	                if (filter.filter(ev)) {
-    //	                    filteredEvents.add(ev);
-    //	                    Entity en = ev.getEntity();
-    //	                    if (ev.getRenderer() instanceof BirthRenderer) {
-    //	                        en.setFilteredBirthIndex(curIdx);
-    //	                    }
-    //	                    if (ev.getRenderer() instanceof DeathRenderer)
-    //	                        en.setFilteredDeathIndex(curIdx);
-    //	                    Interaction[] outgoing = ev.getOutgoingInteractions();
-    //	                    Interaction incoming = ev.getIncomingInteraction();
-    //	                    if (outgoing != null) {
-    //	                        for(int j=0; j<outgoing.length; j++) {
-    //	                            outgoing[j].fromIndex = curIdx;
-    //	                        }
-    //	                    }
-    //	                    if (incoming != null) {
-    //	                        incoming.toIndex = curIdx;
-    //	                    }
-    //	                    curIdx++;
-    //	
-    //	                }
-    //	            }
-    //	
-    //	        } else {
-    //	            // restore indexes
-    //	            int sz = events.size();
-    //	            filteredEvents = events;
-    //	            for(int i=0; i<sz; i++) {
-    //	                Event ev = events.get(i);
-    //	                Interaction[] outgoing = ev.getOutgoingInteractions();
-    //	                Interaction incoming = ev.getIncomingInteraction();
-    //	                if (outgoing != null) {
-    //	                    for(int j=0; j<outgoing.length; j++) {
-    //	                        outgoing[j].toIndex = -1;
-    //	                        outgoing[j].fromIndex = i;
-    //	                    }
-    //	                }
-    //	                if (incoming != null) {
-    //	                    incoming.toIndex = i;
-    //	                    if (incoming.getFromEvent() != null) {
-    //	                        for(int j=filteredEvents.size()-1; j>=0; j--) {
-    //	                            Event ev1 = filteredEvents.get(j);
-    //	                            if (ev1 == incoming.getFromEvent() ) {
-    //	                                incoming.fromIndex = j;
-    //	                                break;
-    //	                            }
-    //	                        }							
-    //	                    }	
-    //	                }
-    //	            }
-    //	        }
-    //    	}
-    //        notifyEventsChanged();    	
-    //    }
+    // public void setFilter(MSCDataModelEventFilter dataModelFilter) {
+    // this.filter = dataModelFilter;
+    // updateFilteredEvents();
+    // }
+    //
 
-    //    public void setFilter(MSCDataModelEventFilter dataModelFilter) {
-    //        this.filter = dataModelFilter;
-    //        updateFilteredEvents();
-    //    }
-    //    
-
-
-    //    public int getIndexForEvent(Event ev) {
-    //        for(int i=0, sz = filteredEvents.size(); i<sz; i++) {
-    //            if (filteredEvents.get(i) == ev)
-    //                return i;
-    //        }
-    //        return -1;
-    //    }
+    // public int getIndexForEvent(Event ev) {
+    // for(int i=0, sz = filteredEvents.size(); i<sz; i++) {
+    // if (filteredEvents.get(i) == ev)
+    // return i;
+    // }
+    // return -1;
+    // }
 
     /**
      * adds a listener to the model
-     * @param l 
+     * 
+     * @param l
      */
     public void addListener(MSCDataModelListener l) {
         listeners.add(l);
     }
 
-
     /**
      * removes a listener from the model
-     * @param l 
+     * 
+     * @param l
      */
     public void removeListener(MSCDataModelListener l) {
         listeners.remove(l);
     }
 
-
-//    private void notifyEntityAdded(final Entity en) {
-//        if (notificationEnabled)
-//            Utils.dispatchOnAWTThreadLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    for (MSCDataModelListener listener : listeners) {
-//                        listener.entityAdded(MSCDataModel.this, en);
-//                    }
-//                }
-//            });
-//    }
-//
-//
-//
-//    private void notifyEventAdded(final Event ev) {
-//        if (notificationEnabled) {
-//            Utils.dispatchOnAWTThreadLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    for (MSCDataModelListener listener : listeners) {
-//                        listener.eventAdded(MSCDataModel.this, ev);
-//                    }
-//                }
-//            });
-//        }
-//    }
+    // private void notifyEntityAdded(final Entity en) {
+    // if (notificationEnabled)
+    // Utils.dispatchOnAWTThreadLater(new Runnable() {
+    // @Override
+    // public void run() {
+    // for (MSCDataModelListener listener : listeners) {
+    // listener.entityAdded(MSCDataModel.this, en);
+    // }
+    // }
+    // });
+    // }
+    //
+    //
+    //
+    // private void notifyEventAdded(final Event ev) {
+    // if (notificationEnabled) {
+    // Utils.dispatchOnAWTThreadLater(new Runnable() {
+    // @Override
+    // public void run() {
+    // for (MSCDataModelListener listener : listeners) {
+    // listener.eventAdded(MSCDataModel.this, ev);
+    // }
+    // }
+    // });
+    // }
+    // }
 
     /**
      * Invoked to notify listeners about a change to the model.
@@ -608,7 +633,7 @@ public final class MSCDataModel {
             Utils.dispatchOnAWTThreadLater(new Runnable() {
                 @Override
                 public void run() {
-                    for (MSCDataModelListener listener : listeners) {
+                    for (final MSCDataModelListener listener : listeners) {
                         listener.modelChanged(MSCDataModel.this);
                     }
                 }
@@ -616,186 +641,192 @@ public final class MSCDataModel {
         }
     }
 
-//    public void notifyEventsChanged() {
-//        if (notificationEnabled) {
-//            Utils.dispatchOnAWTThreadLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    for (MSCDataModelListener listener : listeners) {
-//                        listener.eventsChanged(MSCDataModel.this);
-//                    }
-//                }
-//            });
-//        }
-//    }
+    // public void notifyEventsChanged() {
+    // if (notificationEnabled) {
+    // Utils.dispatchOnAWTThreadLater(new Runnable() {
+    // @Override
+    // public void run() {
+    // for (MSCDataModelListener listener : listeners) {
+    // listener.eventsChanged(MSCDataModel.this);
+    // }
+    // }
+    // });
+    // }
+    // }
 
+    // public int getFirstFilteredEventIndexForEntity(Entity en) {
+    // for(int i=0; i<filteredEvents.size(); i++) {
+    // Event ev = filteredEvents.get(i);
+    // if (ev.getEntity() == en)
+    // return i;
+    // }
+    // return -1;
+    // }
 
-    
-    //    public int getFirstFilteredEventIndexForEntity(Entity en) {
-    //        for(int i=0; i<filteredEvents.size(); i++) {
-    //            Event ev = filteredEvents.get(i); 
-    //            if (ev.getEntity() == en)
-    //                return i;
-    //        }
-    //        return -1;
-    //    }
+    // public Event getFirstEventForEntity(Entity en) {
+    // for (Event ev : events) {
+    // if (ev.getEntity() == en)
+    // return ev;
+    // }
+    // return null;
+    // }
 
-//    public Event getFirstEventForEntity(Entity en) {
-//        for (Event ev : events) { 
-//            if (ev.getEntity() == en)
-//                return ev;
-//        }
-//        return null;
-//    }
+    // public int getLastFilteredEventIndexForEntity(Entity en) {
+    // for(int i=filteredEvents.size()-1; i>=0; i--) {
+    // Event ev = filteredEvents.get(i);
+    // if (ev.getEntity() == en)
+    // return i;
+    // }
+    // return -1;
+    // }
 
-    //    public int getLastFilteredEventIndexForEntity(Entity en) {
-    //        for(int i=filteredEvents.size()-1; i>=0; i--) {
-    //            Event ev = filteredEvents.get(i); 
-    //            if (ev.getEntity() == en)
-    //                return i;
-    //        }
-    //        return -1;
-    //    }
+    // public Event getLastEventForEntity(Entity en) {
+    // for(int i=events.size(); i>=0; i--) {
+    // Event ev = events.get(i);
+    // if (ev.getEntity() == en)
+    // return ev;
+    // }
+    // return null;
+    // }
 
-//    public Event getLastEventForEntity(Entity en) {
-//        for(int i=events.size(); i>=0; i--) {
-//            Event ev = events.get(i); 
-//            if (ev.getEntity() == en)
-//                return ev;
-//        }
-//        return null;
-//    }
-
-    //    @SuppressWarnings("unchecked")
-    //    public void sortEventsWithClockSkew() {
-    //        // step 2: move events which are not in correct ts order
-    //        Collections.sort(events, new Comparator() {
-    //            @Override
-    //            public int compare(Object o1, Object o2) {
-    //                Event ev1 = ((Event)o1);
-    //                Event ev2 = ((Event)o2);
-    //                long res = ev1.getTimestampCorrectedWithSkew() - ev2.getTimestampCorrectedWithSkew();
-    //                return (res<0) ? -1 : ((res > 0) ? +1 : 0);
-    //            }			
-    //        });
-    //        // fix indexes
-    //        for(int i=0; i<getEventCount(); i++) {
-    //            Event ev = getEventAt(i);
-    //            Interaction[] outgoing = ev.getOutgoingInteractions();
-    //            Interaction incoming = ev.getIncomingInteraction();
-    //            if (outgoing!= null) {
-    //                for(int j=0; j<outgoing.length; j++) {
-    //                    outgoing[j].fromIndex = i;
-    //                }
-    //            }
-    //            if (incoming != null) {
-    //                incoming.toIndex = i;
-    //            }
-    //        }
-    //        // recompute filtered events
-    //        setFilter(filter);
-    //    }
+    // @SuppressWarnings("unchecked")
+    // public void sortEventsWithClockSkew() {
+    // // step 2: move events which are not in correct ts order
+    // Collections.sort(events, new Comparator() {
+    // @Override
+    // public int compare(Object o1, Object o2) {
+    // Event ev1 = ((Event)o1);
+    // Event ev2 = ((Event)o2);
+    // long res = ev1.getTimestampCorrectedWithSkew() -
+    // ev2.getTimestampCorrectedWithSkew();
+    // return (res<0) ? -1 : ((res > 0) ? +1 : 0);
+    // }
+    // });
+    // // fix indexes
+    // for(int i=0; i<getEventCount(); i++) {
+    // Event ev = getEventAt(i);
+    // Interaction[] outgoing = ev.getOutgoingInteractions();
+    // Interaction incoming = ev.getIncomingInteraction();
+    // if (outgoing!= null) {
+    // for(int j=0; j<outgoing.length; j++) {
+    // outgoing[j].fromIndex = i;
+    // }
+    // }
+    // if (incoming != null) {
+    // incoming.toIndex = i;
+    // }
+    // }
+    // // recompute filtered events
+    // setFilter(filter);
+    // }
 
     /**
-     * Performs topological sorting of the model. 
+     * Performs topological sorting of the model.
      * 
-     * Once an input file is loaded and the model created, due to skews
-     * in clocks of entities with non-synchronized clocks it is possible that
-     * an interaction may appear with the sink event preceding the source event.
-     * This is undesirable, as it can be confusing for the observer. This function
-     * performs a topological sorting of the graph represented by events and 
-     * interaction to take care of this situation. Events may be "pushed up"
-     * or "pushed down" as long as this doesn't break any reasonable constraints.<br>
+     * Once an input file is loaded and the model created, due to skews in
+     * clocks of entities with non-synchronized clocks it is possible that an
+     * interaction may appear with the sink event preceding the source event.
+     * This is undesirable, as it can be confusing for the observer. This
+     * function performs a topological sorting of the graph represented by
+     * events and interaction to take care of this situation. Events may be
+     * "pushed up" or "pushed down" as long as this doesn't break any reasonable
+     * constraints.<br>
      * 
      * The topological sorting may fail if the model has unexpected loops (for
-     * example events e1, e2, belonging to entity E1, e3, e4 to entity E2, and 
-     * interactions e1->e4, e4->e2, e2->e3, e3->e1 (which would imply e1 happened
-     * before itself).
-     * @param obs 
+     * example events e1, e2, belonging to entity E1, e3, e4 to entity E2, and
+     * interactions e1->e4, e4->e2, e2->e3, e3->e1 (which would imply e1
+     * happened before itself).
+     * 
+     * @param obs
      */
     public void topoSort() {
         if (true) {
-        TopologyGraph graph = new TopologyGraph(this);
-        IntervalTree.dbg = true;
-        try {
-            int sz = events.size();
-            // topoSort() returns a map from new index to old, i.e.
-            // a node that was at index evs[i] should go to index i
-            final int[] evs = graph.topoSort();
-            
-            ArrayList<Event> newevs = new ArrayList<Event>(sz);
-            // remap events
-            for (Entity en: rootEntities) {
-                en.setFirstEventIndex(-1);
-            }
-            for(int i=0; i<sz; i++) {
-                Event ev = events.get(evs[i]);
-                newevs.add(ev);
-                ev.setIndex(i);
-                Entity en = ev.getEntity();
-                if (en.getFirstEventIndex() == -1)
-                    en.setFirstEventIndex(i);
-                en.setLastEventIndex(i);
-            }
+            final TopologyGraph graph = new TopologyGraph(this);
+            IntervalTree.dbg = true;
+            try {
+                final int sz = events.size();
+                // topoSort() returns a map from new index to old, i.e.
+                // a node that was at index evs[i] should go to index i
+                final int[] evs = graph.topoSort();
 
-            // remap interactions
-            class NodeVisitor implements Visitor {
-                private IntervalTree newTree;
-                public NodeVisitor(IntervalTree newTree) {
-                    this.newTree = newTree;
+                final ArrayList<Event> newevs = new ArrayList<Event>(sz);
+                // remap events
+                for (final Entity en : rootEntities) {
+                    en.setFirstEventIndex(-1);
                 }
-                        
-                @Override
-                public boolean visit(AVLTreeNode tn) {
-                    Interaction inter = (Interaction)tn.getData();
-                    int oldFrom = inter.getFromIndex();
-                    int oldTo = inter.getToIndex();
-                    // we use old event array here to map from old index to new
-                    int newFrom = (oldFrom != -1) ? events.get(oldFrom).getIndex() : -1;
-                    int newTo = (oldTo != -1) ? events.get(oldTo).getIndex() : -1;
-                    inter.setFromToIndices(newFrom, newTo);
-                    // although we don't traverse the children any longer,
-                    // we remove them to allow memory recycle for tree nodes
-                    tn.detachChildren();
-                    newTree.add(inter);
-                    return false;
+                for (int i = 0; i < sz; i++) {
+                    final Event ev = events.get(evs[i]);
+                    newevs.add(ev);
+                    ev.setIndex(i);
+                    final Entity en = ev.getEntity();
+                    if (en.getFirstEventIndex() == -1)
+                        en.setFirstEventIndex(i);
+                    en.setLastEventIndex(i);
                 }
-            }
-            IntervalTree newTree = new IntervalTree("tmptree");
-            interactions.postorder(new NodeVisitor(newTree));
-            interactions = newTree;
-            
-            //assing event array last
-            events = newevs;
 
+                // remap interactions
+                class NodeVisitor implements Visitor {
+                    private final IntervalTree newTree;
+
+                    public NodeVisitor(IntervalTree newTree) {
+                        this.newTree = newTree;
+                    }
+
+                    @Override
+                    public boolean visit(AVLTreeNode tn) {
+                        final Interaction inter = (Interaction) tn.getData();
+                        final int oldFrom = inter.getFromIndex();
+                        final int oldTo = inter.getToIndex();
+                        // we use old event array here to map from old index to
+                        // new
+                        final int newFrom = (oldFrom != -1) ? events.get(oldFrom)
+                                .getIndex() : -1;
+                        final int newTo = (oldTo != -1) ? events.get(oldTo)
+                                .getIndex() : -1;
+                        inter.setFromToIndices(newFrom, newTo);
+                        // although we don't traverse the children any longer,
+                        // we remove them to allow memory recycle for tree nodes
+                        tn.detachChildren();
+                        newTree.add(inter);
+                        return false;
+                    }
+                }
+                final IntervalTree newTree = new IntervalTree("tmptree");
+                interactions.postorder(new NodeVisitor(newTree));
+                interactions = newTree;
+
+                // assing event array last
+                events = newevs;
+
+                try {
+                    interactions.verifyIntegrity();
+                } catch (final TreeIntegrityException ex) {
+                    ex.printStackTrace();
+                }
+                notifyModelChanged();
+            } catch (final TopologyError e) {
+                Report.exception(e);
+            }
             try {
                 interactions.verifyIntegrity();
-            } catch (TreeIntegrityException ex) {
-                ex.printStackTrace();
+            } catch (final TreeIntegrityException er) {
+                System.err.println(er.getMessage());
+                System.err.println(er.getTreePath());
             }
-            notifyModelChanged();
-        } catch (TopologyError e) {
-            Report.exception(e);
-        }
-        try {
-            interactions.verifyIntegrity();
-        }catch(TreeIntegrityException er) {
-            System.err.println(er.getMessage());
-            System.err.println(er.getTreePath());
-        }
         }
     }
 
     /**
-     * returns the event that was generated from the line at the specified 
-     * index in the source file.
+     * returns the event that was generated from the line at the specified index
+     * in the source file.
+     * 
      * @param lnum
-     * @return 
+     * @return
      */
     public Event getEventByLineIndex(int lnum) {
-        int sz = events.size();
-        for(int i=0; i<sz; i++) {
-            Event ev = events.get(i);
+        final int sz = events.size();
+        for (int i = 0; i < sz; i++) {
+            final Event ev = events.get(i);
             if (ev.getLineIndex() == lnum)
                 return ev;
         }
@@ -804,41 +835,51 @@ public final class MSCDataModel {
 
     /**
      * enables/disables notification of events.
-     * @param v 
+     * 
+     * @param v
      */
-    public void enableNotification(boolean v) {
-        notificationEnabled = v;
+    public void setLoading(boolean v) {
+        notificationEnabled = !v;
+        if (! v)
+            llm.doneLoading();
     }
 
     /**
      * clears all markers for events and interactions
      */
     public void clearMarkers() {
-        for (Event ev : events) {
-            ev.setMarker(null);            
+        for (final Event ev : events) {
+            ev.setMarker(null);
         }
-        for(InOrderAVLTreeNodeIterator it = new InOrderAVLTreeNodeIterator(interactions); it.hasNext();) {
-            AVLTreeNode tn = it.next();
-            Interaction in = (Interaction)tn.getData();
+        for (final InOrderAVLTreeNodeIterator it = new InOrderAVLTreeNodeIterator(
+                interactions); it.hasNext();) {
+            final AVLTreeNode tn = it.next();
+            final Interaction in = (Interaction) tn.getData();
             in.setMarker(null);
         }
     }
-    
+
     public String getOpenPath() {
         return openPath;
     }
-    
+
     public void setOpenPath(String path) {
         openPath = path;
     }
 
-    public void addGraph(Graph g){
+    public void addGraph(Graph g) {
         graphs.add(g);
     }
 
-	public static MSCDataModel getInstance() {
-		if (singleton == null)
-			singleton = new MSCDataModel();
-		return singleton;
-	}
+    public static MSCDataModel getInstance() {
+        if (singleton == null)
+            singleton = new MSCDataModel();
+        return singleton;
+    }
+
+    public LogListModel getLogListModel() {
+        return llm;
+    }
+
+
 }

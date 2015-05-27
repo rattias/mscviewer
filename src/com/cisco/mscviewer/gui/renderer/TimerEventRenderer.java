@@ -11,11 +11,12 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 public class TimerEventRenderer extends EventRenderer {
 
@@ -24,30 +25,28 @@ public class TimerEventRenderer extends EventRenderer {
         super.setup(props);
     }
 
-
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        int SIDE = maxDim.height-4;
-        g2d.setColor(Color.black);		
-        g2d.drawOval(0-SIDE/2, 0-SIDE/2, SIDE, SIDE);
-        g2d.setColor(Color.gray);		
-        g2d.drawOval(0-SIDE/2-1, 0-SIDE/2-1, SIDE, SIDE);
+        final int SIDE = maxDim.height - 4;
+        g2d.setColor(Color.black);
+        g2d.drawOval(0 - SIDE / 2, 0 - SIDE / 2, SIDE, SIDE);
+        g2d.setColor(Color.gray);
+        g2d.drawOval(0 - SIDE / 2 - 1, 0 - SIDE / 2 - 1, SIDE, SIDE);
 
-        g2d.drawLine(0-SIDE/2, 0, 0-SIDE/2+3, 0);
-        g2d.drawLine(0+SIDE/2, 0, 0+SIDE/2-3, 0);
-        g2d.drawLine(0, 0-SIDE/2, 0, 0-SIDE/2+3);
-        g2d.drawLine(0, 0+SIDE/2, 0, 0+SIDE/2+3);
-        g2d.drawLine(0, 0, 0+SIDE/3, 0+SIDE/3);
-        g2d.drawLine(0, 0, 0, 0-SIDE-2-2);
+        g2d.drawLine(0 - SIDE / 2, 0, 0 - SIDE / 2 + 3, 0);
+        g2d.drawLine(0 + SIDE / 2, 0, 0 + SIDE / 2 - 3, 0);
+        g2d.drawLine(0, 0 - SIDE / 2, 0, 0 - SIDE / 2 + 3);
+        g2d.drawLine(0, 0 + SIDE / 2, 0, 0 + SIDE / 2 + 3);
+        g2d.drawLine(0, 0, 0 + SIDE / 3, 0 + SIDE / 3);
+        g2d.drawLine(0, 0, 0, 0 - SIDE - 2 - 2);
     }
-
 
     @Override
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        bb.x = x-maxDim.height/2;
-        bb.y = y-maxDim.height/2;
+        bb.x = x - maxDim.height / 2;
+        bb.y = y - maxDim.height / 2;
         bb.width = maxDim.height;
         bb.height = maxDim.height;
         return bb;

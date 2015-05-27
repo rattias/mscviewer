@@ -11,13 +11,6 @@
  */
 package com.cisco.mscviewer.gui;
 
-import com.cisco.mscviewer.script.Python;
-import com.cisco.mscviewer.script.PythonChangeListener;
-import com.cisco.mscviewer.script.PythonFunction;
-import com.cisco.mscviewer.util.PNGSnapshotTarget;
-import com.cisco.mscviewer.util.Report;
-import com.cisco.mscviewer.util.Utils;
-
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -36,6 +29,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import com.cisco.mscviewer.script.Python;
+import com.cisco.mscviewer.script.PythonChangeListener;
+import com.cisco.mscviewer.script.PythonFunction;
+import com.cisco.mscviewer.util.Report;
+import com.cisco.mscviewer.util.Utils;
+
 @SuppressWarnings("serial")
 class PyScriptTree extends JTree {
     final static String dir = "scripts";
@@ -43,30 +42,23 @@ class PyScriptTree extends JTree {
     private boolean updating;
     private MainPanel mainPanel;
     private PythonFunction latestFunction;
-    
-    class PyScriptTreeRenderer extends DefaultTreeCellRenderer {        
+
+    class PyScriptTreeRenderer extends DefaultTreeCellRenderer {
         @Override
-        public Component getTreeCellRendererComponent(
-                JTree tree,
-                Object value,
-                boolean sel,
-                boolean expanded,
-                boolean leaf,
-                int row,
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                boolean sel, boolean expanded, boolean leaf, int row,
                 boolean hasFocus) {
-            Component c = super.getTreeCellRendererComponent(
-                    tree, value, sel,
-                    expanded, leaf, row,
-                    hasFocus);
+            final Component c = super.getTreeCellRendererComponent(tree, value, sel,
+                    expanded, leaf, row, hasFocus);
             setToolTipText(null);
-            DefaultMutableTreeNode n = (DefaultMutableTreeNode)value;
-            Object obj = n.getUserObject();
+            final DefaultMutableTreeNode n = (DefaultMutableTreeNode) value;
+            final Object obj = n.getUserObject();
             PythonFunction f;
             if (leaf && obj instanceof PythonFunction) {
-                f = (PythonFunction)n.getUserObject();
+                f = (PythonFunction) n.getUserObject();
                 String doc = f.getDoc();
                 if (doc != null) {
-                    doc = "<html>"+Utils.stringToHTML(doc)+"</html>";
+                    doc = "<html>" + Utils.stringToHTML(doc) + "</html>";
                     setToolTipText(doc);
                 }
             }
@@ -78,13 +70,13 @@ class PyScriptTree extends JTree {
         if (updating)
             return;
         updating = true;
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        final SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
                 initTreeContentInWorkerThread();
                 return null;
             }
-            
+
             @Override
             public void done() {
                 updating = false;
@@ -92,49 +84,50 @@ class PyScriptTree extends JTree {
         };
         worker.execute();
     }
-    
-    private void initTreeContentInWorkerThread() {        
-        DefaultTreeModel dtm = (DefaultTreeModel) getModel();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode )dtm.getRoot();
+
+    private void initTreeContentInWorkerThread() {
+        final DefaultTreeModel dtm = (DefaultTreeModel) getModel();
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) dtm.getRoot();
         root.removeAllChildren();
         dtm.reload();
         if (py == null) {
-            //System.out.println("Instantiating python");
+            // System.out.println("Instantiating python");
             py = new Python(mainPanel);
             py.addChangeListener(new PythonChangeListener() {
                 @Override
                 public void moduleAdded(String module) {
-                    initTreeContent();                    
+                    initTreeContent();
                 }
 
                 @Override
                 public void moduleRemoved(String module) {
-                    initTreeContent();                    
+                    initTreeContent();
                 }
 
                 @Override
                 public void moduleChanged(String module) {
-                    initTreeContent();                    
+                    initTreeContent();
                 }
-                
+
             });
         } else
             py.init(mainPanel);
-        try{
-            for(String pkg: py.getPackages()) {
-                DefaultMutableTreeNode pkgNode = new DefaultMutableTreeNode(pkg);
+        try {
+            for (final String pkg : py.getPackages()) {
+                final DefaultMutableTreeNode pkgNode = new DefaultMutableTreeNode(pkg);
                 if (py.getFunctions(pkg).length > 0)
                     root.add(pkgNode);
                 else {
-                    //System.out.println("no functions in package "+pkg);
+                    // System.out.println("no functions in package "+pkg);
                 }
-                for(PythonFunction fn: py.getFunctions(pkg)) {
-                    DefaultMutableTreeNode fnNode = new DefaultMutableTreeNode(fn);
+                for (final PythonFunction fn : py.getFunctions(pkg)) {
+                    final DefaultMutableTreeNode fnNode = new DefaultMutableTreeNode(
+                            fn);
                     pkgNode.add(fnNode);
                 }
             }
             dtm.reload();
-        }catch(Throwable ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
             Report.exception(ex);
         }
@@ -142,21 +135,24 @@ class PyScriptTree extends JTree {
 
     private void handlePopupMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
-            int x = e.getX();
-            int y = e.getY();
+            final int x = e.getX();
+            final int y = e.getY();
             final TreePath path = getPathForLocation(x, y);
             if (path != null) {
-                DefaultMutableTreeNode tn = (DefaultMutableTreeNode)path.getLastPathComponent();
+                final DefaultMutableTreeNode tn = (DefaultMutableTreeNode) path
+                        .getLastPathComponent();
                 if (tn.getUserObject() instanceof PythonFunction) {
-                    final PythonFunction fun = (PythonFunction)tn.getUserObject();
+                    final PythonFunction fun = (PythonFunction) tn
+                            .getUserObject();
 
-                    JPopupMenu popup = new JPopupMenu();
-                    popup.add(new AbstractAction("Open in editor") { 
+                    final JPopupMenu popup = new JPopupMenu();
+                    popup.add(new AbstractAction("Open in editor") {
+                        @Override
                         public void actionPerformed(ActionEvent e) {
-                            Desktop dt = Desktop.getDesktop();
+                            final Desktop dt = Desktop.getDesktop();
                             try {
                                 dt.open(new File(py.getPyPathForFunction(fun)));
-                            } catch (IOException e1) {
+                            } catch (final IOException e1) {
                                 e1.printStackTrace();
                             }
                         }
@@ -166,11 +162,11 @@ class PyScriptTree extends JTree {
             }
         }
     }
-    
+
     public PyScriptTree(MainPanel mp) {
         this.mainPanel = mp;
-        DefaultTreeModel dtm = (DefaultTreeModel) getModel();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Functions");
+        final DefaultTreeModel dtm = (DefaultTreeModel) getModel();
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Functions");
         dtm.setRoot(root);
         javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
         setCellRenderer(new PyScriptTreeRenderer());
@@ -184,44 +180,46 @@ class PyScriptTree extends JTree {
             public void mouseReleased(MouseEvent e) {
                 handlePopupMenu(e);
             }
-            
+
             @Override
             public void mouseClicked(MouseEvent me) {
-                if (me.getClickCount() ==2) {
-                    TreePath tp = getPathForLocation(me.getX(), me.getY());
+                if (me.getClickCount() == 2) {
+                    final TreePath tp = getPathForLocation(me.getX(), me.getY());
                     if (tp == null)
                         return;
-                    DefaultMutableTreeNode tn = (DefaultMutableTreeNode )tp.getLastPathComponent();
-                    Object o = tn.getUserObject();
+                    final DefaultMutableTreeNode tn = (DefaultMutableTreeNode) tp
+                            .getLastPathComponent();
+                    final Object o = tn.getUserObject();
                     if (o instanceof PythonFunction) {
-                        latestFunction = (PythonFunction)o;
-                        
-                        boolean invokable = latestFunction.canBeInvoked();
+                        latestFunction = (PythonFunction) o;
+
+                        final boolean invokable = latestFunction.canBeInvoked();
                         if ((!invokable) || me.isShiftDown()) {
-                            int res = new FunctionParametersDialog(latestFunction).open();
+                            final int res = new FunctionParametersDialog(
+                                    latestFunction).open();
                             if (res != FunctionParametersDialog.OK)
                                 return;
                         }
                         runLatestFunction();
-                    }                        
+                    }
                 }
             }
 
         });
     }
-    
+
     public void runLatestFunction() {
-    	if (latestFunction == null)
-    		return;
+        if (latestFunction == null)
+            return;
         try {
             latestFunction.invoke();
-        } catch (ScriptException e) {
+        } catch (final ScriptException e) {
             e.printStackTrace();
             Report.exception(e);
         }
     }
 
-	public PythonFunction getLatestFunction() {
-		return latestFunction;
-	}
+    public PythonFunction getLatestFunction() {
+        return latestFunction;
+    }
 }

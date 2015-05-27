@@ -13,19 +13,20 @@ import com.cisco.mscviewer.model.Entity;
 
 /**
  * @author Roberto Attias
- * @since  Aug 2014
+ * @since Aug 2014
  */
 @SuppressWarnings("serial")
 class CustomButton extends JToggleButton {
     private final Entity en;
 
     public CustomButton(Entity en) {
-        super(en.getDescription() == null ?
-                en.getName() :
-                    "<HTML>"+en.getPath()+"<BR> <i><center>"+en.getDescription()+"</center></i></HTML>");
-        //, MainFrame.createImageIcon("close.jpg", "close")
-        this.en = en;			
+        super(en.getDescription() == null ? en.getName() : "<HTML>"
+                + en.getPath() + "<BR> <i><center>" + en.getDescription()
+                + "</center></i></HTML>");
+        // , MainFrame.createImageIcon("close.jpg", "close")
+        this.en = en;
     }
+
     public Entity getEntity() {
         return en;
     }

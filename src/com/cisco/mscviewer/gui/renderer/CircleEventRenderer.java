@@ -11,11 +11,12 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 public class CircleEventRenderer extends EventRenderer {
     Color color = Color.YELLOW;
@@ -25,42 +26,43 @@ public class CircleEventRenderer extends EventRenderer {
     @Override
     public void setup(JSonObject props) {
         super.setup(props);
-        String rad = props.get("radius").toString();
+        final String rad = props.get("radius").toString();
         if (rad != null)
             factor = Float.parseFloat(rad);
-        String col = props.get("color").toString();
+        final String col = props.get("color").toString();
         if (col != null) {
-            int c = Integer.parseInt(col, 16);
+            final int c = Integer.parseInt(col, 16);
             color = new Color(c);
         }
-        color1 = color.darker(); 
+        color1 = color.darker();
     }
 
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        int radius = (int)(maxDim.height/2*factor);
+        final int radius = (int) (maxDim.height / 2 * factor);
         g2d.setColor(color);
-        g2d.fillOval(-radius, -radius, radius*2, radius*2);
+        g2d.fillOval(-radius, -radius, radius * 2, radius * 2);
         g2d.setColor(color1);
-        g2d.drawOval(-radius, -radius, radius*2, radius*2);
+        g2d.drawOval(-radius, -radius, radius * 2, radius * 2);
     }
 
     @Override
-    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px, int py) {
-        int radius = (int)(maxDim.height/2*factor);
-        int dx = x-px;
-        int dy = y-py;
-        boolean b = (dx*dx+dy*dy<radius*radius);
+    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px,
+            int py) {
+        final int radius = (int) (maxDim.height / 2 * factor);
+        final int dx = x - px;
+        final int dy = y - py;
+        final boolean b = (dx * dx + dy * dy < radius * radius);
         return b;
-    }	
+    }
 
     @Override
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        int diameter = (int)(maxDim.height*factor);
-        bb.x = x-diameter/2;
-        bb.y = y-diameter/2;
+        final int diameter = (int) (maxDim.height * factor);
+        bb.x = x - diameter / 2;
+        bb.y = y - diameter / 2;
         bb.width = diameter;
         bb.height = diameter;
         return bb;

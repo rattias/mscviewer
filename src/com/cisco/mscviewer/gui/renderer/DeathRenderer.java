@@ -11,7 +11,6 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,6 +18,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 
+import com.cisco.mscviewer.model.JSonObject;
 
 public class DeathRenderer extends EventRenderer {
     private static BasicStroke basic2 = new BasicStroke(2.0f);
@@ -33,26 +33,29 @@ public class DeathRenderer extends EventRenderer {
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
         g2d.setColor(Color.RED);
-        Stroke s = g2d.getStroke();
+        final Stroke s = g2d.getStroke();
         g2d.setStroke(basic2);
-        g2d.drawLine(-INTRA_EV_WIDTH/2, -INTRA_EV_WIDTH/2, INTRA_EV_WIDTH/2, INTRA_EV_WIDTH/2);
-        g2d.drawLine(INTRA_EV_WIDTH/2, -INTRA_EV_WIDTH/2, -INTRA_EV_WIDTH/2, INTRA_EV_WIDTH/2);
+        g2d.drawLine(-INTRA_EV_WIDTH / 2, -INTRA_EV_WIDTH / 2,
+                INTRA_EV_WIDTH / 2, INTRA_EV_WIDTH / 2);
+        g2d.drawLine(INTRA_EV_WIDTH / 2, -INTRA_EV_WIDTH / 2,
+                -INTRA_EV_WIDTH / 2, INTRA_EV_WIDTH / 2);
         g2d.setStroke(s);
     }
 
     @Override
-    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px, int py) {
-        return px >= x-INTRA_EV_WIDTH/2 && px < x+INTRA_EV_WIDTH/2 &&
-        py >= y-INTRA_EV_WIDTH/2 && py < x+INTRA_EV_WIDTH/2;		
+    public boolean inSelectionArea(int x, int y, Dimension maxDim, int px,
+            int py) {
+        return px >= x - INTRA_EV_WIDTH / 2 && px < x + INTRA_EV_WIDTH / 2
+                && py >= y - INTRA_EV_WIDTH / 2 && py < x + INTRA_EV_WIDTH / 2;
     }
 
     @Override
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        bb.x = x-INTRA_EV_WIDTH/2;
-        bb.y = y-INTRA_EV_WIDTH/2;
-        bb.width = INTRA_EV_WIDTH; 
+        bb.x = x - INTRA_EV_WIDTH / 2;
+        bb.y = y - INTRA_EV_WIDTH / 2;
+        bb.width = INTRA_EV_WIDTH;
         bb.height = INTRA_EV_WIDTH;
         return bb;
     }

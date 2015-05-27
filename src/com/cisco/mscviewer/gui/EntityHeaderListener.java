@@ -15,8 +15,11 @@ import com.cisco.mscviewer.model.Entity;
 
 public interface EntityHeaderListener {
     void entityAdded(EntityHeader hd, Entity en, int idx);
+
     void entityRemoved(EntityHeader hd, Entity en, int idx);
+
     void notifyLayoutChanged(EntityHeader hd);
+
     void entitySelectionChanged(EntityHeader eh, Entity en, int idx);
 
 }

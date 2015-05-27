@@ -15,5 +15,6 @@ import java.awt.Component;
 
 public interface PNGSnapshotTarget {
     Component getPNGSnapshotClient();
+
     String getName();
 }

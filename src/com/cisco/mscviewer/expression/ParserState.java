@@ -35,7 +35,7 @@ public class ParserState {
         props = new Properties();
         completion = new HashSet<String>();
         tk = new Tokenizer(txt);
-        //		tk.print();
+        // tk.print();
     }
 
     void setPos(int p) {
@@ -48,15 +48,15 @@ public class ParserState {
 
     Token next() throws NoMoreTokensException {
         try {
-            setPos(getPos()+1);		
+            setPos(getPos() + 1);
             return tok();
-        }catch(IndexOutOfBoundsException ex) {
+        } catch (final IndexOutOfBoundsException ex) {
             throw new NoMoreTokensException();
         }
     }
 
-    Token prev()  {
-        setPos(getPos()-1);		
+    Token prev() {
+        setPos(getPos() - 1);
         return tok();
     }
 
@@ -74,18 +74,18 @@ public class ParserState {
 
     void compl(String str) {
         String t = tok().string;
-        if (t.charAt(t.length()-1) == Token.COMPL_CHAR) {
-            t = t.substring(0, t.length()-1);
+        if (t.charAt(t.length() - 1) == Token.COMPL_CHAR) {
+            t = t.substring(0, t.length() - 1);
             if (str.startsWith(t))
                 completion.add(str);
-        }		
+        }
     }
 
     public ArrayList<String> getCompletions() {
-        ArrayList<String> al = new ArrayList<String>();
+        final ArrayList<String> al = new ArrayList<String>();
         al.addAll(completion);
         Collections.sort(al);
-        return 	al;
+        return al;
     }
 
     public int getTokenCount() {

@@ -18,12 +18,12 @@ import javax.swing.JSplitPane;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
 @SuppressWarnings("serial")
-class LeftPane extends JSplitPane implements PNGSnapshotTarget{
+class LeftPane extends JSplitPane implements PNGSnapshotTarget {
     public LeftPane(Component top, Component bottom) {
         super(JSplitPane.VERTICAL_SPLIT, top, bottom);
         setName("LeftPane");
     }
-    
+
     @Override
     public Component getPNGSnapshotClient() {
         return null;

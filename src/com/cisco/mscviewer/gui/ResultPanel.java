@@ -31,6 +31,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
+
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;
@@ -39,32 +40,30 @@ import com.cisco.mscviewer.model.MSCDataModel;
 class ResultPanel extends JPanel implements MouseListener {
     private final JEditorPane editor;
 
-    public ResultPanel(final MSCDataModel model) {        
+    public ResultPanel(final MSCDataModel model) {
         setLayout(new BorderLayout());
-        Font font = new Font("courier", Font.PLAIN, 12);
-        String CSS = "<style> " +
-        "body { "+
-        "font-family: " + font.getFamily() + "; " +
-        "font-size: " + font.getSize() + "pt; "+
-        "}" +
-        ".match {  color: #00A000; }" +
-        ".mismatch {  color: #FF0000; }" +
-        "</style>";
-        editor = new JEditorPane("text/html", "<html><head>"+CSS+"</head><body>"); 
-        //((HTMLDocument)editor.getDocument()).getStyleSheet().addRule(bodyRule);
+        final Font font = new Font("courier", Font.PLAIN, 12);
+        final String CSS = "<style> " + "body { " + "font-family: "
+                + font.getFamily() + "; " + "font-size: " + font.getSize()
+                + "pt; " + "}" + ".match {  color: #00A000; }"
+                + ".mismatch {  color: #FF0000; }" + "</style>";
+        editor = new JEditorPane("text/html", "<html><head>" + CSS
+                + "</head><body>");
+        // ((HTMLDocument)editor.getDocument()).getStyleSheet().addRule(bodyRule);
         editor.setEditable(false);
         editor.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent he) {
-                HyperlinkEvent.EventType type = he.getEventType();
+                final HyperlinkEvent.EventType type = he.getEventType();
                 if (type == HyperlinkEvent.EventType.ACTIVATED) {
-                    String descr = he.getDescription();
+                    final String descr = he.getDescription();
                     if (descr.startsWith("msc_event://")) {
-                        String ids = descr.substring("msc_event://".length());
-                        String[] idarr = ids.split(",");
-                        for (String idarr1 : idarr) {
+                        final String ids = descr.substring("msc_event://".length());
+                        final String[] idarr = ids.split(",");
+                        for (final String idarr1 : idarr) {
                             if (!idarr1.equals("")) {
-                                Event ev = model.getEventAt(Integer.parseInt(idarr1));
+                                final Event ev = model.getEventAt(Integer
+                                        .parseInt(idarr1));
                                 Main.open(ev);
                             }
                         }
@@ -77,24 +76,25 @@ class ResultPanel extends JPanel implements MouseListener {
     }
 
     public void append(String txt) {
-        HTMLEditorKit edkit = (HTMLEditorKit) editor.getEditorKit();
-        StringReader reader = new StringReader(txt);         
+        final HTMLEditorKit edkit = (HTMLEditorKit) editor.getEditorKit();
+        final StringReader reader = new StringReader(txt);
         try {
-            edkit.read(reader, editor.getDocument(), editor.getDocument().getLength());
-        } catch (IOException e) {
+            edkit.read(reader, editor.getDocument(), editor.getDocument()
+                    .getLength());
+        } catch (final IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     public void clear() {
-        Document doc = editor.getDocument();
+        final Document doc = editor.getDocument();
         try {
             doc.remove(0, doc.getLength());
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -109,16 +109,16 @@ class ResultPanel extends JPanel implements MouseListener {
     @Override
     public void mousePressed(MouseEvent me) {
         if (me.isPopupTrigger()) {
-            JPopupMenu jpm = new JPopupMenu();
-            JMenuItem it = new JMenuItem("Clear");
-            it.addActionListener(new ActionListener(){
+            final JPopupMenu jpm = new JPopupMenu();
+            final JMenuItem it = new JMenuItem("Clear");
+            it.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    editor.setText("");                
+                    editor.setText("");
                 }
             });
             jpm.add(it);
-            jpm.show((Component)me.getSource(), me.getX(), me.getY());
+            jpm.show((Component) me.getSource(), me.getX(), me.getY());
         }
 
     }

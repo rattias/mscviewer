@@ -19,9 +19,8 @@ import java.util.Set;
 import com.cisco.mscviewer.io.JSonException;
 import com.cisco.mscviewer.util.JSonParser;
 
-
 /**
- * Model element representing a JSon object. 
+ * Model element representing a JSon object.
  * 
  * A JSon object is expressed by the grammar shown in {@link http://json.org/}
  * 
@@ -29,7 +28,7 @@ import com.cisco.mscviewer.util.JSonParser;
  */
 public class JSonObject implements JSonValue {
 
-    private HashMap<String, JSonValue> map;
+    private final HashMap<String, JSonValue> map;
 
     public JSonObject() {
         map = new LinkedHashMap<String, JSonValue>();
@@ -40,18 +39,19 @@ public class JSonObject implements JSonValue {
         JSonParser.parseObject(str, this);
     }
 
-    public static JSonObject parse(String text, String file, int lineNum, int pos) throws JSonException {
+    public static JSonObject parse(String text, String file, int lineNum,
+            int pos) throws JSonException {
         return JSonParser.parseObject(text, file, lineNum);
     }
-    
+
     public static JSonObject parse(String text) throws JSonException {
         return parse(text, null, 0, 0);
     }
 
     private String toStringInternal(boolean pretty, int indent) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("{ ");
-        for (String k : map.keySet()) {
+        for (final String k : map.keySet()) {
             if (pretty) {
                 sb.append('\n');
                 for (int c = 0; c < indent * 2; c++) {
@@ -62,9 +62,9 @@ public class JSonObject implements JSonValue {
             sb.append(k);
             sb.append('"');
             sb.append(':');
-            JSonValue value = map.get(k);
+            final JSonValue value = map.get(k);
             if (value instanceof JSonObject) {
-                JSonObject v = (JSonObject) value;
+                final JSonObject v = (JSonObject) value;
                 sb.append(v.toStringInternal(pretty, indent + 1));
             } else if (value instanceof JSonStringValue) {
                 sb.append('"');
@@ -100,16 +100,15 @@ public class JSonObject implements JSonValue {
     public JSonValue get(String key) {
         return map.get(key);
     }
-    
+
     public JSonObject getJSon(String key) {
-        return (JSonObject)map.get(key);
+        return (JSonObject) map.get(key);
     }
 
     public JSonArrayValue getArray(String key) {
-        return (JSonArrayValue)map.get(key);
+        return (JSonArrayValue) map.get(key);
     }
 
-    
     public void set(String key, JSonValue value) {
         map.put(key, value);
     }
@@ -121,7 +120,7 @@ public class JSonObject implements JSonValue {
     public void clear() {
         map.clear();
     }
-   
+
     @Override
     public int hashCode() {
         return map.hashCode();
@@ -131,43 +130,45 @@ public class JSonObject implements JSonValue {
     public boolean equals(Object o2) {
         if (!(o2 instanceof JSonObject))
             return false;
-        return map.equals(((JSonObject)o2).map);
+        return map.equals(((JSonObject) o2).map);
     }
 
-    
     public static void main(String args[]) throws JSonException {
-        String s = "{ \"ciao\":\"bello\", \"foo\":true, \"bar\":[1, 2], \"xyz\":{\"k1\":\"v1\"} }";
-        //String s = "{ \"ciao\":\"bello\"}";
-        JSonObject o1 = new JSonObject(s);
-        JSonObject o2 = new JSonObject(s);
-        System.out.println("o1="+o1);
-        System.out.println("o2="+o2);
-        System.out.println("h(o1)="+o1.hashCode());
-        System.out.println("h(o2)="+o2.hashCode());
-        System.out.print("o1.equals(o2):"+o1.equals(o2));
+        final String s = "{ \"ciao\":\"bello\", \"foo\":true, \"bar\":[1, 2], \"xyz\":{\"k1\":\"v1\"} }";
+        // String s = "{ \"ciao\":\"bello\"}";
+        final JSonObject o1 = new JSonObject(s);
+        final JSonObject o2 = new JSonObject(s);
+        System.out.println("o1=" + o1);
+        System.out.println("o2=" + o2);
+        System.out.println("h(o1)=" + o1.hashCode());
+        System.out.println("h(o2)=" + o2.hashCode());
+        System.out.print("o1.equals(o2):" + o1.equals(o2));
     }
 
     public JSonValue getValueByPath(String path) {
-        String [] toks = path.split("/");
+        final String[] toks = path.split("/");
         JSonValue o = this;
         String tmp = "";
-        for(String t: toks) {
-            if (! (o instanceof JSonObject))
-                throw new NoSuchFieldError("Field '"+t+"' is not a JSON object in path '"+tmp+"'.");
-            tmp+= t+"/";
-            o = ((JSonObject)o).get(t);
+        for (final String t : toks) {
+            if (!(o instanceof JSonObject))
+                throw new NoSuchFieldError("Field '" + t
+                        + "' is not a JSON object in path '" + tmp + "'.");
+            tmp += t + "/";
+            o = ((JSonObject) o).get(t);
             if (o == null)
-                throw new NoSuchFieldError("Field '"+t+"' not found in path '"+tmp+"'.");
+                throw new NoSuchFieldError("Field '" + t
+                        + "' not found in path '" + tmp + "'.");
         }
         return o;
     }
 
     public String[] getKeys() {
-        Set<String> s = map.keySet();
+        final Set<String> s = map.keySet();
         return s.toArray(new String[s.size()]);
     }
+
     public JSonValue[] getValues() {
-        Collection<JSonValue> s = map.values();
+        final Collection<JSonValue> s = map.values();
         return s.toArray(new JSonValue[s.size()]);
     }
 

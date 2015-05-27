@@ -11,8 +11,6 @@
  */
 package com.cisco.mscviewer.gui.renderer;
 
-import com.cisco.mscviewer.model.JSonObject;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,6 +18,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+
+import com.cisco.mscviewer.model.JSonObject;
 
 public class SyncMessageRenderer extends EventRenderer {
     @SuppressWarnings("unused")
@@ -33,33 +33,20 @@ public class SyncMessageRenderer extends EventRenderer {
         setScaleSource(true);
     }
 
-
     @Override
     public void render(Graphics2D g2d, Dimension maxDim) {
-        Stroke s = g2d.getStroke();
-        int SIDE = maxDim.height;
-        int x= -SIDE/2;
-        int y= -SIDE/2;
-        int xs[] = {
-                x+SIDE/3,
-                x+SIDE/3,
-                x+SIDE*2/3,
-                x+SIDE*2/3,
-                x+SIDE/3,
-                x+SIDE/3
-        };
-        int ys[] = {
-                y+2,
-                y+SIDE/3,
-                y+SIDE/3,
-                y+SIDE*2/3,
-                y+SIDE*2/3,
-                y+SIDE-2
-        };
-        //g2d.setStroke(basic2);
+        final Stroke s = g2d.getStroke();
+        final int SIDE = maxDim.height;
+        final int x = -SIDE / 2;
+        final int y = -SIDE / 2;
+        final int xs[] = { x + SIDE / 3, x + SIDE / 3, x + SIDE * 2 / 3,
+                x + SIDE * 2 / 3, x + SIDE / 3, x + SIDE / 3 };
+        final int ys[] = { y + 2, y + SIDE / 3, y + SIDE / 3, y + SIDE * 2 / 3,
+                y + SIDE * 2 / 3, y + SIDE - 2 };
+        // g2d.setStroke(basic2);
         g2d.setColor(Color.yellow);
         g2d.drawPolyline(xs, ys, 6);
-        AffineTransform t = g2d.getTransform();
+        final AffineTransform t = g2d.getTransform();
         g2d.translate(1, 1);
         g2d.setColor(Color.yellow.darker());
         g2d.drawPolyline(xs, ys, 6);
@@ -67,13 +54,12 @@ public class SyncMessageRenderer extends EventRenderer {
         g2d.setStroke(s);
     }
 
-
     @Override
     public Rectangle getBoundingBox(Dimension maxDim, int x, int y, Rectangle bb) {
         if (bb == null)
             bb = new Rectangle();
-        bb.x = x-maxDim.height/2;
-        bb.y = y-maxDim.height/2;
+        bb.x = x - maxDim.height / 2;
+        bb.y = y - maxDim.height / 2;
         bb.width = maxDim.height;
         bb.height = maxDim.height;
         return bb;

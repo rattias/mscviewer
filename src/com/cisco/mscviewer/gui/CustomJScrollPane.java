@@ -8,20 +8,21 @@
 package com.cisco.mscviewer.gui;
 
 import java.awt.Component;
-import javax.swing.JScrollPane;
-import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
+import javax.swing.JScrollPane;
+
+import com.cisco.mscviewer.util.PNGSnapshotTarget;
 
 /**
  * @author Roberto Attias
- * @since  Aug 2012
+ * @since Aug 2012
  */
 @SuppressWarnings("serial")
 class CustomJScrollPane extends JScrollPane implements PNGSnapshotTarget {
     public CustomJScrollPane(Component view) {
         super(view);
     }
-    
+
     @Override
     public Component getPNGSnapshotClient() {
         return null;

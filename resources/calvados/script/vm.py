@@ -2,7 +2,10 @@ from string import Template
 import re
 from msc.model import *
 from msc.flows import *
-	
+
+def fconn_to(client_entity,server_entity):
+    return fev(client_entity, "<"+server_entity+"_init>", predicate=is_sink, descr="connecting to "+server_entity)
+
             
 def vm_creation_flow(human_friendly=True):
     # print "*** vm_creation_flow called with arg=", arg, "with_model=", with_model, "human=", human 

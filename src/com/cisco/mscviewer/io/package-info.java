@@ -8,7 +8,8 @@
 /**
  * Contains classes for loading/saving MSCViewer data model from and to files.
  *
-* @author Roberto Attias
+ * @author Roberto Attias
  * @since  Jan 2012
  */
 package com.cisco.mscviewer.io;
+

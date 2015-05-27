@@ -11,10 +11,6 @@
  */
 package com.cisco.mscviewer.gui;
 
-import com.cisco.mscviewer.util.Resources;
-import com.cisco.mscviewer.util.Utils;
-import com.cisco.mscviewer.model.*;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -43,12 +39,18 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.EntityHeaderModelListener;
+import com.cisco.mscviewer.model.ViewModel;
+import com.cisco.mscviewer.util.Resources;
+import com.cisco.mscviewer.util.Utils;
+
 @SuppressWarnings("serial")
 public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 
-    //private MainPanel mainPanel;
-    private ViewModel ehm;
-//    private final Vector<EntityHeaderListener> listeners;
+    // private MainPanel mainPanel;
+    private final ViewModel ehm;
+    // private final Vector<EntityHeaderListener> listeners;
     private Dimension preferredSize;
     private Component dragging = null;
     private int draggingProspectiveIndex = -1;
@@ -59,7 +61,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 
     @Override
     public void entityMoved(ViewModel eh, Entity en, int toIdx) {
-        JPanel pp = getPanel(en);
+        final JPanel pp = getPanel(en);
         setComponentZOrder(pp, toIdx);
         doLayout();
         repaint();
@@ -104,10 +106,11 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton b = (CustomButton) e.getSource();
-            JPanel pp = (JPanel) b.getParent();
-            //dragging = pp;
-            Point p = SwingUtilities.convertPoint(pp, e.getPoint(), EntityHeader.this);
+            final CustomButton b = (CustomButton) e.getSource();
+            final JPanel pp = (JPanel) b.getParent();
+            // dragging = pp;
+            final Point p = SwingUtilities.convertPoint(pp, e.getPoint(),
+                    EntityHeader.this);
             dx = b.getParent().getX() - p.x;
         }
 
@@ -125,11 +128,12 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton b = (CustomButton) e.getSource();
-            JPanel pp = (JPanel) b.getParent();
+            final CustomButton b = (CustomButton) e.getSource();
+            final JPanel pp = (JPanel) b.getParent();
             dragging = pp;
             preferredSize = EntityHeader.super.getPreferredSize();
-            // following two lines are to move panel to front in Z order. also, panel is now first 
+            // following two lines are to move panel to front in Z order. also,
+            // panel is now first
             // in component list
             setComponentZOrder(pp, 0);
             draggingProspectiveIndex = 0;
@@ -140,10 +144,12 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 throw new Error("should be in event dispatch thread!");
             }
             dragging = null;
-            // the following line is important to make sure regular preferred size
+            // the following line is important to make sure regular preferred
+            // size
             // is used when adding/removing components
             preferredSize = null;
-            ehm.moveEntity(((CustomButton) e.getSource()).getEntity(), draggingProspectiveIndex);
+            ehm.moveEntity(((CustomButton) e.getSource()).getEntity(),
+                    draggingProspectiveIndex);
             draggingProspectiveIndex = -1;
         }
 
@@ -155,37 +161,41 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (dragging == null) {
                 startDragging(e);
             }
-            CustomButton b = (CustomButton) e.getSource();
-            JPanel pp = (JPanel) b.getParent();
-            Point p = SwingUtilities.convertPoint(pp, e.getPoint(), EntityHeader.this);
-            int lx = p.x + dx;
-            // set Panel location. There is a ComponentListener to transfer bounds change to model,
-            // but that fires only at mouseReleased, so we also set model coords.
+            final CustomButton b = (CustomButton) e.getSource();
+            final JPanel pp = (JPanel) b.getParent();
+            final Point p = SwingUtilities.convertPoint(pp, e.getPoint(),
+                    EntityHeader.this);
+            final int lx = p.x + dx;
+            // set Panel location. There is a ComponentListener to transfer
+            // bounds change to model,
+            // but that fires only at mouseReleased, so we also set model
+            // coords.
             ehm.setEntityLocation(getEntity(pp), lx);
-            int count = getComponentCount();
-            int cx = lx + pp.getWidth() / 2;
+            final int count = getComponentCount();
+            final int cx = lx + pp.getWidth() / 2;
             int x = (cx < 0) ? pp.getWidth() : 0;
-            // first component is the one we're dragging, loop on the others	
+            // first component is the one we're dragging, loop on the others
             draggingProspectiveIndex = -1;
             for (int idx = 1; idx < count; idx++) {
-                JPanel curr = (JPanel) getComponent(idx);
+                final JPanel curr = (JPanel) getComponent(idx);
                 if (cx >= x && cx < x + curr.getWidth()) {
                     x += pp.getWidth();
                     draggingProspectiveIndex = idx - 1;
                 }
-                Point pos = curr.getLocation();
+                final Point pos = curr.getLocation();
                 pos.x = x;
-                //curr.setLocation(pos);
+                // curr.setLocation(pos);
                 ehm.setEntityLocation(getEntity(curr), x);
                 x += curr.getWidth();
             }
             if (draggingProspectiveIndex == -1) {
                 draggingProspectiveIndex = (cx < 0) ? 0 : count - 1;
             }
-            //doLayout();
+            // doLayout();
             repaint();
         }
     }
+
     ButtonDragger bd = new ButtonDragger();
 
     ActionListener selectListener = new ActionListener() {
@@ -194,21 +204,24 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton cb = (CustomButton) actionEvent.getSource();
-            Entity en = cb.getEntity();
-            boolean selected = cb.getModel().isSelected();
-            Utils.trace(Utils.EVENTS, "Button for " + en.getName() + " " + selected);
+            final CustomButton cb = (CustomButton) actionEvent.getSource();
+            final Entity en = cb.getEntity();
+            final boolean selected = cb.getModel().isSelected();
+            Utils.trace(Utils.EVENTS, "Button for " + en.getName() + " "
+                    + selected);
             ehm.setSelected(en, selected);
             scrollToVisible(cb.getEntity());
             // do following only if CTRL not pressed (need to add that check)
             for (int i = 0; i < ehm.entityCount(); i++) {
-                Entity en1 = ehm.get(i);
+                final Entity en1 = ehm.get(i);
                 if (en1 != en) {
-                    Utils.trace(Utils.EVENTS, "setting model for " + en.getName() + " to false");
+                    Utils.trace(Utils.EVENTS,
+                            "setting model for " + en.getName() + " to false");
                     ehm.setSelected(en1, false);
                 }
             }
-//            notifyEntitySelectionChanged(cb.getEntity(), ehm.indexOf(cb.getEntity()));
+            // notifyEntitySelectionChanged(cb.getEntity(),
+            // ehm.indexOf(cb.getEntity()));
         }
     };
 
@@ -218,24 +231,26 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton b = (CustomButton) e.getSource();
-            int idx = getButtonIndex(b);
+            final CustomButton b = (CustomButton) e.getSource();
+            final int idx = getButtonIndex(b);
             if (idx > 0) {
-                int newx = b.getX() - b.getWidth();
-                int butw = b.getWidth();
+                final int newx = b.getX() - b.getWidth();
+                final int butw = b.getWidth();
                 ehm.moveEntity(b.getEntity(), idx - 1);
                 b.requestFocus();
                 b.setSelected(true);
 
                 Container c;
-                for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c.getParent())
+                for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c
+                        .getParent())
                     ;
-                JScrollPane pn = (JScrollPane) c;
-                int jspx = pn.getViewport().getViewPosition().x;
+                final JScrollPane pn = (JScrollPane) c;
+                final int jspx = pn.getViewport().getViewPosition().x;
                 if (newx < jspx) {
-                    Rectangle r = pn.getViewport().getViewRect();
+                    final Rectangle r = pn.getViewport().getViewRect();
                     r.x -= butw;
-                    ((JComponent) pn.getViewport().getView()).scrollRectToVisible(r);
+                    ((JComponent) pn.getViewport().getView())
+                            .scrollRectToVisible(r);
                 }
                 repaint();
             }
@@ -247,11 +262,12 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        // when dragging a button somehow the preferred height becomes one. we fix it.
+        // when dragging a button somehow the preferred height becomes one. we
+        // fix it.
         if (preferredSize != null) {
             return preferredSize;
         }
-        Dimension r = super.getPreferredSize();
+        final Dimension r = super.getPreferredSize();
         if (r.height == 1 && getComponentCount() > 0) {
             r.height = getComponent(0).getHeight();
         }
@@ -264,23 +280,25 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton b = (CustomButton) e.getSource();
-            int idx = getButtonIndex(b);
+            final CustomButton b = (CustomButton) e.getSource();
+            final int idx = getButtonIndex(b);
             if (idx < getComponentCount() - 1) {
-                int newx = b.getX() + b.getWidth();
-                int butw = b.getWidth();
+                final int newx = b.getX() + b.getWidth();
+                final int butw = b.getWidth();
                 ehm.moveEntity(b.getEntity(), idx + 1);
                 b.requestFocus();
                 b.setSelected(true);
                 Container c;
-                for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c.getParent())
+                for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c
+                        .getParent())
                     ;
-                JScrollPane pn = (JScrollPane) c;
-                Rectangle jspRect = pn.getViewport().getViewRect();
+                final JScrollPane pn = (JScrollPane) c;
+                final Rectangle jspRect = pn.getViewport().getViewRect();
                 if (newx + butw > jspRect.x + jspRect.width) {
-                    Rectangle r = pn.getViewport().getViewRect();
+                    final Rectangle r = pn.getViewport().getViewRect();
                     r.x += butw;
-                    ((JComponent) pn.getViewport().getView()).scrollRectToVisible(r);
+                    ((JComponent) pn.getViewport().getView())
+                            .scrollRectToVisible(r);
                 }
                 repaint();
             }
@@ -293,11 +311,11 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-            CustomButton b = (CustomButton) e.getSource();
-            int idx = ehm.indexOf(b.getEntity());
-            Dimension d = ehm.getEntityPreferredSize(idx);
+            final CustomButton b = (CustomButton) e.getSource();
+            final int idx = ehm.indexOf(b.getEntity());
+            final Dimension d = ehm.getEntityPreferredSize(idx);
             d.width += 6;
-            ehm.setEntityPreferredSize(idx, d);            
+            ehm.setEntityPreferredSize(idx, d);
         }
     };
 
@@ -308,30 +326,30 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 throw new Error("should be in event dispatch thread!");
             }
 
-            int count = ehm.entityCount();
-            int totalW = getWidth();
-            JViewport jvp = (JViewport)getParent();
-            Rectangle rec = jvp.getViewRect();
-            int visibleW = (int)rec.getWidth();
+            final int count = ehm.entityCount();
+            final int totalW = getWidth();
+            final JViewport jvp = (JViewport) getParent();
+            final Rectangle rec = jvp.getViewRect();
+            final int visibleW = (int) rec.getWidth();
             int delta = 6;
             if (totalW == visibleW)
                 return;
-            if (totalW-delta < visibleW)
+            if (totalW - delta < visibleW)
                 delta = totalW - visibleW;
-            CustomButton b = (CustomButton) e.getSource();
-            int idx = ehm.indexOf(b.getEntity());
-            Dimension d = ehm.getEntityPreferredSize(idx);
+            final CustomButton b = (CustomButton) e.getSource();
+            final int idx = ehm.indexOf(b.getEntity());
+            final Dimension d = ehm.getEntityPreferredSize(idx);
             d.width -= delta;
-            ehm.setEntityPreferredSize(idx, d);            
+            ehm.setEntityPreferredSize(idx, d);
         }
     };
 
     public EntityHeader(ViewModel ehm) {
-//        this.listeners = new Vector<EntityHeaderListener>();
+        // this.listeners = new Vector<EntityHeaderListener>();
         this.ehm = ehm;
         ehm.addListener(this);
         setLayout(null);
-        //setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        // setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     }
 
     @Override
@@ -339,7 +357,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        Dimension d = super.getSize();
+        final Dimension d = super.getSize();
         return d;
     }
 
@@ -362,13 +380,13 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (entityIdx >= getComponentCount()) {
             return 0;
         }
-        Component c = getComponent(entityIdx);
+        final Component c = getComponent(entityIdx);
         return c.getX() + c.getWidth() / 2;
     }
 
-    //	public int getEntityWidth() {
-    //		return (getComponentCount()>0) ? getComponent(0).getWidth() : 0;
-    //	}
+    // public int getEntityWidth() {
+    // return (getComponentCount()>0) ? getComponent(0).getWidth() : 0;
+    // }
     public int getEntitiesTotalWidth() {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
@@ -380,9 +398,9 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         return w;
     }
 
-    //	public void setMainPanel(MainPanel mp) {
-    //		mainPanel = mp;
-    //	}
+    // public void setMainPanel(MainPanel mp) {
+    // mainPanel = mp;
+    // }
     public Entity getEntity(int i) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
@@ -401,7 +419,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        int cnt = getComponentCount();
+        final int cnt = getComponentCount();
         for (int i = 0; i < cnt; i++) {
             if (getEntity(i) == en) {
                 return (JPanel) getComponent(i);
@@ -426,36 +444,48 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        CustomButton b = new CustomButton(en);
+        final CustomButton b = new CustomButton(en);
         b.setBorderPainted(false);
         b.setToolTipText("SHIFT+cursor keys to move");
         b.addActionListener(selectListener);
         b.addMouseListener(bd);
         b.addMouseMotionListener(bd);
-        b.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK), "VK_LEFT");
+        b.getInputMap()
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
+                        InputEvent.SHIFT_MASK), "VK_LEFT");
         b.getActionMap().put("VK_LEFT", leftKeyPressed);
-        b.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK), "VK_RIGHT");
+        b.getInputMap()
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
+                        InputEvent.SHIFT_MASK), "VK_RIGHT");
         b.getActionMap().put("VK_RIGHT", rightKeyPressed);
 
-        b.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, InputEvent.SHIFT_MASK), "VK_PLUS");
+        b.getInputMap().put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS,
+                        InputEvent.SHIFT_MASK), "VK_PLUS");
         b.getActionMap().put("VK_PLUS", plusKeyPressed);
-        b.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "VK_MINUS");
+        b.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0),
+                "VK_MINUS");
         b.getActionMap().put("VK_MINUS", minusKeyPressed);
         final JPanel p = new JPanel();
         p.setMinimumSize(new Dimension(64, 20));
-        p.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK), "VK_LEFT");
+        p.getInputMap()
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
+                        InputEvent.SHIFT_MASK), "VK_LEFT");
         p.getActionMap().put("VK_LEFT", leftKeyPressed);
-        p.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK), "VK_RIGHT");
+        p.getInputMap()
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
+                        InputEvent.SHIFT_MASK), "VK_RIGHT");
         p.getActionMap().put("VK_RIGHT", rightKeyPressed);
 
         p.setBorder(BorderFactory.createLineBorder(Color.black));
-//        p.addComponentListener(new ComponentAdapter() {
-//            @Override
-//            public void componentResized(ComponentEvent e) {
-//                ehm.setEntityBounds(ehm.indexOf(en), p.getBounds());
-//            }
-//        });
-        JButton x = new JButton(Resources.getImageIcon("16x16/close1.png", "close"));
+        // p.addComponentListener(new ComponentAdapter() {
+        // @Override
+        // public void componentResized(ComponentEvent e) {
+        // ehm.setEntityBounds(ehm.indexOf(en), p.getBounds());
+        // }
+        // });
+        final JButton x = new JButton(Resources.getImageIcon("16x16/close1.png",
+                "close"));
         x.setBorderPainted(false);
         x.setMargin(new Insets(2, 0, 2, 0));
         class XActionListener implements ActionListener {
@@ -473,10 +503,12 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             }
         }
         x.addActionListener(new XActionListener(en));
-        JToggleButton y = new JToggleButton(Resources.getImageIcon("16x16/iconize.png", "iconize"));
+        final JToggleButton y = new JToggleButton(Resources.getImageIcon(
+                "16x16/iconize.png", "iconize"));
         y.setFocusable(false);
         y.setName("iconize");
-        y.setSelectedIcon(Resources.getImageIcon("16x16/iconize1.png", "iconize"));
+        y.setSelectedIcon(Resources.getImageIcon("16x16/iconize1.png",
+                "iconize"));
         y.setBorderPainted(false);
 
         y.setMargin(new Insets(2, 0, 2, 0));
@@ -496,24 +528,25 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                     oldDim = p.getPreferredSize();
                     p.setPreferredSize(p1.getSize());
                     p.setMaximumSize(p1.getSize());
-                    // model adapts because there is a componentlistener that transfers boudn changes to 
+                    // model adapts because there is a componentlistener that
+                    // transfers boudn changes to
                     // model
-                    //ehm.setEntityBounds(idx, p.getBounds());
+                    // ehm.setEntityBounds(idx, p.getBounds());
                     doLayout();
                 } else {
                     if (oldDim != null) {
                         p.setPreferredSize(oldDim);
                         p.setMaximumSize(null);
-                        //ehm.setEntityBounds(idx, p.getBounds());
+                        // ehm.setEntityBounds(idx, p.getBounds());
                         doLayout();
                     }
                 }
                 MainFrame.getInstance().repaint();
             }
         }
-        JPanel p1 = new JPanel();
+        final JPanel p1 = new JPanel();
         y.addActionListener(new YActionListener(p, p1));
-        //		p1.setLayout(new BorderLayout());
+        // p1.setLayout(new BorderLayout());
         p1.setLayout(new BoxLayout(p1, BoxLayout.LINE_AXIS));
         p1.add(y, BorderLayout.WEST);
         p1.add(x, BorderLayout.EAST);
@@ -523,32 +556,33 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         p.add(b, BorderLayout.CENTER);
         add(p, idx);
         ehm.setEntityComponent(idx, p);
-        //updateIndexes();
-        //mainPanel.getMainFrame().updateTree(en);
-        //notifyListenersEntityAdded(en);
+        // updateIndexes();
+        // mainPanel.getMainFrame().updateTree(en);
+        // notifyListenersEntityAdded(en);
         doLayout();
         return p;
     }
 
     private JViewport getViewPort() {
         Component c;
-        for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c.getParent())
+        for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c
+                .getParent())
             ;
-        JScrollPane pn = (JScrollPane) c;
+        final JScrollPane pn = (JScrollPane) c;
         return pn.getViewport();
     }
 
+    @Override
     public void setSize(Dimension d) {
-        super.setSize(d);        
+        super.setSize(d);
     }
-    
-    
+
     @Override
     public void doLayout() {
         if (dragging != null) {
             return;
         }
-        int count = getComponentCount();
+        final int count = getComponentCount();
         if (count == 0) {
             return;
         }
@@ -556,33 +590,33 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         int preferredTotalW = 0;
         int preferredTotalH = 0;
         for (int i = 0; i < count; i++) {
-            Component c = getComponent(i);
-            Dimension pd = c.getPreferredSize();
+            final Component c = getComponent(i);
+            final Dimension pd = c.getPreferredSize();
             preferredTotalW += pd.width;
             preferredTotalH = Math.max(preferredTotalH, pd.height);
         }
-        Dimension vpd = getViewPort().getExtentSize();
+        final Dimension vpd = getViewPort().getExtentSize();
         int diff = vpd.width - preferredTotalW;
-        if (diff <= 0) 
+        if (diff <= 0)
             diff = 0;
-        int part = diff / count;
-        int last = diff - part*(count-1);
+        final int part = diff / count;
+        final int last = diff - part * (count - 1);
         for (int i = 0; i < count; i++) {
-            Component c = getComponent(i);
-            Dimension d = c.getPreferredSize();
-            int neww = d.width + ((i < count - 1) ? part  : last);
+            final Component c = getComponent(i);
+            final Dimension d = c.getPreferredSize();
+            final int neww = d.width + ((i < count - 1) ? part : last);
             c.setBounds(x, 0, neww, preferredTotalH);
             x += neww;
         }
-        Dimension newDim = new Dimension(x, preferredTotalH);
-        Dimension oldDim = getSize();
+        final Dimension newDim = new Dimension(x, preferredTotalH);
+        final Dimension oldDim = getSize();
         if (!newDim.equals(oldDim)) {
             setSize(newDim);
             setMinimumSize(newDim);
             setPreferredSize(newDim);
         }
-//        revalidate();
-//        repaint();
+        // revalidate();
+        // repaint();
     }
 
     public void flipIconizedState(Entity en) {
@@ -593,9 +627,9 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        int cnt = getComponentCount();
+        final int cnt = getComponentCount();
         for (int i = 0; i < cnt; i++) {
-            CustomButton b = getCBFromIndex(i);
+            final CustomButton b = getCBFromIndex(i);
             if (b.getEntity() == en) {
                 remove(b.getParent());
                 break;
@@ -604,16 +638,15 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         doLayout();
     }
 
-
     public Entity getEntityAt(Point p) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        Component c = getComponentAt(p);
+        final Component c = getComponentAt(p);
         if (c == null) {
             return null;
         }
-        CustomButton cb = (CustomButton) ((JPanel) c).getComponent(1);
+        final CustomButton cb = (CustomButton) ((JPanel) c).getComponent(1);
         return cb.getEntity();
     }
 
@@ -627,7 +660,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 cnt++;
             }
         }
-        int[] idx = new int[cnt];
+        final int[] idx = new int[cnt];
         for (int i = 0, j = 0; i < getComponentCount(); i++) {
             if (getCBFromIndex(i).isSelected()) {
                 idx[j] = i;
@@ -644,7 +677,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }
         add(en, idx);
         doLayout();
-//        notifyEntityAdded(en, idx);
+        // notifyEntityAdded(en, idx);
     }
 
     @Override
@@ -654,7 +687,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }
         remove(en);
         doLayout();
-//        notifyEntityRemoved(en, idx);
+        // notifyEntityRemoved(en, idx);
     }
 
     @Override
@@ -663,13 +696,14 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             throw new Error("should be in event dispatch thread!");
         }
         Utils.trace(Utils.EVENTS, "CB.entitySelectionChanged()");
-        int cnt = getComponentCount();
+        final int cnt = getComponentCount();
         for (int i = 0; i < cnt; i++) {
-            CustomButton cb = getCBFromIndex(i);
-            Entity en1 = cb.getEntity();
-            boolean isButtonSelected = cb.isSelected();
-            boolean isModelSelected = eh.isSelected(en1);
-            Utils.trace(Utils.EVENTS, en1.getName() + ": but=" + isButtonSelected + ", model=" + isModelSelected);
+            final CustomButton cb = getCBFromIndex(i);
+            final Entity en1 = cb.getEntity();
+            final boolean isButtonSelected = cb.isSelected();
+            final boolean isModelSelected = eh.isSelected(en1);
+            Utils.trace(Utils.EVENTS, en1.getName() + ": but="
+                    + isButtonSelected + ", model=" + isModelSelected);
             if (isButtonSelected != isModelSelected) {
                 cb.setSelected(isModelSelected);
                 if (isModelSelected) {
@@ -677,23 +711,23 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 }
             }
         }
-//        if (somethingChanged) {
-//            notifyEntitySelectionChanged(en, idx);
-//        }
+        // if (somethingChanged) {
+        // notifyEntitySelectionChanged(en, idx);
+        // }
     }
 
-    //	public int getComponentCount() {
-    //        if (! SwingUtilities.isEventDispatchThread())
-    //            throw new Error("should be in event dispatch thread!");
-    //		return super.getComponentCount();
-    //	}
+    // public int getComponentCount() {
+    // if (! SwingUtilities.isEventDispatchThread())
+    // throw new Error("should be in event dispatch thread!");
+    // return super.getComponentCount();
+    // }
     public int getMinEntityWidth() {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
         int min = Integer.MAX_VALUE;
         for (int i = 0; i < getComponentCount(); i++) {
-            int w = getComponent(i).getWidth();
+            final int w = getComponent(i).getWidth();
             if (w < min) {
                 min = w;
             }
@@ -713,7 +747,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             throw new Error("should be in event dispatch thread!");
         }
         for (int i = 0; i < getComponentCount(); i++) {
-            CustomButton b = getCBFromIndex(i);
+            final CustomButton b = getCBFromIndex(i);
             if (b.getEntity() == en) {
                 return getEntityWidth(i);
             }
@@ -725,18 +759,19 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        int idx = ehm.indexOf(en);
-        int cx = getEntityCenterX(idx);
-        int w = getEntityWidth(idx);
-        int x0 = cx - w / 2;
-        int x1 = cx + w / 2;
+        final int idx = ehm.indexOf(en);
+        final int cx = getEntityCenterX(idx);
+        final int w = getEntityWidth(idx);
+        final int x0 = cx - w / 2;
+        final int x1 = cx + w / 2;
 
         Container c;
-        for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c.getParent())
+        for (c = EntityHeader.this.getParent(); !(c instanceof JScrollPane); c = c
+                .getParent())
             ;
-        JScrollPane pn = (JScrollPane) c;
-        Rectangle jspRect = pn.getViewport().getViewRect();
-        Rectangle r = pn.getViewport().getViewRect();
+        final JScrollPane pn = (JScrollPane) c;
+        final Rectangle jspRect = pn.getViewport().getViewRect();
+        final Rectangle r = pn.getViewport().getViewRect();
         if (x0 < jspRect.x) {
             r.x = x0;
             ((JComponent) pn.getViewport().getView()).scrollRectToVisible(r);
@@ -754,8 +789,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
     }
 
     @Override
-    public void boundsChanged(ViewModel entityHeaderModel, Entity en,
-            int idx) {
+    public void boundsChanged(ViewModel entityHeaderModel, Entity en, int idx) {
         doLayout();
     }
 }

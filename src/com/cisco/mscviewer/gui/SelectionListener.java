@@ -10,10 +10,15 @@
  * @since  Jun 2011
  */
 package com.cisco.mscviewer.gui;
-import com.cisco.mscviewer.model.*;
+
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.Interaction;
 
 interface SelectionListener {
 
-    void eventSelected(MSCRenderer renderer, Event selectedEvent, int viewEventIndex, int modelEventIndex);
-    void interactionSelected(MSCRenderer renderer, Interaction selectedInteraction);
+    void eventSelected(MSCRenderer renderer, Event selectedEvent,
+            int viewEventIndex, int modelEventIndex);
+
+    void interactionSelected(MSCRenderer renderer,
+            Interaction selectedInteraction);
 }

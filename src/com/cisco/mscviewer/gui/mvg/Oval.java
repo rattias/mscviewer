@@ -18,17 +18,19 @@ import java.awt.geom.Ellipse2D;
  * @author rattias
  */
 public class Oval extends Primitive {
-    private float x, y, w, h;
-    
+    private final float x, y, w, h;
+
     public Oval(float x, float y, float w, float h) {
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
     }
-    
+
+    @Override
     public void setContainerDimension(int width, int height) {
-        setShape(new Ellipse2D.Float(x*width, y*height, w*width, h*height));
+        setShape(new Ellipse2D.Float(x * width, y * height, w * width, h
+                * height));
     }
-    
+
 }

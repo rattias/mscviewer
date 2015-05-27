@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author rattias
  */
-public class DirSetWatcher extends Thread { 
+public class DirSetWatcher extends Thread {
     private final String[] paths;
     private final Vector<Watcher> watchers;
     private Thread dirWatcherThread;
@@ -39,98 +39,104 @@ public class DirSetWatcher extends Thread {
     private WatchKey wk = null;
     private WatchService ws = null;
     private Thread wt;
-    
-    public DirSetWatcher(String[] arr) {        
+
+    public DirSetWatcher(String[] arr) {
         paths = arr.clone();
         watchers = new Vector<Watcher>();
-        FileSystem defaultFS = FileSystems.getDefault();
+        final FileSystem defaultFS = FileSystems.getDefault();
         try {
             ws = defaultFS.newWatchService();
-            for(String ps: paths) {
-                Path p = defaultFS.getPath(ps);
-                p.register(ws,
-                        StandardWatchEventKinds.ENTRY_CREATE,
+            for (final String ps : paths) {
+                final Path p = defaultFS.getPath(ps);
+                p.register(ws, StandardWatchEventKinds.ENTRY_CREATE,
                         StandardWatchEventKinds.ENTRY_MODIFY,
                         StandardWatchEventKinds.ENTRY_DELETE);
             }
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
         }
     }
 
     public void add(Watcher w) {
         watchers.add(w);
     }
-    
- 
+
     @Override
     public void run() {
         dirWatcherThread = Thread.currentThread();
-        HashMap<String, Long> modificationTime = new HashMap<String, Long>(); 
+        final HashMap<String, Long> modificationTime = new HashMap<String, Long>();
 
         if (wt != null)
             throw new Error("Internal Error: second thread spawned");
         wt = Thread.currentThread();
         // loop forever to watch directories
         try {
-            while(true) {
+            while (true) {
                 do {
                     wk = ws.take();
-                }while(wk == null);
-                            
-                long ts = System.currentTimeMillis();
+                } while (wk == null);
+
+                final long ts = System.currentTimeMillis();
                 if (exit) {
                     System.out.println("Dir watcher exiting");
                     break;
                 }
                 if (wk != null) {
-                    String parentPath = ((Path)wk.watchable()).toString();
-                    List<WatchEvent<?>> events = wk.pollEvents();
-                    for (WatchEvent<?> event : events) { 
-                        Path path = (Path)event.context();
-                        File  file = new File(parentPath, path.toString());
-                        System.out.println("file is "+file.getPath());
-                        Long mod = modificationTime.get(file.getPath());
-                        long lm = file.lastModified();
+                    final String parentPath = ((Path) wk.watchable()).toString();
+                    final List<WatchEvent<?>> events = wk.pollEvents();
+                    for (final WatchEvent<?> event : events) {
+                        final Path path = (Path) event.context();
+                        final File file = new File(parentPath, path.toString());
+                        System.out.println("file is " + file.getPath());
+                        final Long mod = modificationTime.get(file.getPath());
+                        final long lm = file.lastModified();
                         if (mod != null && lm - mod < 100) {
                             continue;
                         }
                         modificationTime.put(file.getPath(), lm);
-                        for(Watcher w: watchers)
+                        for (final Watcher w : watchers)
                             w.event(parentPath, event);
-                        Kind<?> kind = event.kind();
-                            
+                        final Kind<?> kind = event.kind();
+
                         if (kind.equals(StandardWatchEventKinds.ENTRY_CREATE)) {
                             if (file.isDirectory()) {
-                                path.register(ws, 
+                                path.register(ws,
                                         StandardWatchEventKinds.ENTRY_CREATE,
                                         StandardWatchEventKinds.ENTRY_MODIFY,
                                         StandardWatchEventKinds.ENTRY_DELETE);
                             }
-                            //System.out.println(ts+": Entry created:" + file.getPath());
-                        } else if (kind.equals(StandardWatchEventKinds.ENTRY_DELETE)) {
-                            System.out.println(ts+": Entry deleted:" + path);
-                        } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
-                            //System.out.println(ts+": ["+cnt+"] Entry modified:" + path);
+                            // System.out.println(ts+": Entry created:" +
+                            // file.getPath());
+                        } else if (kind
+                                .equals(StandardWatchEventKinds.ENTRY_DELETE)) {
+                            System.out.println(ts + ": Entry deleted:" + path);
+                        } else if (kind
+                                .equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
+                            // System.out.println(ts+": ["+cnt+"] Entry modified:"
+                            // + path);
                         }
-                    }                    
+                    }
                     if (!wk.reset())
                         break;
                 }
                 Thread.sleep(1000);
             }
-        } catch (InterruptedException ex) {
-        } catch (IOException ex) {
-            Logger.getLogger(DirSetWatcher.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (final InterruptedException ex) {
+        } catch (final IOException ex) {
+            Logger.getLogger(DirSetWatcher.class.getName()).log(Level.SEVERE,
+                    null, ex);
         } finally {
             if (wk != null)
                 wk.cancel();
             try {
                 ws.close();
-            } catch (IOException ex) {}
+            } catch (final IOException ex) {
+            }
         }
-        System.out.println("thread "+Thread.currentThread().getName()+" dying");
+        System.out.println("thread " + Thread.currentThread().getName()
+                + " dying");
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void destroy() {
         if (dirWatcherThread != null) {
@@ -138,17 +144,18 @@ public class DirSetWatcher extends Thread {
             dirWatcherThread.interrupt();
             try {
                 dirWatcherThread.join();
-            } catch (InterruptedException ex) {                
-            }            
-            System.out.println("destroyed thread "+dirWatcherThread.getName());
+            } catch (final InterruptedException ex) {
+            }
+            System.out
+                    .println("destroyed thread " + dirWatcherThread.getName());
         }
         dirWatcherThread = null;
     }
-    
+
     public static void main(String[] args) throws InterruptedException {
-        DirSetWatcher dw = new DirSetWatcher(new String[]{"c:/temp/dwtest/a", "c:/temp/dwtest/b"});         
+        final DirSetWatcher dw = new DirSetWatcher(new String[] { "c:/temp/dwtest/a",
+                "c:/temp/dwtest/b" });
         dw.start();
         Thread.sleep(100000);
     }
-}    
-
+}

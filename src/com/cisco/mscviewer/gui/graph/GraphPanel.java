@@ -29,71 +29,72 @@ import javax.swing.KeyStroke;
 import com.cisco.mscviewer.graph.GraphSeries;
 import com.cisco.mscviewer.graph.Point;
 
-
-
 @SuppressWarnings("serial")
-abstract public class GraphPanel extends JPanel  {
+abstract public class GraphPanel extends JPanel {
     private final static String LEFT = "Left";
     private final static String LEFT_LOCAL = "LeftLocal";
     private final static String RIGHT = "Right";
     private final static String RIGHT_LOCAL = "RightLocal";
     protected static final long ZOOM_THRESHOLD = 10;
     private static int AXIS_OFFSET = 10;
-    private Vector<GraphCursorListener> listeners = new Vector<GraphCursorListener>();
-    private ArrayList<GraphSeries> graph = new ArrayList<GraphSeries>();
-    private HashMap<GraphSeries, Color> foregroundMap = new HashMap<GraphSeries, Color>();
-    private HashSet<GraphSeries> enabled = new HashSet<GraphSeries>(); 
+    private final Vector<GraphCursorListener> listeners = new Vector<GraphCursorListener>();
+    private final ArrayList<GraphSeries> graph = new ArrayList<GraphSeries>();
+    private final HashMap<GraphSeries, Color> foregroundMap = new HashMap<GraphSeries, Color>();
+    private final HashSet<GraphSeries> enabled = new HashSet<GraphSeries>();
     private int startX = -1, endX = -1;
-    private long minVisibleX = 0;
-    private long maxVisibleX = 0;
-    private long minModelX = Long.MAX_VALUE;
-    private long maxModelX = Long.MIN_VALUE;
+    /* graph model X min and max values for viewport */
+    private long minViewportModelX = 0;
+    private long maxViewportModelX = 0;
+    /* graph model X min and max values */
+    private long minViewModelX = Long.MAX_VALUE;
+    private long maxViewModelX = Long.MIN_VALUE;
     private double zoomFactor = 1.0;
     Color axesColor = Color.cyan;
     Color cursorColor = Color.white;
     Color bkgColor = Color.black;
     protected int cursorIdx = -1;
     protected int cursorGraphIdx = -1;
-    private boolean axis = true;
-    private boolean ticks = true;
-    private boolean labels = true;
+    private final boolean axis = true;
+    private final boolean ticks = true;
+    private final boolean labels = true;
     private FontMetrics fm;
     private int prevPixelVisibleWidth = -1;
     private long prevVisibleWidth = -1;
-    
+
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        long visibleWidth = maxVisibleX-minVisibleX;
-        long modelWidth = maxModelX-minModelX;
-        JScrollPane jsp = getScrollPane();
+        final long visibleWidth = maxViewportModelX - minViewportModelX;
+        final long modelWidth = maxViewModelX - minViewModelX;
+        final JScrollPane jsp = getScrollPane();
         if (jsp != null) {
-            Dimension ext = jsp.getViewport().getExtentSize();
-            int pixelVisibleWidth = ext.width;
-            if (pixelVisibleWidth != prevPixelVisibleWidth ||
-                    visibleWidth != prevVisibleWidth) {
+            final Dimension ext = jsp.getViewport().getExtentSize();
+            final int pixelVisibleWidth = ext.width;
+            if (pixelVisibleWidth != prevPixelVisibleWidth
+                    || visibleWidth != prevVisibleWidth) {
                 prevVisibleWidth = visibleWidth;
                 prevPixelVisibleWidth = pixelVisibleWidth;
-                zoomFactor = ((double)pixelVisibleWidth)/visibleWidth;
-//                System.out.println("zoomFactor = "+zoomFactor);
-                int pixelWidth = screenWidth(modelWidth);
+                zoomFactor = ((double) pixelVisibleWidth) / visibleWidth;
+                // System.out.println("zoomFactor = "+zoomFactor);
+                final int pixelWidth = screenWidth(modelWidth);
                 if (pixelWidth != getWidth()) {
                     setPreferredSize(new Dimension(pixelWidth, getHeight()));
                     revalidate();
                 }
             }
-            java.awt.Point p = getScrollPane().getViewport().getViewPosition();
-            int x = screenX(minVisibleX);
+            final java.awt.Point p = getScrollPane().getViewport().getViewPosition();
+            final int x = screenX(minViewportModelX);
             if (p.x != x) {
                 p.x = x;
                 getScrollPane().getViewport().setViewPosition(p);
             }
-                
+
         }
-        
-        GraphPanel gp = GraphPanel.this;
-        Graphics2D g2d = (Graphics2D)g;
+
+        final GraphPanel gp = GraphPanel.this;
+        final Graphics2D g2d = (Graphics2D) g;
         fm = g2d.getFontMetrics();
-        //clear(g2d);
+        // clear(g2d);
         GraphPanel.this.prepare(g2d);
         if (axis)
             gp.paintAxes(g2d);
@@ -106,12 +107,12 @@ abstract public class GraphPanel extends JPanel  {
         if (startX >= 0) {
             g2d.setColor(Color.white);
             g2d.setXORMode(Color.black);
-            g2d.fillRect(startX, 0, endX-startX, getHeight());
+            g2d.fillRect(startX, 0, endX - startX, getHeight());
             g2d.setPaintMode();
         }
     }
 
-    private AbstractAction moveLeft = new AbstractAction(LEFT) {
+    private final AbstractAction moveLeft = new AbstractAction(LEFT) {
         @Override
         public void actionPerformed(ActionEvent e) {
             moveCursorLeft(false);
@@ -119,7 +120,7 @@ abstract public class GraphPanel extends JPanel  {
         }
     };
 
-    private AbstractAction moveLeftLocal = new AbstractAction(LEFT_LOCAL) {
+    private final AbstractAction moveLeftLocal = new AbstractAction(LEFT_LOCAL) {
         @Override
         public void actionPerformed(ActionEvent e) {
             moveCursorLeft(true);
@@ -127,15 +128,14 @@ abstract public class GraphPanel extends JPanel  {
         }
     };
 
-    //    @Override
-    //    public Dimension getPreferredSize() {
-    //        int w = (int)((getGraphMaxX()-getGraphMinX());
-    //        Dimension d = new Dimension(w, getHeight());
-    //        return d;
-    //    }
+    // @Override
+    // public Dimension getPreferredSize() {
+    // int w = (int)((getGraphMaxX()-getGraphMinX());
+    // Dimension d = new Dimension(w, getHeight());
+    // return d;
+    // }
 
-
-    private AbstractAction moveRight = new AbstractAction(RIGHT) {
+    private final AbstractAction moveRight = new AbstractAction(RIGHT) {
         @Override
         public void actionPerformed(ActionEvent e) {
             moveCursorRight(false);
@@ -143,7 +143,7 @@ abstract public class GraphPanel extends JPanel  {
         }
     };
 
-    private AbstractAction moveRightLocal = new AbstractAction(RIGHT_LOCAL) {
+    private final AbstractAction moveRightLocal = new AbstractAction(RIGHT_LOCAL) {
         @Override
         public void actionPerformed(ActionEvent e) {
             moveCursorRight(true);
@@ -155,44 +155,47 @@ abstract public class GraphPanel extends JPanel  {
         setFocusable(true);
         setOpaque(true);
         setBackground(bkgColor);
-        InputMap im = getInputMap();
-        ActionMap am = getActionMap();
+        final InputMap im = getInputMap();
+        final ActionMap am = getActionMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), LEFT);
         am.put(LEFT, moveLeft);
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK), LEFT_LOCAL);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK),
+                LEFT_LOCAL);
         am.put(LEFT_LOCAL, moveLeftLocal);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), RIGHT);
         am.put(RIGHT, moveRight);
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK), RIGHT_LOCAL);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK),
+                RIGHT_LOCAL);
         am.put(RIGHT_LOCAL, moveRightLocal);
-        MouseAdapter ma = new MouseAdapter() {
+        final MouseAdapter ma = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent ev) {
                 if (ev.isShiftDown())
-                    startX = endX = ev.getX();                    
+                    startX = endX = ev.getX();
             }
 
+            @Override
             public void mouseReleased(MouseEvent ev) {
                 if (startX >= 0) {
-                    int l,r;
+                    int l, r;
                     if (startX > endX) {
                         l = endX;
-                        r = startX; 
+                        r = startX;
                     } else {
                         l = startX;
                         r = endX;
                     }
-                    if (r-l > ZOOM_THRESHOLD) {
-                        long minX = modelX(l);
-                        long maxX = modelX(r);
-                        System.out.println("ZOOM TO "+minX+","+maxX);
+                    if (r - l > ZOOM_THRESHOLD) {
+                        final long minX = modelX(l);
+                        final long maxX = modelX(r);
+                        System.out.println("ZOOM TO " + minX + "," + maxX);
                         setGraphVisibleInterval(minX, maxX);
                     } else {
-                        System.out.println("l = "+l+", r = "+r);
+                        System.out.println("l = " + l + ", r = " + r);
                         if (ev.isShiftDown())
-                            zoom(ev.getX(), 2f/3f);
+                            zoom(ev.getX(), 2f / 3f);
                         else if (ev.isControlDown())
-                            zoom(ev.getX(), 3f/2f);
+                            zoom(ev.getX(), 3f / 2f);
                     }
                 }
                 startX = endX = -1;
@@ -202,8 +205,8 @@ abstract public class GraphPanel extends JPanel  {
             @Override
             public void mouseDragged(MouseEvent ev) {
                 endX = ev.getX();
-                long l = Math.min(startX, endX);
-                long r = Math.max(startX,  endX);
+                final long l = Math.min(startX, endX);
+                final long r = Math.max(startX, endX);
                 repaint();
             }
 
@@ -211,110 +214,132 @@ abstract public class GraphPanel extends JPanel  {
             public void mouseClicked(MouseEvent ev) {
                 grabFocus();
                 if (ev.getClickCount() == 2) {
-                       
-                } else                    
+
+                } else
                     setCursorScreenX(ev.getX());
                 repaint();
             }
         };
         addMouseListener(ma);
         addMouseMotionListener(ma);
-        addHierarchyListener(new HierarchyListener() {            
+        addHierarchyListener(new HierarchyListener() {
             @Override
             public void hierarchyChanged(HierarchyEvent e) {
-                //possibly we were just added to scrollpane. 
-                //update various things
+                // possibly we were just added to scrollpane.
+                // update various things
                 resetYLabelPanel();
             }
         });
     }
-    
+
     public void zoom(int center, double ratio) {
-        long wCenter = modelX(center);
-//        System.out.println("center = "+center);
-        long w = (maxModelX - minModelX);
-        long newW = (long)(w*ratio);
-//        System.out.println("prev w = "+w+", new w = "+newW);
-        long newMinX = wCenter - newW/2;
-        long newMaxX = wCenter + newW/2;
-        setGraphVisibleInterval(newMinX, newMaxX);         
+        final long wCenter = modelX(center);
+        // System.out.println("center = "+center);
+        final long w = (maxViewModelX - minViewModelX);
+        final long newW = (long) (w * ratio);
+        // System.out.println("prev w = "+w+", new w = "+newW);
+        final long newMinX = wCenter - newW / 2;
+        final long newMaxX = wCenter + newW / 2;
+        setGraphVisibleInterval(newMinX, newMaxX);
     }
 
     public FontMetrics getFontMetrics() {
         return fm;
     }
 
-
     public String getXType() {
-        return graph.isEmpty()? "" : graph.get(0).getXType();
+        return graph.isEmpty() ? "" : graph.get(0).getXType();
     }
 
     public String getYType() {
-        return graph.isEmpty()? "" : graph.get(0).getYType();
+        return graph.isEmpty() ? "" : graph.get(0).getYType();
     }
 
-
-    public void addGraph(GraphSeries gd) throws IllegalArgumentException {
-        if (! graph.isEmpty()) {
-            GraphSeries g0 = graph.get(0);
-            String g0xType = g0.getXType();
-            String gdxType = gd.getXType();
-            if (! gdxType.equals(g0xType))
-                throw new IllegalArgumentException("Graph "+gd.getName()+" has X type "+gdxType+" and can't be rendered with graph "+g0.getName()+" of X type "+g0xType); 
-            String g0yType = g0.getYType();
-            String gdyType = gd.getYType();
-            if (! gdyType.equals(g0yType))
-                throw new IllegalArgumentException("Graph "+gd.getName()+" has Y type "+gdyType+" and can't be rendered with graph "+g0.getName()+" of X type "+g0yType); 
+    public void addGraph(GraphSeries gd) {
+        if (!graph.isEmpty()) {
+            final GraphSeries g0 = graph.get(0);
+            final String g0xType = g0.getXType();
+            final String gdxType = gd.getXType();
+            if (!gdxType.equals(g0xType))
+                throw new IllegalArgumentException("Graph " + gd.getName()
+                        + " has X type " + gdxType
+                        + " and can't be rendered with graph " + g0.getName()
+                        + " of X type " + g0xType);
+            final String g0yType = g0.getYType();
+            final String gdyType = gd.getYType();
+            if (!gdyType.equals(g0yType))
+                throw new IllegalArgumentException("Graph " + gd.getName()
+                        + " has Y type " + gdyType
+                        + " and can't be rendered with graph " + g0.getName()
+                        + " of X type " + g0yType);
         }
         graph.add(gd);
         enabled.add(gd);
         resetYLabelPanel();
-        if (gd.maxX() > maxModelX) {
-            maxModelX = gd.maxX();
+        if (gd.maxX() > maxViewModelX) {
+            maxViewModelX = gd.maxX();
         }
-        if (gd.minX() < minModelX) {
-            minModelX = gd.minX();
+        if (gd.minX() < minViewModelX) {
+            minViewModelX = gd.minX();
         }
-        setGraphVisibleInterval(minModelX, maxModelX);
+        setGraphVisibleInterval(minViewModelX, maxViewModelX);
     }
 
     private JScrollPane getScrollPane() {
-        Component p; 
-        for(p = getParent(); p != null; p = p.getParent())
+        Component p;
+        for (p = getParent(); p != null; p = p.getParent())
             if (p instanceof JScrollPane)
-                return (JScrollPane)p;
-        return null;       
+                return (JScrollPane) p;
+        return null;
     }
-    
+
     public void resetYLabelPanel() {
-        JPanel y = getYLabelsPanel();
-        JScrollPane jsp = getScrollPane();
+        final JPanel y = getYLabelsPanel();
+        final JScrollPane jsp = getScrollPane();
         if (jsp != null)
             jsp.setRowHeaderView(y);
     }
-    
+
     private void setGraphVisibleInterval(long min, long max) {
-        minVisibleX = min;
-        maxVisibleX = max;
-        JScrollPane jsp = getScrollPane();
+        minViewportModelX = min;
+        maxViewportModelX = max;
+        final JScrollPane jsp = getScrollPane();
         if (jsp != null) {
-            Rectangle r = new Rectangle(screenX(minVisibleX), 0, screenWidth(maxVisibleX-minVisibleX), getHeight());
+            final Rectangle r = new Rectangle(screenX(minViewportModelX), 0,
+                    screenWidth(maxViewportModelX - minViewportModelX),
+                    getHeight());
             scrollRectToVisible(r);
-            int y = jsp.getViewport().getViewPosition().y;
-            int x = screenX(minVisibleX);
-            System.out.println("new x is "+x);
-            jsp.getViewport().setViewPosition(new java.awt.Point(x,y));
+            final int y = jsp.getViewport().getViewPosition().y;
+            final int x = screenX(minViewportModelX);
+            jsp.getViewport().setViewPosition(new java.awt.Point(x, y));
         }
         repaint();
     }
 
-    public int getLeftOffset() { return AXIS_OFFSET; }
-    public int getTopOffset() { return AXIS_OFFSET; }
-    public int getRightOffset() { return AXIS_OFFSET; }
-    public int getBottomOffset() { return AXIS_OFFSET; }
+    public int getLeftOffset() {
+        return AXIS_OFFSET;
+    }
 
-    public long getMaxModelX() { return maxModelX; }
-    
+    public int getTopOffset() {
+        return AXIS_OFFSET;
+    }
+
+    public int getRightOffset() {
+        return AXIS_OFFSET;
+    }
+
+    public int getBottomOffset() {
+        return AXIS_OFFSET;
+    }
+
+    public long getMaxModelX() {
+        return maxViewModelX;
+    }
+
+    public long getModelWidth() {
+        return maxViewModelX - minViewModelX;
+    }
+
     public void setForeground(GraphSeries g, Color b) {
         foregroundMap.put(g, b);
     }
@@ -326,19 +351,20 @@ abstract public class GraphPanel extends JPanel  {
         return c;
     }
 
-
     void clear(Graphics2D g) {
         g.setColor(bkgColor);
-        //g.fillRect(0,  0, getWidth(), getHeight());
+        // g.fillRect(0, 0, getWidth(), getHeight());
     }
 
-    void prepare(Graphics2D g) {        
+    void prepare(Graphics2D g) {
     }
 
     void paintAxes(Graphics2D g) {
         g.setColor(axesColor);
-        g.drawLine(getLeftOffset(), getHeight()-getBottomOffset(), getLeftOffset(), getTopOffset());
-        g.drawLine(getLeftOffset(), getHeight()-getBottomOffset(), getWidth()-getRightOffset(), getHeight()-getBottomOffset());
+        g.drawLine(getLeftOffset(), getHeight() - getBottomOffset(),
+                getLeftOffset(), getTopOffset());
+        g.drawLine(getLeftOffset(), getHeight() - getBottomOffset(), getWidth()
+                - getRightOffset(), getHeight() - getBottomOffset());
     }
 
     void paintTicks(Graphics2D g) {
@@ -347,91 +373,88 @@ abstract public class GraphPanel extends JPanel  {
     void paintLabels(Graphics2D g) {
     }
 
-
+    /** converts from model X to screen X */
     protected int screenX(long x) {
-        int res = screenWidth(x-minModelX)+getLeftOffset();
+        final int res = screenWidth(x - minViewModelX) + getLeftOffset();
         return res;
     }
-    
-    protected long modelX(int screenX) {
-        return modelWidth(screenX - getLeftOffset())+minModelX;
-    }
 
+    /** converts from screen X to model X */
+    protected long modelX(int screenX) {
+        return modelWidth(screenX - getLeftOffset()) + minViewModelX;
+    }
 
     protected int screenY(double y) {
-        double percent = y/getHeight();
-        return (int)(getHeight() -  percent * getHeight()) - AXIS_OFFSET;
+        final double percent = y / getHeight();
+        return (int) (getHeight() - percent * getHeight()) - AXIS_OFFSET;
     }
 
+    /** converts from model width to screen width */
     protected int screenWidth(long w) {
-        return (int)(w*zoomFactor);
+        return (int) (w * zoomFactor);
     }
 
+    /** converts from screen width to model width */
     protected long modelWidth(int w) {
-        return (long)(w/zoomFactor);
+        return (long) (w / zoomFactor);
     }
-
 
     protected int oX() {
         return AXIS_OFFSET;
     }
 
     protected int oY() {
-        return getHeight()-AXIS_OFFSET;
+        return getHeight() - AXIS_OFFSET;
     }
-
 
     public GraphSeries[] getGraphData() {
         return graph.toArray(new GraphSeries[graph.size()]);
     }
 
-    public long getMinVisibleX() {
-        return minVisibleX;
+    public long getMinViewportModelX() {
+        return minViewportModelX;
     }
 
-    public long getMaxVisibleX() {
-        return maxVisibleX;
+    public long getMaxViewportModelX() {
+        return maxViewportModelX;
     }
-
-
 
     public void paintCursor(Graphics2D g) {
         if (cursorIdx >= 0 && cursorGraphIdx >= 0) {
-            int cursorScreenX = screenX(graph.get(cursorGraphIdx).point(cursorIdx).x);
+            final int cursorScreenX = screenX(graph.get(cursorGraphIdx).point(
+                    cursorIdx).x());
             g.setColor(cursorColor);
-            g.drawLine(cursorScreenX, AXIS_OFFSET, cursorScreenX, AXIS_OFFSET+getHeight());
+            g.drawLine(cursorScreenX, AXIS_OFFSET, cursorScreenX, AXIS_OFFSET
+                    + getHeight());
         }
     }
-
 
     final public void setCursorColor(Color c) {
         cursorColor = c;
     }
 
-
     public void setCursorScreenX(int x) {
         if (x <= AXIS_OFFSET)
-            x = AXIS_OFFSET+1;
+            x = AXIS_OFFSET + 1;
         if (x > AXIS_OFFSET + getWidth())
             x = AXIS_OFFSET + getWidth();
-        long cursorX = modelX(x);
+        final long cursorX = modelX(x);
         long closestDist = Long.MAX_VALUE;
-        for(int i=0; i<graph.size(); i++) {
-            GraphSeries g = graph.get(i);
-            int idx = g.closestIndex(cursorX);
-            Point p = g.point(idx);
-            long dist = Math.abs(p.x-cursorX); 
+        for (int i = 0; i < graph.size(); i++) {
+            final GraphSeries g = graph.get(i);
+            final int idx = g.closestIndex(cursorX);
+            final Point p = g.point(idx);
+            final long dist = Math.abs(p.x() - cursorX);
             if (dist < closestDist) {
                 cursorIdx = idx;
                 cursorGraphIdx = i;
                 closestDist = dist;
             }
         }
-        for(GraphCursorListener l: listeners)
+        for (final GraphCursorListener l : listeners)
             l.cursorChanged(graph.get(cursorGraphIdx), cursorIdx);
         repaint();
     }
-
 
     public int getCursorIndex() {
         return cursorIdx;
@@ -448,9 +471,9 @@ abstract public class GraphPanel extends JPanel  {
     abstract public void paintGraph(Graphics2D g);
 
     public int xToEventIdx(int x) {
-        for(GraphSeries g: graph) {
-            int v = g.xToIndex(x);
-            if (v >=0)
+        for (final GraphSeries g : graph) {
+            final int v = g.xToIndex(x);
+            if (v >= 0)
                 return v;
         }
         return -1;
@@ -460,20 +483,20 @@ abstract public class GraphPanel extends JPanel  {
         if (value)
             enabled.add(gd);
         else {
-            int idx = graph.indexOf(gd);
+            final int idx = graph.indexOf(gd);
             if (idx > cursorGraphIdx) {
                 cursorGraphIdx--;
-            } else if (idx == cursorGraphIdx){
-                int tmpGraphIdx = cursorGraphIdx;
-                int tmpIdx = cursorIdx; 
+            } else if (idx == cursorGraphIdx) {
+                final int tmpGraphIdx = cursorGraphIdx;
+                final int tmpIdx = cursorIdx;
                 boolean moving = true;
-                while(cursorGraphIdx == tmpGraphIdx && moving) {
+                while (cursorGraphIdx == tmpGraphIdx && moving) {
                     moving = moveCursorLeft(false);
                 }
-                if (! moving) {
+                if (!moving) {
                     cursorGraphIdx = tmpIdx;
                     cursorIdx = tmpIdx;
-                    while(cursorGraphIdx == tmpGraphIdx && moving) {
+                    while (cursorGraphIdx == tmpGraphIdx && moving) {
                         moving = moveCursorRight(false);
                     }
                 }
@@ -485,73 +508,76 @@ abstract public class GraphPanel extends JPanel  {
     public boolean isEnabled(GraphSeries gd) {
         return enabled.contains(gd);
     }
+
     /**
      * move the cursor to the next point across multiple graphs. The next point
-     * is defined by applying in order the following rules:
-     * - if the next point in the current graph has the same x as the current cursor,
-     *   that's the next cursor
-     * - if another graph has one or more points on the same x as the current cursor,
-     *   the first point for the first graph AFTER the current cursor graph is the
-     *   next point
-     * - the point with the minimum x > current cursor is the next point.
+     * is defined by applying in order the following rules: - if the next point
+     * in the current graph has the same x as the current cursor, that's the
+     * next cursor - if another graph has one or more points on the same x as
+     * the current cursor, the first point for the first graph AFTER the current
+     * cursor graph is the next point - the point with the minimum x > current
+     * cursor is the next point.
      */
     public boolean moveCursorRight(boolean local) {
         int minIdx = Integer.MAX_VALUE;
         int minGraphIdx = Integer.MAX_VALUE;
         if (cursorIdx < 0)
             return false;
-        GraphSeries cursorGraph = graph.get(cursorGraphIdx);
+        final GraphSeries cursorGraph = graph.get(cursorGraphIdx);
         if (local) {
-            if (cursorIdx == cursorGraph.size()-1)
+            if (cursorIdx == cursorGraph.size() - 1)
                 return false;
             minIdx = cursorIdx + 1;
-            minGraphIdx  = cursorGraphIdx;
+            minGraphIdx = cursorGraphIdx;
         } else {
             long minDist = Long.MAX_VALUE;
-            long currX = cursorGraph.point(cursorIdx).x;
-            for(int gidx = 0; gidx < graph.size(); gidx++) {
-                GraphSeries g = graph.get(gidx);
+            final long currX = cursorGraph.point(cursorIdx).x();
+            for (int gidx = 0; gidx < graph.size(); gidx++) {
+                final GraphSeries g = graph.get(gidx);
                 int idx;
                 idx = g.insertionIndex(currX);
-                if (idx > g.size()-1) {
+                if (idx > g.size() - 1) {
                     continue;
                 }
-                long xx = g.point(idx).x;
+                final long xx = g.point(idx).x();
                 if (xx == currX) {
                     if (gidx < cursorGraphIdx) {
                         // rule 2
-                        // this is not the graph of the current cursor position, but it has
+                        // this is not the graph of the current cursor position,
+                        // but it has
                         // the same x. if it is one before, ignore it
-                        continue;                    
+                        continue;
                     }
                     if (gidx == cursorGraphIdx) {
-                        // if we are on the same graph currently selected and with same x,
+                        // if we are on the same graph currently selected and
+                        // with same x,
                         // move past the currently selected point
                         if (cursorIdx + 1 >= graph.get(gidx).size())
                             continue;
                         idx = cursorIdx + 1;
-                        if (graph.get(gidx).point(idx).x == currX) {
+                        if (graph.get(gidx).point(idx).x() == currX) {
                             minIdx = idx;
                             minGraphIdx = gidx;
                             break;
                         }
                     } else {
-                        // if there are multiple points with currX, we have the rightmost. back
+                        // if there are multiple points with currX, we have the
+                        // rightmost. back
                         // to the leftmost.
-                        for(idx--; idx>=0 && g.point(idx).x == xx; idx--)
+                        for (idx--; idx >= 0 && g.point(idx).x() == xx; idx--)
                             ;
                         minIdx = idx + 1;
                         minGraphIdx = gidx;
                         break;
                     }
                 }
-                // rule 3          
-                long dist = g.point(idx).x - currX;
+                // rule 3
+                final long dist = g.point(idx).x() - currX;
                 if (dist < minDist) {
                     minGraphIdx = gidx;
-                    minIdx = idx; 
+                    minIdx = idx;
                     minDist = dist;
-                }            
+                }
             }
             if (minIdx == Integer.MAX_VALUE) {
                 minIdx = cursorIdx;
@@ -561,7 +587,7 @@ abstract public class GraphPanel extends JPanel  {
         if (minIdx != cursorIdx || minGraphIdx != cursorGraphIdx) {
             cursorIdx = minIdx;
             cursorGraphIdx = minGraphIdx;
-            for(GraphCursorListener l: listeners)
+            for (final GraphCursorListener l : listeners)
                 l.cursorChanged(graph.get(cursorGraphIdx), cursorIdx);
             return true;
         } else
@@ -571,36 +597,39 @@ abstract public class GraphPanel extends JPanel  {
     public boolean moveCursorLeft(boolean local) {
         int minIdx = Integer.MAX_VALUE;
         int minGraphIdx = Integer.MAX_VALUE;
-        if (cursorIdx < 0 )
+        if (cursorIdx < 0)
             return false;
-        GraphSeries cursorGraph = graph.get(cursorGraphIdx);
+        final GraphSeries cursorGraph = graph.get(cursorGraphIdx);
         if (local) {
             if (cursorIdx == 0)
                 return false;
-            minIdx = cursorIdx-1;
+            minIdx = cursorIdx - 1;
             minGraphIdx = cursorGraphIdx;
         } else {
             long minDist = Long.MAX_VALUE;
-            long currX = cursorGraph.point(cursorIdx).x;
-            for(int gidx = graph.size()-1; gidx >= 0 ; gidx--) {
-                GraphSeries g = graph.get(gidx);
+            final long currX = cursorGraph.point(cursorIdx).x();
+            for (int gidx = graph.size() - 1; gidx >= 0; gidx--) {
+                final GraphSeries g = graph.get(gidx);
                 int idx;
                 idx = g.insertionIndex(currX);
-                long xx = (idx > g.size()-1) ? g.point(idx-1).x : g.point(idx).x;
+                final long xx = (idx > g.size() - 1) ? g.point(idx - 1).x() : g
+                        .point(idx).x();
                 if (xx == currX) {
                     if (gidx > cursorGraphIdx) {
                         // rule 2
-                        // this is not the graph of the current cursor position, but it has
+                        // this is not the graph of the current cursor position,
+                        // but it has
                         // the same x. if it is one after, ignore it
-                        continue;                    
+                        continue;
                     }
                     if (gidx == cursorGraphIdx) {
-                        // if we are on the same graph currently selected and with same x,
+                        // if we are on the same graph currently selected and
+                        // with same x,
                         // move before the currently selected point
                         if (cursorIdx - 1 < 0)
                             continue;
                         idx = cursorIdx - 1;
-                        if (graph.get(gidx).point(idx).x == currX) {
+                        if (graph.get(gidx).point(idx).x() == currX) {
                             minIdx = idx;
                             minGraphIdx = gidx;
                             break;
@@ -615,13 +644,13 @@ abstract public class GraphPanel extends JPanel  {
                     if (idx < 0)
                         continue;
                 }
-                // rule 3          
-                long dist = currX - g.point(idx).x;
+                // rule 3
+                final long dist = currX - g.point(idx).x();
                 if (dist < minDist) {
                     minGraphIdx = gidx;
-                    minIdx = idx; 
+                    minIdx = idx;
                     minDist = dist;
-                }            
+                }
             }
             if (minIdx == Integer.MAX_VALUE)
                 return false;
@@ -629,7 +658,7 @@ abstract public class GraphPanel extends JPanel  {
         if (minIdx != cursorIdx || minGraphIdx != cursorGraphIdx) {
             cursorIdx = minIdx;
             cursorGraphIdx = minGraphIdx;
-            for(GraphCursorListener l: listeners)
+            for (final GraphCursorListener l : listeners)
                 l.cursorChanged(graph.get(cursorGraphIdx), cursorIdx);
             return true;
         } else
@@ -638,6 +667,9 @@ abstract public class GraphPanel extends JPanel  {
 
     public JPanel getYLabelsPanel() {
         return null;
-    }    
+    }
 
+    public Dimension getPreferredScrollableViewportSize() {
+        return new Dimension(0, 0);
+    }
 }

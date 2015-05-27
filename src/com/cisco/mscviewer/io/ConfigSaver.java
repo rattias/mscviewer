@@ -23,33 +23,34 @@ import com.cisco.mscviewer.model.MSCDataModel;
 public class ConfigSaver {
 
     public void save(String fname, MSCDataModel mod) throws IOException {
-        PrintWriter pw = new PrintWriter(new FileWriter(fname));
-        String path = mod.getFilePath();
-        File f = new File(path);
-        long dateTime = f.lastModified();
-        String date = Config.getDateString(dateTime);
-        pw.println("<"+Config.ATTR_MSCCONFIG_LOG+"\""+mod.getFilePath()+" "+Config.ATTR_MSCCONFIG_DATE+"=\""+date+"\">");
+        final PrintWriter pw = new PrintWriter(new FileWriter(fname));
+        final String path = mod.getFilePath();
+        final File f = new File(path);
+        final long dateTime = f.lastModified();
+        final String date = Config.getDateString(dateTime);
+        pw.println("<" + Config.ATTR_MSCCONFIG_LOG + "\"" + mod.getFilePath()
+                + " " + Config.ATTR_MSCCONFIG_DATE + "=\"" + date + "\">");
         emitFilterConfig(pw, mod);
         emitMarkerConfig(pw, mod);
-        pw.println("</"+Config.EL_MSCCONFIG+">");
+        pw.println("</" + Config.EL_MSCCONFIG + ">");
         pw.close();
     }
 
     public void emitFilterConfig(PrintWriter pw, MSCDataModel mod) {
-        pw.println("  <"+Config.EL_FILTER+">");
-        pw.println("  </"+Config.EL_FILTER+">");
+        pw.println("  <" + Config.EL_FILTER + ">");
+        pw.println("  </" + Config.EL_FILTER + ">");
     }
 
     public void emitMarkerConfig(PrintWriter pw, MSCDataModel mod) {
-        pw.println("  <"+Config.EL_MARKERS+">");
-        for(int i=0; i<mod.getEventCount(); i++) {
-            Event ev = mod.getEventAt(i);
-            Marker m = ev.getMarker();
-            pw.print("    <"+Config.EL_MARKER+" ");
-            pw.print(Config.ATTR_MARKER_LINE +"=\""+i+" ");
-            pw.print(Config.ATTR_MARKER_COLOR+"=\""+m.toString()+" ");
-            pw.println(Config.ATTR_MARKER_NOTE +"=\""+ev.getNote()+"\">");
+        pw.println("  <" + Config.EL_MARKERS + ">");
+        for (int i = 0; i < mod.getEventCount(); i++) {
+            final Event ev = mod.getEventAt(i);
+            final Marker m = ev.getMarker();
+            pw.print("    <" + Config.EL_MARKER + " ");
+            pw.print(Config.ATTR_MARKER_LINE + "=\"" + i + " ");
+            pw.print(Config.ATTR_MARKER_COLOR + "=\"" + m.toString() + " ");
+            pw.println(Config.ATTR_MARKER_NOTE + "=\"" + ev.getNote() + "\">");
         }
-        pw.println("  </"+Config.EL_MARKERS+">");		
+        pw.println("  </" + Config.EL_MARKERS + ">");
     }
 }

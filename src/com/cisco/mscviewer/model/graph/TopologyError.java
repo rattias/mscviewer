@@ -13,7 +13,7 @@ package com.cisco.mscviewer.model.graph;
 
 @SuppressWarnings("serial")
 public class TopologyError extends Exception {
-    public TopologyError(String s){
+    public TopologyError(String s) {
         super(s);
     }
 }

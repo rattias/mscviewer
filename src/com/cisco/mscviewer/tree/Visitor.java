@@ -11,12 +11,10 @@
  */
 package com.cisco.mscviewer.tree;
 
-import com.cisco.mscviewer.tree.AVLTreeNode;
-
 /**
  *
  * @author rattias
  */
 public interface Visitor {
-    public boolean visit(AVLTreeNode tn); 
+    public boolean visit(AVLTreeNode tn);
 }

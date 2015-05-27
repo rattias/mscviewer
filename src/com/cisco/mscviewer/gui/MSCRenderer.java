@@ -10,6 +10,7 @@
  * @since  Jun 2011
  */
 package com.cisco.mscviewer.gui;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,7 +45,7 @@ import com.cisco.mscviewer.util.Resources;
 public class MSCRenderer {
     public final static int EVENT_HEIGHT = 20;
     private int eventHeight = EVENT_HEIGHT;
-    //private EntityHeaderModel headerModel;
+    // private EntityHeaderModel headerModel;
     private Event selectedEvent = null;
     private Interaction selectedInteraction = null;
     private int viewModelSelectedEventIndex = -1;
@@ -52,12 +53,12 @@ public class MSCRenderer {
     private boolean showBlocks = true;
     private boolean showLabels = true;
     private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
-    private InputUnit deltaTimeUnit = InputUnit.NS; 
-    //private InputUnit timestampUnit = InputUnit.NS;
+    private InputUnit deltaTimeUnit = InputUnit.NS;
+    // private InputUnit timestampUnit = InputUnit.NS;
     private final boolean drawBands = true;
     private boolean showUnits = true;
     private boolean showDate = false;
-    private boolean  showLeadingZeroes;
+    private boolean showLeadingZeroes;
     private boolean compactView = true;
     private final Vector<SelectionListener> selListeners = new Vector<SelectionListener>();
     private int maxBBwidth = 0;
@@ -69,15 +70,12 @@ public class MSCRenderer {
     private Font mainFont;
     private final boolean timeProportional = false;
 
-    final static BasicStroke basicStroke =  new BasicStroke();
-    final static BasicStroke selStroke =  new BasicStroke(2.0f);
-    final static BasicStroke dashedStroke =  
-        new BasicStroke(1.0f, // line width
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_BEVEL, 1.0f,
-                new float[] { 3.0f, 3.0f, 3.0f, 3.0f },
-                0.0f); 	
-    final static int STUB_LEN=40;
+    final static BasicStroke basicStroke = new BasicStroke();
+    final static BasicStroke selStroke = new BasicStroke(2.0f);
+    final static BasicStroke dashedStroke = new BasicStroke(1.0f, // line width
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1.0f, new float[] {
+                    3.0f, 3.0f, 3.0f, 3.0f }, 0.0f);
+    final static int STUB_LEN = 40;
 
     class Segment {
         int x1, y1;
@@ -87,97 +85,104 @@ public class MSCRenderer {
 
         @Override
         public String toString() {
-            return ("["+x1+","+y1+"]-["+x2+","+y2+"]");			
+            return ("[" + x1 + "," + y1 + "]-[" + x2 + "," + y2 + "]");
         }
     }
 
-
     public MSCRenderer(ViewModel eh) {
         viewModel = eh;
-        infoIcon = Resources.getImageIcon("32x32/info.png", "Info icon");	
+        infoIcon = Resources.getImageIcon("32x32/info.png", "Info icon");
     }
 
-    //	public MSCRenderer() {
-    //	}
+    // public MSCRenderer() {
+    // }
 
-
-    //	public void setDataModel(MSCDataModel dm) {
-    //		dataModel = dm;
-    //		updateForTimeUnitChanges();
-    //	}
+    // public void setDataModel(MSCDataModel dm) {
+    // dataModel = dm;
+    // updateForTimeUnitChanges();
+    // }
 
     public int getEventHeight() {
         return eventHeight;
     }
 
-    private Rectangle getEventBoundingBox(Event ev, int eventIndex, Dimension maxDim) {
-        int entityIndex = viewModel.indexOf(ev.getEntity());
+    private Rectangle getEventBoundingBox(Event ev, int eventIndex,
+            Dimension maxDim) {
+        final int entityIndex = viewModel.indexOf(ev.getEntity());
         if (entityIndex < 0)
             return new Rectangle(-1, -1, 0, 0);
-        EventRenderer rn = ev.getRenderer();
-        Rectangle r= new Rectangle();
-        int x = viewModel.getEntityCenterX(entityIndex);
-        int y = (timeProportional) ?  (int)ev.getTimestamp() : eventIndex*eventHeight+eventHeight/2;
+        final EventRenderer rn = ev.getRenderer();
+        final Rectangle r = new Rectangle();
+        final int x = viewModel.getEntityCenterX(entityIndex);
+        final int y = (timeProportional) ? (int) ev.getTimestamp() : eventIndex
+                * eventHeight + eventHeight / 2;
         rn.getBoundingBox(maxDim, x, y, r);
         return r;
     }
 
-    private void drawLifeLines(Graphics2D g2d, boolean export, int minIdx, int maxIdx) {
-        int hdEntityCount = viewModel.entityCount();
+    private void drawLifeLines(Graphics2D g2d, boolean export, int minIdx,
+            int maxIdx) {
+        final int hdEntityCount = viewModel.entityCount();
         g2d.setColor(Color.lightGray);
-        for(int i=0; i<hdEntityCount; i++) {
-            int x = viewModel.getEntityCenterX(i);
+        for (int i = 0; i < hdEntityCount; i++) {
+            final int x = viewModel.getEntityCenterX(i);
             int y0, y1;
             if (export) {
                 y0 = 0;
                 y1 = getHeight();
             } else {
-                if (timeProportional) {                
-                    y0 = (int)viewModel.getEventAt(viewModel.getEntityBirthIndex(i)).getTimestamp();
-                    y1 = (int)viewModel.getEventAt(viewModel.getEntityBirthIndex(i)).getTimestamp();
+                if (timeProportional) {
+                    y0 = (int) viewModel.getEventAt(
+                            viewModel.getEntityBirthIndex(i)).getTimestamp();
+                    y1 = (int) viewModel.getEventAt(
+                            viewModel.getEntityBirthIndex(i)).getTimestamp();
                 } else {
-                    y0 = viewModel.getEntityBirthIndex(i)*eventHeight+eventHeight/2;
-                    y1 = viewModel.getEntityDeathIndex(i)*eventHeight+eventHeight/2;
+                    y0 = viewModel.getEntityBirthIndex(i) * eventHeight
+                            + eventHeight / 2;
+                    y1 = viewModel.getEntityDeathIndex(i) * eventHeight
+                            + eventHeight / 2;
                 }
-                if (y0<0)
+                if (y0 < 0)
                     y0 = 0;
-                if (y1<0)
+                if (y1 < 0)
                     y1 = getHeight();
             }
             g2d.drawLine(x, y0, x, y1);
         }
     }
 
-    public void renderTimeHeader(Graphics2D g2d, boolean renderHeader, int viewY, int viewHeight) {
-        int evCount = viewModel.getEventCount();
-        int minIdx = viewY/eventHeight;
-        int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
-        if (maxIdx > evCount-1)
-            maxIdx = evCount-1;
+    public void renderTimeHeader(Graphics2D g2d, boolean renderHeader,
+            int viewY, int viewHeight) {
+        final int evCount = viewModel.getEventCount();
+        final int minIdx = viewY / eventHeight;
+        int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+        if (maxIdx > evCount - 1)
+            maxIdx = evCount - 1;
 
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, viewModel.getTotalWidth(), getHeight());
         if (drawBands) {
             g2d.setColor(new Color(248, 248, 248));
-            for(int i=minIdx; i<=maxIdx; i++) {
+            for (int i = minIdx; i <= maxIdx; i++) {
                 if (i % 2 == 1) {
-                    int h = i*eventHeight; 
-                    g2d.fillRect(0, h, viewModel.getTotalWidth(), eventHeight-1);
+                    final int h = i * eventHeight;
+                    g2d.fillRect(0, h, viewModel.getTotalWidth(),
+                            eventHeight - 1);
                 }
             }
-        }	
+        }
     }
 
     public String getTimeRepr(long timestamp) {
         return absTimeUnit.format(timestamp);
     }
-    
+
     public void updateForTimeUnitChanges() {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            int cnt = dataModel.getEventCount();
-            for(int i=0; i<cnt; i++) {
-                Event ev = dataModel.getEventAt(i);
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            final int cnt = dataModel.getEventCount();
+            for (int i = 0; i < cnt; i++) {
+                final Event ev = dataModel.getEventAt(i);
                 ev.setTimestampRepr(getTimeRepr(ev.getTimestamp()));
             }
         }
@@ -185,96 +190,108 @@ public class MSCRenderer {
 
     private void render(Graphics2D g2d, int viewMinIdx, int viewMaxIdx) {
         if (mainFont == null) {
-            mainFont = g2d.getFont(); 
+            mainFont = g2d.getFont();
         }
-        AffineTransform tf = new AffineTransform();
-        tf.scale(1, zoomFactor/100.0);
+        final AffineTransform tf = new AffineTransform();
+        tf.scale(1, zoomFactor / 100.0);
         font = mainFont.deriveFont(tf);
         g2d.setFont(font);
-        int ascent = g2d.getFontMetrics().getAscent();
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final int ascent = g2d.getFontMetrics().getAscent();
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             // render blocks first
-            Dimension max = new Dimension(64, eventHeight);
-            int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
-            int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
+            final Dimension max = new Dimension(64, eventHeight);
+            final int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
+            final int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
             if (showBlocks) {
                 IntervalTree.dbg = true;
-                ArrayList<Interval> al = dataModel.getBlocksInInterval(modelMinIdx, modelMaxIdx); 
+                final ArrayList<Interval> al = dataModel.getBlocksInInterval(
+                        modelMinIdx, modelMaxIdx);
                 IntervalTree.dbg = false;
-                for (Interval block: al) {
-                    int beginIdx = block.getStart();
-                    int endIdx = block.getEnd();
-                    int beginViewIdx = viewModel.getViewIndexFromModelIndex(beginIdx);
-                    int endViewIdx = viewModel.getViewIndexFromModelIndex(endIdx);
-                    Event beginEv = dataModel.getEventAt(beginIdx);
-                    Event endEv = dataModel.getEventAt(endIdx);
-                    Entity entity = beginEv.getEntity();
-                    int entityIndex = viewModel.indexOf(entity);
+                for (final Interval block : al) {
+                    final int beginIdx = block.getStart();
+                    final int endIdx = block.getEnd();
+                    final int beginViewIdx = viewModel
+                            .getViewIndexFromModelIndex(beginIdx);
+                    final int endViewIdx = viewModel
+                            .getViewIndexFromModelIndex(endIdx);
+                    final Event beginEv = dataModel.getEventAt(beginIdx);
+                    final Event endEv = dataModel.getEventAt(endIdx);
+                    final Entity entity = beginEv.getEntity();
+                    final int entityIndex = viewModel.indexOf(entity);
                     if (entityIndex < 0)
                         continue;
-                    int x = viewModel.getEntityCenterX(entityIndex);
-                    int y0 = beginViewIdx*eventHeight+eventHeight/2;
-                    int y1 = endViewIdx*eventHeight+eventHeight/2;
-                    Rectangle rb = beginEv.getRenderer().getBoundingBox(max, x, y0, null);
-                    Rectangle re = endEv.getRenderer().getBoundingBox(max, x, y1, null);
-                    Rectangle r = rb.union(re);
+                    final int x = viewModel.getEntityCenterX(entityIndex);
+                    final int y0 = beginViewIdx * eventHeight + eventHeight / 2;
+                    final int y1 = endViewIdx * eventHeight + eventHeight / 2;
+                    final Rectangle rb = beginEv.getRenderer().getBoundingBox(max, x,
+                            y0, null);
+                    final Rectangle re = endEv.getRenderer().getBoundingBox(max, x,
+                            y1, null);
+                    final Rectangle r = rb.union(re);
                     g2d.setColor(Color.lightGray);
-                    g2d.fillRect(x-3, r.y, 7, r.height-4);
+                    g2d.fillRect(x - 3, r.y, 7, r.height - 4);
                     g2d.setColor(Color.gray);
-                    g2d.drawRect(x-3, r.y, 7, r.height-4);
+                    g2d.drawRect(x - 3, r.y, 7, r.height - 4);
                 }
             }
-                
-            // render interactions 
-            ArrayList<Interaction> inter = dataModel.getInteractionsInInterval(modelMinIdx, modelMaxIdx);
+
+            // render interactions
+            final ArrayList<Interaction> inter = dataModel.getInteractionsInInterval(
+                    modelMinIdx, modelMaxIdx);
             Rectangle r1, r2;
-            for(Interaction in: inter) {
-                int sourceModelIdx = in.getFromIndex();
-                int sourceViewIdx = viewModel.getViewIndexFromModelIndex(sourceModelIdx);
-                int sinkModelIdx = in.getToIndex();
-                int sinkViewIdx = viewModel.getViewIndexFromModelIndex(sinkModelIdx);
+            for (final Interaction in : inter) {
+                final int sourceModelIdx = in.getFromIndex();
+                final int sourceViewIdx = viewModel
+                        .getViewIndexFromModelIndex(sourceModelIdx);
+                final int sinkModelIdx = in.getToIndex();
+                final int sinkViewIdx = viewModel
+                        .getViewIndexFromModelIndex(sinkModelIdx);
                 if (sourceViewIdx < 0 && sinkViewIdx < 0)
                     continue;
-                if (sourceViewIdx >=0) {
-                    Event source = dataModel.getEventAt(sourceModelIdx);
-                    Entity sourceEn = source.getEntity();
-                    int sourceEntityIndex = viewModel.indexOf(sourceEn);
-                    Dimension maxDim = new Dimension(viewModel.getEntityWidth(sourceEntityIndex), eventHeight);
+                if (sourceViewIdx >= 0) {
+                    final Event source = dataModel.getEventAt(sourceModelIdx);
+                    final Entity sourceEn = source.getEntity();
+                    final int sourceEntityIndex = viewModel.indexOf(sourceEn);
+                    final Dimension maxDim = new Dimension(
+                            viewModel.getEntityWidth(sourceEntityIndex),
+                            eventHeight);
                     r1 = getEventBoundingBox(source, sourceViewIdx, maxDim);
                 } else
                     r1 = new Rectangle(-1, 0, 0, 0);
                 if (sinkViewIdx >= 0) {
-                    Event sink  = dataModel.getEventAt(sinkModelIdx);
-                    Entity sinkEn = sink.getEntity();
-                    int sinkEntityIndex = viewModel.indexOf(sinkEn);                    
-                    Dimension maxDim = new Dimension(viewModel.getEntityWidth(sinkEntityIndex), eventHeight);
+                    final Event sink = dataModel.getEventAt(sinkModelIdx);
+                    final Entity sinkEn = sink.getEntity();
+                    final int sinkEntityIndex = viewModel.indexOf(sinkEn);
+                    final Dimension maxDim = new Dimension(
+                            viewModel.getEntityWidth(sinkEntityIndex),
+                            eventHeight);
                     r2 = getEventBoundingBox(sink, sinkViewIdx, maxDim);
                 } else
-                    r2 = new Rectangle(-1, 0, 0, 0);                
-                InteractionRenderer ir = in.getIRenderer();
-                Marker m = in.getMarker();
+                    r2 = new Rectangle(-1, 0, 0, 0);
+                final InteractionRenderer ir = in.getIRenderer();
+                final Marker m = in.getMarker();
                 ir.render(r1, r2, g2d, in == selectedInteraction, m);
             }
-            
+
             // render events last
-            for(int i=viewMinIdx; i<=viewMaxIdx; i++) {
-                Event ev = viewModel.getEventAt(i);
-                Entity en = ev.getEntity();
-                int entityIndex = viewModel.indexOf(en);
+            for (int i = viewMinIdx; i <= viewMaxIdx; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
+                final int entityIndex = viewModel.indexOf(en);
                 if (entityIndex == -1)
                     continue;
-                int entityWidth = viewModel.getEntityWidth(entityIndex);
-                Dimension maxDim = new Dimension(entityWidth, eventHeight);
-                EventRenderer r = ev.getRenderer();
-                if (entityIndex >=0) {
-                    int x = viewModel.getEntityCenterX(entityIndex);
-                    int y = i*eventHeight+eventHeight/2;
-                    //g2d.drawString("ev_"+i, 0, y);
-                    //g2d.drawString(ev.getType(), 0, y);
-                    AffineTransform t = g2d.getTransform();
+                final int entityWidth = viewModel.getEntityWidth(entityIndex);
+                final Dimension maxDim = new Dimension(entityWidth, eventHeight);
+                final EventRenderer r = ev.getRenderer();
+                if (entityIndex >= 0) {
+                    final int x = viewModel.getEntityCenterX(entityIndex);
+                    final int y = i * eventHeight + eventHeight / 2;
+                    // g2d.drawString("ev_"+i, 0, y);
+                    // g2d.drawString(ev.getType(), 0, y);
+                    final AffineTransform t = g2d.getTransform();
                     g2d.translate(x, y);
-                    boolean scaled = r.scaleSource();
+                    final boolean scaled = r.scaleSource();
                     AffineTransform t1 = null;
                     if (scaled) {
                         t1 = g2d.getTransform();
@@ -282,32 +299,37 @@ public class MSCRenderer {
                     }
                     r.render(g2d, maxDim);
                     if (ev.getNote() != null) {
-                        Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
-                        g2d.drawImage(infoIcon.getImage(), -bb.width/2-8, 0, null); 
+                        final Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
+                        g2d.drawImage(infoIcon.getImage(), -bb.width / 2 - 8,
+                                0, null);
                     }
-                    if (scaled) 
+                    if (scaled)
                         g2d.setTransform(t1);
                     if (ev == selectedEvent) {
                         g2d.setColor(Color.red);
                         g2d.setStroke(selStroke);
-                        g2d.drawRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
+                        g2d.drawRect(-maxBBwidth / 2, -eventHeight / 2,
+                                maxBBwidth, eventHeight);
                         g2d.setStroke(basicStroke);
                     }
-                    Marker m = ev.getMarker();
+                    final Marker m = ev.getMarker();
                     if (m != null) {
-                        Color c = m.getTransparentColor();
+                        final Color c = m.getTransparentColor();
                         g2d.setColor(c);
-                        g2d.fillRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
+                        g2d.fillRect(-maxBBwidth / 2, -eventHeight / 2,
+                                maxBBwidth, eventHeight);
                     }
                     g2d.setTransform(t);
-                    Rectangle bb = new Rectangle();
+                    final Rectangle bb = new Rectangle();
                     r.getBoundingBox(maxDim, x, y, bb);
                     if (showTime) {
-                        String time = ev.getTimestampRepr();
+                        final String time = ev.getTimestampRepr();
                         if (time != null) {
                             g2d.setColor(Color.pink);
-                            int w = g2d.getFontMetrics().stringWidth(time);
-                            g2d.drawString(MSCDataModel.getInstance().getEventIndex(ev)+":"+time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
+                            final int w = g2d.getFontMetrics().stringWidth(time);
+                            g2d.drawString(time,
+                                    x - maxBBwidth / 2 - w - 4, i * eventHeight
+                                    + ascent);
                         }
                     }
                     if (ev.getRenderer() instanceof ErrorRenderer)
@@ -315,155 +337,160 @@ public class MSCRenderer {
                     else
                         g2d.setColor(Color.BLACK);
                     if (showLabels)
-                    	g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
+                        g2d.drawString(ev.getLabel(), x + maxBBwidth, i
+                                * eventHeight + ascent);
                 }
             }
         }
     }
 
-//    private void renderTimeProportional(Graphics2D g2d, int viewMinIdx, int viewMaxIdx) {
-//        if (mainFont == null) {
-//            mainFont = g2d.getFont(); 
-//        }
-//        AffineTransform tf = new AffineTransform();
-//        tf.scale(1, zoomFactor/100.0);
-//        font = mainFont.deriveFont(tf);
-//        g2d.setFont(font);
-//        int ascent = g2d.getFontMetrics().getAscent();
-//        synchronized(dataModel) {
-//            int evCount = viewModel.getEventCount();
-//            // render interactions first
-//            for(int i=0; i<evCount; i++) {
-//                Event ev = viewModel.getEventAt(i);
-//                int entityIndex = viewModel.indexOf(ev.getEntity());
-//                if (entityIndex < 0 )
-//                    continue;
-//                Dimension maxDim = new Dimension(viewModel.getEntityWidth(entityIndex), eventHeight);
-//                Interaction[] incoming = ev.getIncomingInteractions();
-//                if (incoming != null) {
-//                    for(Interaction in: incoming) {
-//                        // If we traverse events on a filtered view, then the source might not
-//                        // be there. in that case we do need to render the sink.
-//                        boolean sourceExists = in.getFromEvent() != null;
-//                        int sourceViewIdx = viewModel.getViewIndexFromModelIndex(in.getFromIndex());
-//                        if (sourceExists && (i < viewMinIdx || sourceViewIdx > viewMaxIdx)) {
-//                            continue;
-//                        }
-//                        if ((!sourceExists) && (i<viewMinIdx || i>viewMaxIdx)) {
-//                            continue;
-//                        }
-//                        Rectangle r1 = null, r2;
-//                        r2 = getEventBoundingBox(ev, i, maxDim);
-//                        if (in.getFromEvent() != null) {
-//                            r1 = getEventBoundingBox(in.getFromEvent(), sourceViewIdx, maxDim);
-//                        } else
-//                            r1 = new Rectangle(-1, 0, 0, 0);
-//                        InteractionRenderer ir = in.getIRenderer();
-//                        ir.render(r1, r2, g2d, in == selectedInteraction);
-//                    }
-//                }
-//                Interaction[] outgoing = ev.getOutgoingInteractions();
-//                if (outgoing != null && i <= viewMaxIdx) {
-//                    for(int j=0; j<outgoing.length; j++) {
-//                        int  sinkIdx = viewModel.getViewIndexFromModelIndex(outgoing[j].getToIndex());
-//                        if (sinkIdx >=0 && sinkIdx < viewMinIdx)
-//                            continue;
-//                        Rectangle r1, r2 = null;
-//                        r1 = getEventBoundingBox(ev, i, maxDim);
-//                        Event tev = outgoing[j].getToEvent(); 
-//                        if (tev != null) {
-//                            r2 = getEventBoundingBox(tev, sinkIdx, maxDim);
-//                        } else {
-//                            r2 = new Rectangle(-1, 0, 0, 0);
-//                        }
-//                        InteractionRenderer ir = outgoing[j].getIRenderer();
-//                        ir.render(r1, r2, g2d, outgoing[j] == selectedInteraction);
-//                    }
-//                }
-//            }
-//
-//            // render events after
-//            for(int i=viewMinIdx; i<=viewMaxIdx; i++) {
-//                Event ev = viewModel.getEventAt(i);
-//                Entity en = ev.getEntity();
-//                int entityIndex = viewModel.indexOf(en);
-//                if (entityIndex == -1)
-//                    continue;
-//                int entityWidth = viewModel.getEntityWidth(entityIndex);
-//                Dimension maxDim = new Dimension(entityWidth, eventHeight);
-//                EventRenderer r = ev.getRenderer();
-//                if (entityIndex >=0) {
-//                    int x = viewModel.getEntityCenterX(entityIndex);
-//                    int y = i*eventHeight+eventHeight/2;
-//                    AffineTransform t = g2d.getTransform();
-//                    g2d.translate(x, y);
-//                    boolean scaled = (ev.getOutgoingInteractions() != null && r.scaleSource());
-//                    AffineTransform t1 = null;
-//                    if (scaled) {
-//                        t1 = g2d.getTransform();
-//                        g2d.scale(.7, .7);
-//                    }
-//                    r.render(g2d, maxDim, ev == selectedEvent);
-//                    if (ev.getNote() != null) {
-//                        Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
-//                        g2d.drawImage(infoIcon.getImage(), -bb.width/2-8, 0, null); 
-//                    }
-//                    if (scaled) 
-//                        g2d.setTransform(t1);
-//                    if (ev == selectedEvent) {
-//                        g2d.setColor(Color.red);
-//                        g2d.setStroke(selStroke);
-//                        g2d.drawRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
-//                        g2d.setStroke(basicStroke);
-//                    }
-//                    Marker m = ev.getMarker();
-//                    if (m != null) {
-//                        Color c = m.getTransparentColor();
-//                        g2d.setColor(c);
-//                        g2d.fillRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
-//                    }
-//                    g2d.setTransform(t);
-//                    Rectangle bb = new Rectangle();
-//                    r.getBoundingBox(maxDim, x, y, bb);
-//                    if (showTime) {
-//                        String time = ev.getTimestampRepr();
-//                        if (time != null) {
-//                            g2d.setColor(Color.pink);
-//                            int w = g2d.getFontMetrics().stringWidth(time);
-//                            g2d.drawString(time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
-//                        }
-//                    }
-//                    if (ev.getRenderer() instanceof ErrorRenderer)
-//                        g2d.setColor(Color.RED);
-//                    else
-//                        g2d.setColor(Color.BLACK);
-//                    int labelStyle = ev.getRenderer().getLabelStyle();
-//                    if (labelStyle != Font.PLAIN) {
-//                        Font f = g2d.getFont();
-//                        g2d.setFont(f.deriveFont(labelStyle));
-//                        g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
-//                        g2d.setFont(f);
-//                    } else {
-//                        g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);                  
-//                    }
-//                }
-//            }
-//        }
-//    }
-
+    // private void renderTimeProportional(Graphics2D g2d, int viewMinIdx, int
+    // viewMaxIdx) {
+    // if (mainFont == null) {
+    // mainFont = g2d.getFont();
+    // }
+    // AffineTransform tf = new AffineTransform();
+    // tf.scale(1, zoomFactor/100.0);
+    // font = mainFont.deriveFont(tf);
+    // g2d.setFont(font);
+    // int ascent = g2d.getFontMetrics().getAscent();
+    // synchronized(dataModel) {
+    // int evCount = viewModel.getEventCount();
+    // // render interactions first
+    // for(int i=0; i<evCount; i++) {
+    // Event ev = viewModel.getEventAt(i);
+    // int entityIndex = viewModel.indexOf(ev.getEntity());
+    // if (entityIndex < 0 )
+    // continue;
+    // Dimension maxDim = new Dimension(viewModel.getEntityWidth(entityIndex),
+    // eventHeight);
+    // Interaction[] incoming = ev.getIncomingInteractions();
+    // if (incoming != null) {
+    // for(Interaction in: incoming) {
+    // // If we traverse events on a filtered view, then the source might not
+    // // be there. in that case we do need to render the sink.
+    // boolean sourceExists = in.getFromEvent() != null;
+    // int sourceViewIdx =
+    // viewModel.getViewIndexFromModelIndex(in.getFromIndex());
+    // if (sourceExists && (i < viewMinIdx || sourceViewIdx > viewMaxIdx)) {
+    // continue;
+    // }
+    // if ((!sourceExists) && (i<viewMinIdx || i>viewMaxIdx)) {
+    // continue;
+    // }
+    // Rectangle r1 = null, r2;
+    // r2 = getEventBoundingBox(ev, i, maxDim);
+    // if (in.getFromEvent() != null) {
+    // r1 = getEventBoundingBox(in.getFromEvent(), sourceViewIdx, maxDim);
+    // } else
+    // r1 = new Rectangle(-1, 0, 0, 0);
+    // InteractionRenderer ir = in.getIRenderer();
+    // ir.render(r1, r2, g2d, in == selectedInteraction);
+    // }
+    // }
+    // Interaction[] outgoing = ev.getOutgoingInteractions();
+    // if (outgoing != null && i <= viewMaxIdx) {
+    // for(int j=0; j<outgoing.length; j++) {
+    // int sinkIdx =
+    // viewModel.getViewIndexFromModelIndex(outgoing[j].getToIndex());
+    // if (sinkIdx >=0 && sinkIdx < viewMinIdx)
+    // continue;
+    // Rectangle r1, r2 = null;
+    // r1 = getEventBoundingBox(ev, i, maxDim);
+    // Event tev = outgoing[j].getToEvent();
+    // if (tev != null) {
+    // r2 = getEventBoundingBox(tev, sinkIdx, maxDim);
+    // } else {
+    // r2 = new Rectangle(-1, 0, 0, 0);
+    // }
+    // InteractionRenderer ir = outgoing[j].getIRenderer();
+    // ir.render(r1, r2, g2d, outgoing[j] == selectedInteraction);
+    // }
+    // }
+    // }
+    //
+    // // render events after
+    // for(int i=viewMinIdx; i<=viewMaxIdx; i++) {
+    // Event ev = viewModel.getEventAt(i);
+    // Entity en = ev.getEntity();
+    // int entityIndex = viewModel.indexOf(en);
+    // if (entityIndex == -1)
+    // continue;
+    // int entityWidth = viewModel.getEntityWidth(entityIndex);
+    // Dimension maxDim = new Dimension(entityWidth, eventHeight);
+    // EventRenderer r = ev.getRenderer();
+    // if (entityIndex >=0) {
+    // int x = viewModel.getEntityCenterX(entityIndex);
+    // int y = i*eventHeight+eventHeight/2;
+    // AffineTransform t = g2d.getTransform();
+    // g2d.translate(x, y);
+    // boolean scaled = (ev.getOutgoingInteractions() != null &&
+    // r.scaleSource());
+    // AffineTransform t1 = null;
+    // if (scaled) {
+    // t1 = g2d.getTransform();
+    // g2d.scale(.7, .7);
+    // }
+    // r.render(g2d, maxDim, ev == selectedEvent);
+    // if (ev.getNote() != null) {
+    // Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
+    // g2d.drawImage(infoIcon.getImage(), -bb.width/2-8, 0, null);
+    // }
+    // if (scaled)
+    // g2d.setTransform(t1);
+    // if (ev == selectedEvent) {
+    // g2d.setColor(Color.red);
+    // g2d.setStroke(selStroke);
+    // g2d.drawRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
+    // g2d.setStroke(basicStroke);
+    // }
+    // Marker m = ev.getMarker();
+    // if (m != null) {
+    // Color c = m.getTransparentColor();
+    // g2d.setColor(c);
+    // g2d.fillRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
+    // }
+    // g2d.setTransform(t);
+    // Rectangle bb = new Rectangle();
+    // r.getBoundingBox(maxDim, x, y, bb);
+    // if (showTime) {
+    // String time = ev.getTimestampRepr();
+    // if (time != null) {
+    // g2d.setColor(Color.pink);
+    // int w = g2d.getFontMetrics().stringWidth(time);
+    // g2d.drawString(time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
+    // }
+    // }
+    // if (ev.getRenderer() instanceof ErrorRenderer)
+    // g2d.setColor(Color.RED);
+    // else
+    // g2d.setColor(Color.BLACK);
+    // int labelStyle = ev.getRenderer().getLabelStyle();
+    // if (labelStyle != Font.PLAIN) {
+    // Font f = g2d.getFont();
+    // g2d.setFont(f.deriveFont(labelStyle));
+    // g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
+    // g2d.setFont(f);
+    // } else {
+    // g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
+    // }
+    // }
+    // }
+    // }
+    // }
 
     private void computeMaxBBWidth() {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            int cnt = viewModel.getEventCount();
-            Rectangle r = new Rectangle();
-            for(int i=0; i<cnt; i++) {
-                Event ev = viewModel.getEventAt(i); 
-                Entity en = ev.getEntity();
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            final int cnt = viewModel.getEventCount();
+            final Rectangle r = new Rectangle();
+            for (int i = 0; i < cnt; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
                 int w = viewModel.getEntityWidth(viewModel.indexOf(en));
-                if (w<0)
-                    w=0;
-                Dimension maxDim = new Dimension(w, eventHeight);
+                if (w < 0)
+                    w = 0;
+                final Dimension maxDim = new Dimension(w, eventHeight);
                 ev.getRenderer().getBoundingBox(maxDim, 0, 0, r);
                 if (r.width > maxBBwidth)
                     maxBBwidth = r.width;
@@ -478,75 +505,79 @@ public class MSCRenderer {
     public void render(Graphics2D g2d, boolean export, int viewY, int viewHeight) {
         if (getWidth() == 0)
             return;
-        MSCDataModelEventFilter f = viewModel.getFilter();
+        final MSCDataModelEventFilter f = viewModel.getFilter();
         if (this.filter != f) {
             computeMaxBBWidth();
             this.filter = f;
         }
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
         int minIdx, maxIdx;
-        minIdx = viewY/eventHeight;
-        maxIdx = (viewY+viewHeight-1)/eventHeight+1;
+        minIdx = viewY / eventHeight;
+        maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
 
-        int evCount = viewModel.getEventCount();
+        final int evCount = viewModel.getEventCount();
 
-        if (maxIdx > evCount-1)
-            maxIdx = evCount-1;
+        if (maxIdx > evCount - 1)
+            maxIdx = evCount - 1;
 
         int height = getHeight();
-        int fontHeight = g2d.getFontMetrics().getHeight();
+        final int fontHeight = g2d.getFontMetrics().getHeight();
         if (export)
-            height += fontHeight+4;
+            height += fontHeight + 4;
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, viewModel.getTotalWidth()+10, height);
+        g2d.fillRect(0, 0, viewModel.getTotalWidth() + 10, height);
         if ((!export) && drawBands) {
             g2d.setColor(new Color(248, 248, 248));
-            for(int i=minIdx; i<=maxIdx; i++) {
+            for (int i = minIdx; i <= maxIdx; i++) {
                 if (i % 2 == 1) {
-                    int h = i*eventHeight; 
-                    g2d.fillRect(0, h, viewModel.getTotalWidth(), eventHeight-1);
+                    final int h = i * eventHeight;
+                    g2d.fillRect(0, h, viewModel.getTotalWidth(),
+                            eventHeight - 1);
                 }
             }
         }
         g2d.setColor(Color.BLACK);
-        int enCnt = viewModel.entityCount();
-        if (export){
-            for(int i=0; i<enCnt; i++) {
-                Entity en = viewModel.get(i);
-                int enx = viewModel.getEntityCenterX(i);
-                int w = g2d.getFontMetrics().stringWidth(en.getPath());
-                int ascent = g2d.getFontMetrics().getAscent();
-                g2d.drawString(en.getPath(), enx-w/2, ascent+2);
-                g2d.drawRect(enx-w/2-1, 0, w+1, g2d.getFontMetrics().getHeight());
-            }				
-            g2d.translate(0, fontHeight+4);
+        final int enCnt = viewModel.entityCount();
+        if (export) {
+            for (int i = 0; i < enCnt; i++) {
+                final Entity en = viewModel.get(i);
+                final int enx = viewModel.getEntityCenterX(i);
+                final int w = g2d.getFontMetrics().stringWidth(en.getPath());
+                final int ascent = g2d.getFontMetrics().getAscent();
+                g2d.drawString(en.getPath(), enx - w / 2, ascent + 2);
+                g2d.drawRect(enx - w / 2 - 1, 0, w + 1, g2d.getFontMetrics()
+                        .getHeight());
+            }
+            g2d.translate(0, fontHeight + 4);
         }
         drawLifeLines(g2d, export, minIdx, maxIdx);
         render(g2d, minIdx, maxIdx);
     }
 
     public int getHeight() {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
         if (dataModel == null)
             return 0;
         if (timeProportional) {
             long h;
-            if (viewModel.getEventCount() > 0) 
-                h = viewModel.getEventAt(viewModel.getEventCount()-1).getTimestamp() - viewModel.getEventAt(0).getTimestamp();
+            if (viewModel.getEventCount() > 0)
+                h = viewModel.getEventAt(viewModel.getEventCount() - 1)
+                        .getTimestamp()
+                        - viewModel.getEventAt(0).getTimestamp();
             else
                 h = 0;
-            if (h>Integer.MAX_VALUE) {
+            if (h > Integer.MAX_VALUE) {
                 return Integer.MAX_VALUE;
             } else
-                return (int)h;
+                return (int) h;
         } else {
-            int cnt = viewModel.getEventCount();
+            final int cnt = viewModel.getEventCount();
             if (cnt == 0)
                 return 0;
-            return eventHeight*(cnt+1);
+            return eventHeight * (cnt + 1);
         }
     }
 
@@ -562,24 +593,26 @@ public class MSCRenderer {
         return viewModelSelectedEventIndex;
     }
 
-    public int getViewModelClosestEventIndex(int x, int y, int viewY, int viewHeight) {
-        int minIdx = viewY/eventHeight;
-        int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            if (maxIdx > viewModel.getEventCount()-1)
-                maxIdx = viewModel.getEventCount()-1;
-            for(int i=minIdx; i<=maxIdx; i++) {
-                Event ev = viewModel.getEventAt(i);
-                Entity en = ev.getEntity();
-                int enIdx = viewModel.indexOf(en);
+    public int getViewModelClosestEventIndex(int x, int y, int viewY,
+            int viewHeight) {
+        final int minIdx = viewY / eventHeight;
+        int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            if (maxIdx > viewModel.getEventCount() - 1)
+                maxIdx = viewModel.getEventCount() - 1;
+            for (int i = minIdx; i <= maxIdx; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
+                final int enIdx = viewModel.indexOf(en);
                 if (enIdx < 0)
                     continue;
-                Dimension maxDim = new Dimension(viewModel.getEntityWidth(enIdx), eventHeight);
-                Point p = getEventPoint(i);
-                if (p == null) 
+                final Dimension maxDim = new Dimension(
+                        viewModel.getEntityWidth(enIdx), eventHeight);
+                final Point p = getEventPoint(i);
+                if (p == null)
                     continue;
-                if (ev.getRenderer().inSelectionArea(p.x, p.y,  maxDim, x, y)) {
+                if (ev.getRenderer().inSelectionArea(p.x, p.y, maxDim, x, y)) {
                     return i;
                 }
             }
@@ -587,21 +620,24 @@ public class MSCRenderer {
         return -1;
     }
 
-    private Interaction selectClosestInteraction(int x, int y, int viewMinIdx, int viewMaxIdx) {
-        Interaction inter = getClosestInteraction(x, y, viewMinIdx, viewMaxIdx);
+    private Interaction selectClosestInteraction(int x, int y, int viewMinIdx,
+            int viewMaxIdx) {
+        final Interaction inter = getClosestInteraction(x, y, viewMinIdx, viewMaxIdx);
         setSelectedInteraction(inter);
         return inter;
     }
-    
-    private Interaction getClosestInteraction(int x, int y, int viewMinIdx, int viewMaxIdx) {
-        int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
-        int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        ArrayList<Interaction> al = dataModel.getInteractionsInInterval(modelMinIdx, modelMaxIdx);
-        for(Interaction in: al) {
-            InteractionRenderer ir = in.getIRenderer();
-            
-            Event ev1 = in.getFromEvent();
+
+    private Interaction getClosestInteraction(int x, int y, int viewMinIdx,
+            int viewMaxIdx) {
+        final int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
+        final int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        final ArrayList<Interaction> al = dataModel.getInteractionsInInterval(
+                modelMinIdx, modelMaxIdx);
+        for (final Interaction in : al) {
+            final InteractionRenderer ir = in.getIRenderer();
+
+            final Event ev1 = in.getFromEvent();
             int w1, w2;
             Entity en1, en2;
             if (ev1 != null) {
@@ -611,7 +647,7 @@ public class MSCRenderer {
                 en1 = null;
                 w1 = -1;
             }
-            Event ev2 = in.getToEvent();
+            final Event ev2 = in.getToEvent();
             if (ev2 != null) {
                 en2 = ev2.getEntity();
                 w2 = viewModel.getEntityWidth(en2);
@@ -621,152 +657,162 @@ public class MSCRenderer {
             }
             if (w1 < 0 && w2 < 0)
                 continue;
-            Dimension maxDim1 = new Dimension(w1, eventHeight);
-            Rectangle r1 = ev1 != null ?
-                getEventBoundingBox(ev1, viewModel.getViewIndexFromModelIndex(ev1.getIndex()), maxDim1)
-                    : new Rectangle(-1, -1, 0, 0);
-            Dimension maxDim2 = new Dimension(w2, eventHeight);
-            Rectangle r2 = ev2 != null ? 
-                    getEventBoundingBox(ev2, viewModel.getViewIndexFromModelIndex(ev2.getIndex()), maxDim2)
-                    : new Rectangle(-1, -1, 0, 0);
+            final Dimension maxDim1 = new Dimension(w1, eventHeight);
+            final Rectangle r1 = ev1 != null ? getEventBoundingBox(ev1,
+                    viewModel.getViewIndexFromModelIndex(ev1.getIndex()),
+                    maxDim1) : new Rectangle(-1, -1, 0, 0);
+            final Dimension maxDim2 = new Dimension(w2, eventHeight);
+            final Rectangle r2 = ev2 != null ? getEventBoundingBox(ev2,
+                    viewModel.getViewIndexFromModelIndex(ev2.getIndex()),
+                    maxDim2) : new Rectangle(-1, -1, 0, 0);
             if (ir.inSelectionArea(r1, r2, x, y, en1 == en2)) {
-                return in;					
+                return in;
             }
-        } 
+        }
         return null;
     }
 
     public Object getClosest(int x, int y, int viewY, int viewHeight) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            int evCount = viewModel.getEventCount();
-            int minIdx = viewY/eventHeight;
-            int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
-            if (maxIdx > evCount-1)
-                maxIdx = evCount-1;
-            for(int i=minIdx; i<=maxIdx; i++) {
-                Event ev = viewModel.getEventAt(i);
-                Entity en = ev.getEntity();
-                int enIdx = viewModel.indexOf(en);
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            final int evCount = viewModel.getEventCount();
+            final int minIdx = viewY / eventHeight;
+            int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+            if (maxIdx > evCount - 1)
+                maxIdx = evCount - 1;
+            for (int i = minIdx; i <= maxIdx; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
+                final int enIdx = viewModel.indexOf(en);
                 if (enIdx < 0)
                     continue;
-                Dimension maxDim = new Dimension(viewModel.getEntityWidth(enIdx), eventHeight);
-                Point p = getEventPoint(i);
-                if (p == null) 
+                final Dimension maxDim = new Dimension(
+                        viewModel.getEntityWidth(enIdx), eventHeight);
+                final Point p = getEventPoint(i);
+                if (p == null)
                     continue;
-                if (ev.getRenderer().inSelectionArea(p.x, p.y,  maxDim, x, y)) {
+                if (ev.getRenderer().inSelectionArea(p.x, p.y, maxDim, x, y)) {
                     return ev;
                 }
             }
-            Interaction in = getClosestInteraction(x, y, minIdx, maxIdx);
+            final Interaction in = getClosestInteraction(x, y, minIdx, maxIdx);
             return in;
         }
     }
-    
+
     public int getClosestEventViewIndex(int x, int y, int viewY, int viewHeight) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            int evCount = viewModel.getEventCount();
-            int minIdx = viewY/eventHeight;
-            int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
-            if (maxIdx > evCount-1)
-                maxIdx = evCount-1;
-            for(int i=minIdx; i<=maxIdx; i++) {
-                Event ev = viewModel.getEventAt(i);
-                Entity en = ev.getEntity();
-                int enIdx = viewModel.indexOf(en);
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            final int evCount = viewModel.getEventCount();
+            final int minIdx = viewY / eventHeight;
+            int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+            if (maxIdx > evCount - 1)
+                maxIdx = evCount - 1;
+            for (int i = minIdx; i <= maxIdx; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
+                final int enIdx = viewModel.indexOf(en);
                 if (enIdx < 0)
                     continue;
-                Dimension maxDim = new Dimension(viewModel.getEntityWidth(enIdx), eventHeight);
-                Point p = getEventPoint(i);
-                if (p == null) 
+                final Dimension maxDim = new Dimension(
+                        viewModel.getEntityWidth(enIdx), eventHeight);
+                final Point p = getEventPoint(i);
+                if (p == null)
                     continue;
-                if (ev.getRenderer().inSelectionArea(p.x, p.y,  maxDim, x, y)) {
+                if (ev.getRenderer().inSelectionArea(p.x, p.y, maxDim, x, y)) {
                     return i;
                 }
             }
-            return -1;        
+            return -1;
         }
     }
-    
+
     public int getClosestEventModelIndex(int x, int y, int viewY, int viewHeight) {
-        return viewModel.getModelIndexFromViewIndex(getClosestEventViewIndex(x, y, viewY, viewHeight));
+        return viewModel.getModelIndexFromViewIndex(getClosestEventViewIndex(x,
+                y, viewY, viewHeight));
     }
-    
+
     public void selectClosest(int x, int y, int viewY, int viewHeight) {
-        int idx = getClosestEventViewIndex(x, y, viewY, viewHeight);
+        final int idx = getClosestEventViewIndex(x, y, viewY, viewHeight);
         if (idx >= 0) {
             setSelectedEventByViewIndex(idx);
             return;
         }
-        int evCount = viewModel.getEventCount();
-        int minIdx = viewY/eventHeight;
-        int maxIdx = (viewY+viewHeight-1)/eventHeight+1;
-        if (maxIdx > evCount-1)
-            maxIdx = evCount-1;
+        final int evCount = viewModel.getEventCount();
+        final int minIdx = viewY / eventHeight;
+        int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+        if (maxIdx > evCount - 1)
+            maxIdx = evCount - 1;
         if (selectClosestInteraction(x, y, minIdx, maxIdx) == null)
             setSelectedInteraction(null);
     }
 
     @SuppressWarnings("unused")
     private int pointEventDistance(int x, int y, int evIdx) {
-        Event ev = viewModel.getEventAt(evIdx);
+        final Event ev = viewModel.getEventAt(evIdx);
         if (ev == null)
             return Integer.MAX_VALUE;
-        Entity en = ev.getEntity();
-        int enIdx = viewModel.indexOf(en);
+        final Entity en = ev.getEntity();
+        final int enIdx = viewModel.indexOf(en);
         if (enIdx < 0)
             return Integer.MAX_VALUE;
-        int entityWidth = viewModel.getEntityWidth(enIdx);		
-        int x1 = viewModel.getEntityCenterX(enIdx);
-        int y1 = evIdx*eventHeight+eventHeight/2;
-        return (int)Math.sqrt((x1-x)*(x1-x)+(y1-y)*(y1-y));
+        final int entityWidth = viewModel.getEntityWidth(enIdx);
+        final int x1 = viewModel.getEntityCenterX(enIdx);
+        final int y1 = evIdx * eventHeight + eventHeight / 2;
+        return (int) Math.sqrt((x1 - x) * (x1 - x) + (y1 - y) * (y1 - y));
     }
 
     public void setSelectedEvent(Event ev) {
         selectedInteraction = null;
         selectedEvent = ev;
-        int modelIdx = ev.getIndex();
-        viewModelSelectedEventIndex = selectedEvent != null ? viewModel.getViewIndexFromModelIndex(modelIdx) : -1;
-        for (SelectionListener selListener : selListeners) {
-            selListener.eventSelected(this, selectedEvent, viewModelSelectedEventIndex, modelIdx);
+        final int modelIdx = ev.getIndex();
+        viewModelSelectedEventIndex = selectedEvent != null ? viewModel
+                .getViewIndexFromModelIndex(modelIdx) : -1;
+        for (final SelectionListener selListener : selListeners) {
+            selListener.eventSelected(this, selectedEvent,
+                    viewModelSelectedEventIndex, modelIdx);
         }
     }
-    
+
     public void setSelectedEventByModelIndex(int modelIdx) {
-        int currModelIndex = viewModel.getModelIndexFromViewIndex(viewModelSelectedEventIndex);
+        final int currModelIndex = viewModel
+                .getModelIndexFromViewIndex(viewModelSelectedEventIndex);
         if (modelIdx == currModelIndex) {
-            return; 
+            return;
         }
         if (modelIdx != -1) {
             selectedInteraction = null;
-        	MSCDataModel dataModel = MSCDataModel.getInstance();
+            final MSCDataModel dataModel = MSCDataModel.getInstance();
             selectedEvent = dataModel.getEventAt(modelIdx);
-            viewModelSelectedEventIndex = selectedEvent != null ? viewModel.getViewIndexFromModelIndex(modelIdx) : -1;
-        } else {         
+            viewModelSelectedEventIndex = selectedEvent != null ? viewModel
+                    .getViewIndexFromModelIndex(modelIdx) : -1;
+        } else {
             selectedEvent = null;
             viewModelSelectedEventIndex = -1;
         }
-        for (SelectionListener selListener : selListeners) {
-            selListener.eventSelected(this, selectedEvent, viewModelSelectedEventIndex, modelIdx);
+        for (final SelectionListener selListener : selListeners) {
+            selListener.eventSelected(this, selectedEvent,
+                    viewModelSelectedEventIndex, modelIdx);
         }
     }
-    
+
     public void setSelectedEventByViewIndex(int idx) {
         if (idx == viewModelSelectedEventIndex) {
-            return; 
+            return;
         }
         if (idx != -1) {
             selectedInteraction = null;
             selectedEvent = viewModel.getEventAt(idx);
-            viewModelSelectedEventIndex =(selectedEvent != null)? idx: -1;
-        } else {         
+            viewModelSelectedEventIndex = (selectedEvent != null) ? idx : -1;
+        } else {
             selectedEvent = null;
             viewModelSelectedEventIndex = -1;
         }
-        int modelIndex = viewModel.getModelIndexFromViewIndex(viewModelSelectedEventIndex);
-        for (SelectionListener selListener : selListeners) {
-            selListener.eventSelected(this, selectedEvent, viewModelSelectedEventIndex, modelIndex);
+        final int modelIndex = viewModel
+                .getModelIndexFromViewIndex(viewModelSelectedEventIndex);
+        for (final SelectionListener selListener : selListeners) {
+            selListener.eventSelected(this, selectedEvent,
+                    viewModelSelectedEventIndex, modelIndex);
         }
 
     }
@@ -777,29 +823,29 @@ public class MSCRenderer {
             viewModelSelectedEventIndex = -1;
         }
         selectedInteraction = inter;
-        for (SelectionListener selListener : selListeners) {
+        for (final SelectionListener selListener : selListeners) {
             selListener.interactionSelected(this, selectedInteraction);
         }
     }
 
     public void selectByLineNumber(int lineIndex) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized (dataModel) {			
-            for(int i=0; i<viewModel.getEventCount(); i++) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            for (int i = 0; i < viewModel.getEventCount(); i++) {
                 if (viewModel.getEventAt(i).getLineIndex() == lineIndex)
                     setSelectedEventByViewIndex(i);
             }
         }
     }
 
-
     public ViewModel getViewModel() {
         return viewModel;
     }
 
     public void setTimeScaleFactor(long factor) {
-        //		tsScaleFactor = factor;
+        // tsScaleFactor = factor;
     }
+
     public long getTimeScaleFactor() {
         return 1;
     }
@@ -820,13 +866,13 @@ public class MSCRenderer {
         return deltaTimeUnit;
     }
 
-//    public void setTimestampUnit(InputUnit inputUnit) {
-//        timestampUnit = inputUnit;
-//    }
+    // public void setTimestampUnit(InputUnit inputUnit) {
+    // timestampUnit = inputUnit;
+    // }
 
-//    public InputUnit getTimestampUnit() {
-//        return timestampUnit;
-//    }
+    // public InputUnit getTimestampUnit() {
+    // return timestampUnit;
+    // }
 
     public void cursorBegin(boolean ctrl) {
         if (selectedInteraction != null) {
@@ -837,21 +883,23 @@ public class MSCRenderer {
     public void cursorEnd(boolean ctrl) {
         if (selectedInteraction != null) {
             setSelectedEventByViewIndex(selectedInteraction.getToIndex());
-        }		
+        }
     }
 
     /**
-     * If on event, move to the next event in the same entity
-     * If on interaction, move to the event associated to the interaction which lower on the screen
+     * If on event, move to the next event in the same entity If on interaction,
+     * move to the event associated to the interaction which lower on the screen
+     * 
      * @param ctrl
      */
     public void cursorDown(boolean ctrl) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (selectedEvent != null) {
-                Entity en = selectedEvent.getEntity();
-                for(int i = viewModelSelectedEventIndex+1; i < viewModel.getEventCount(); i++) {
-                    Event ev = viewModel.getEventAt(i);
+                final Entity en = selectedEvent.getEntity();
+                for (int i = viewModelSelectedEventIndex + 1; i < viewModel
+                        .getEventCount(); i++) {
+                    final Event ev = viewModel.getEventAt(i);
                     if (ev.getEntity() == en) {
                         setSelectedEventByViewIndex(i);
                         break;
@@ -860,31 +908,38 @@ public class MSCRenderer {
             }
             if (selectedInteraction != null) {
                 if (ctrl) {
-                    Event fromEv = selectedInteraction.getFromEvent();
-                    Interaction[] inters = dataModel.getOutgoingInteractions(fromEv);
-                    int evIdx = selectedInteraction.getToIndex();
+                    final Event fromEv = selectedInteraction.getFromEvent();
+                    final Interaction[] inters = dataModel
+                            .getOutgoingInteractions(fromEv);
+                    final int evIdx = selectedInteraction.getToIndex();
                     Interaction nextDown = selectedInteraction;
                     int nextDownIdx = Integer.MAX_VALUE;
-                    for(Interaction in: inters) {
+                    for (final Interaction in : inters) {
                         if (in == selectedInteraction)
                             continue;
-                        int toIdx = in.getToIndex();
+                        final int toIdx = in.getToIndex();
                         if (toIdx > evIdx && toIdx < nextDownIdx) {
                             nextDownIdx = toIdx;
                             nextDown = in;
                         }
                     }
-                    setSelectedInteraction(nextDown); 
+                    setSelectedInteraction(nextDown);
                 } else {
-                    int fromEnIdx=-1, toEnIdx=-1;
-                    int fromEvIdx=-1, toEvIdx = -1;
+                    int fromEnIdx = -1, toEnIdx = -1;
+                    int fromEvIdx = -1, toEvIdx = -1;
                     if (selectedInteraction.getFromIndex() != -1) {
-                        fromEnIdx = viewModel.indexOf(selectedInteraction.getFromEvent().getEntity());
-                        fromEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getFromIndex());
+                        fromEnIdx = viewModel.indexOf(selectedInteraction
+                                .getFromEvent().getEntity());
+                        fromEvIdx = viewModel
+                                .getViewIndexFromModelIndex(selectedInteraction
+                                        .getFromIndex());
                     }
                     if (selectedInteraction.getToIndex() != -1) {
-                        toEnIdx = viewModel.indexOf(selectedInteraction.getToEvent().getEntity());
-                        toEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getToIndex());
+                        toEnIdx = viewModel.indexOf(selectedInteraction
+                                .getToEvent().getEntity());
+                        toEvIdx = viewModel
+                                .getViewIndexFromModelIndex(selectedInteraction
+                                        .getToIndex());
                     }
                     if (fromEnIdx >= 0 && toEnIdx >= 0) {
                         if (fromEvIdx < toEvIdx)
@@ -892,17 +947,17 @@ public class MSCRenderer {
                         else
                             setSelectedEventByViewIndex(fromEvIdx);
                     } else if (fromEnIdx >= 0) {
-                        //outgoing stub, drawn below event center, open hidden 
+                        // outgoing stub, drawn below event center, open hidden
                         // sink entity if possible.
-                        Event toEv = selectedInteraction.getToEvent();
+                        final Event toEv = selectedInteraction.getToEvent();
                         if (toEv != null) {
-                            Entity toEn = toEv.getEntity();
+                            final Entity toEn = toEv.getEntity();
                             if (toEn != null) {
                                 viewModel.add(toEn);
                             }
                         }
                     } else if (toEnIdx >= 0) {
-                        //incoming stub, drawn above event center, select event				
+                        // incoming stub, drawn above event center, select event
                         setSelectedEventByViewIndex(toEvIdx);
                     }
                 }
@@ -911,50 +966,59 @@ public class MSCRenderer {
     }
 
     /**
-     * If on event, move to the previous event in the same entity
-     * If on interaction, move to the event associated to the interaction which higher on the screen
+     * If on event, move to the previous event in the same entity If on
+     * interaction, move to the event associated to the interaction which higher
+     * on the screen
+     * 
      * @param ctrl
      */
     public void cursorUp(boolean ctrl) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (selectedEvent != null) {
-                Entity en = selectedEvent.getEntity();
-                for(int i = viewModelSelectedEventIndex-1; i >= 0; i--) {
-                    Event ev = viewModel.getEventAt(i);
+                final Entity en = selectedEvent.getEntity();
+                for (int i = viewModelSelectedEventIndex - 1; i >= 0; i--) {
+                    final Event ev = viewModel.getEventAt(i);
                     if (ev.getEntity() == en) {
                         setSelectedEventByViewIndex(i);
                         break;
                     }
                 }
-            }		
+            }
             if (selectedInteraction != null) {
                 if (ctrl) {
-                    Event fromEv = selectedInteraction.getFromEvent();
-                    Interaction[] inters = dataModel.getOutgoingInteractions(fromEv);
-                    int evIdx = selectedInteraction.getToIndex();
+                    final Event fromEv = selectedInteraction.getFromEvent();
+                    final Interaction[] inters = dataModel
+                            .getOutgoingInteractions(fromEv);
+                    final int evIdx = selectedInteraction.getToIndex();
                     Interaction nextUp = selectedInteraction;
                     int nextUpIdx = Integer.MIN_VALUE;
-                    for(Interaction in: inters) {
+                    for (final Interaction in : inters) {
                         if (in == selectedInteraction)
                             continue;
-                        int toIdx = in.getToIndex();
+                        final int toIdx = in.getToIndex();
                         if (toIdx < evIdx && toIdx > nextUpIdx) {
                             nextUpIdx = toIdx;
                             nextUp = in;
                         }
                     }
-                    setSelectedInteraction(nextUp); 
+                    setSelectedInteraction(nextUp);
                 } else {
-                    int fromEnIdx=-1, toEnIdx=-1;
-                    int fromEvIdx=-1, toEvIdx = -1;
+                    int fromEnIdx = -1, toEnIdx = -1;
+                    int fromEvIdx = -1, toEvIdx = -1;
                     if (selectedInteraction.getFromIndex() != -1) {
-                        fromEnIdx = viewModel.indexOf(selectedInteraction.getFromEvent().getEntity());
-                        fromEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getFromIndex());
+                        fromEnIdx = viewModel.indexOf(selectedInteraction
+                                .getFromEvent().getEntity());
+                        fromEvIdx = viewModel
+                                .getViewIndexFromModelIndex(selectedInteraction
+                                        .getFromIndex());
                     }
                     if (selectedInteraction.getToIndex() != -1) {
-                        toEnIdx = viewModel.indexOf(selectedInteraction.getToEvent().getEntity());
-                        toEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getToIndex());
+                        toEnIdx = viewModel.indexOf(selectedInteraction
+                                .getToEvent().getEntity());
+                        toEvIdx = viewModel
+                                .getViewIndexFromModelIndex(selectedInteraction
+                                        .getToIndex());
                     }
                     if (fromEnIdx >= 0 && toEnIdx >= 0) {
                         if (fromEvIdx > toEvIdx)
@@ -962,45 +1026,49 @@ public class MSCRenderer {
                         else
                             setSelectedEventByViewIndex(fromEvIdx);
                     } else if (fromEnIdx >= 0) {
-                        //outgoing stub, going below event center, select event
+                        // outgoing stub, going below event center, select event
                         setSelectedEventByViewIndex(fromEvIdx);
                     } else if (toEnIdx >= 0) {
-                        //incoming stub, drawn above event center, open hidden 
+                        // incoming stub, drawn above event center, open hidden
                         // from entity if possible.
-                        Event fromEv = selectedInteraction.getFromEvent();
+                        final Event fromEv = selectedInteraction.getFromEvent();
                         if (fromEv != null) {
-                            Entity fromEn = fromEv.getEntity();
+                            final Entity fromEn = fromEv.getEntity();
                             if (fromEn != null) {
                                 viewModel.add(fromEn);
                             }
                         }
-                    }			
+                    }
                 }
             }
         }
     }
 
     /**
-     * If on event, move to the interaction outgoing or incoming which is drawn at the left of the event.
-     * if more than one exists, the first one is selected.
-     * If on interaction, move to the event at the left of the interaction, if there is only one. 
-     * If more than one event is at the left (for example, for a lane interaction), does nothing, the 
-     * user can use cursorUp() cursorDown() instead.
+     * If on event, move to the interaction outgoing or incoming which is drawn
+     * at the left of the event. if more than one exists, the first one is
+     * selected. If on interaction, move to the event at the left of the
+     * interaction, if there is only one. If more than one event is at the left
+     * (for example, for a lane interaction), does nothing, the user can use
+     * cursorUp() cursorDown() instead.
+     * 
      * @param ctrl
      */
     public void cursorLeft(boolean ctrl) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (selectedEvent != null) {
-                Entity selEn = selectedEvent.getEntity();
-                int selEnIdx = viewModel.indexOf(selEn);
-                Interaction[] incoming = dataModel.getIncomingInteractions(selectedEvent);
+                final Entity selEn = selectedEvent.getEntity();
+                final int selEnIdx = viewModel.indexOf(selEn);
+                final Interaction[] incoming = dataModel
+                        .getIncomingInteractions(selectedEvent);
                 if (incoming != null) {
-                    for(Interaction in:incoming){
+                    for (final Interaction in : incoming) {
                         if (in.getIRenderer() instanceof BlockInteractionRenderer)
                             continue;
-                        Event otherEv = in.getOtherEvent(selectedEvent);
-                        int otherEnIdx = (otherEv != null) ? viewModel.indexOf(otherEv.getEntity()) : -1;
+                        final Event otherEv = in.getOtherEvent(selectedEvent);
+                        final int otherEnIdx = (otherEv != null) ? viewModel
+                                .indexOf(otherEv.getEntity()) : -1;
                         if (otherEnIdx < selEnIdx) {
                             setSelectedInteraction(in);
                             setSelectedEventByViewIndex(-1);
@@ -1008,37 +1076,45 @@ public class MSCRenderer {
                         }
                     }
                 }
-                Interaction[] outgoings = dataModel.getOutgoingInteractions(selectedEvent);
+                final Interaction[] outgoings = dataModel
+                        .getOutgoingInteractions(selectedEvent);
                 if (outgoings != null) {
                     int otherEvIdx = Integer.MAX_VALUE;
                     int otherEnIdx = Integer.MAX_VALUE;
                     Interaction inter = null;
-                    for(Interaction in: outgoings) {
+                    for (final Interaction in : outgoings) {
                         if (in.getIRenderer() instanceof BlockInteractionRenderer)
                             continue;
-                        int v= in.getOtherEventIndex(selectedEvent);
-                        if (v>=0 && v < otherEvIdx) {
+                        final int v = in.getOtherEventIndex(selectedEvent);
+                        if (v >= 0 && v < otherEvIdx) {
                             inter = in;
                             otherEvIdx = v;
-                            Entity otherEn = in.getOtherEvent(selectedEvent).getEntity();
+                            final Entity otherEn = in.getOtherEvent(selectedEvent)
+                                    .getEntity();
                             otherEnIdx = viewModel.indexOf(otherEn);
                         }
                     }
                     if (otherEnIdx < selEnIdx) {
                         setSelectedEventByViewIndex(-1);
                         setSelectedInteraction(inter);
-                    }				
+                    }
                 }
             } else if (selectedInteraction != null) {
-                int fromEnIdx=-1, toEnIdx=-1;
-                int fromEvIdx=-1, toEvIdx = -1;
+                int fromEnIdx = -1, toEnIdx = -1;
+                int fromEvIdx = -1, toEvIdx = -1;
                 if (selectedInteraction.getFromIndex() != -1) {
-                    fromEnIdx = viewModel.indexOf(selectedInteraction.getFromEvent().getEntity());
-                    fromEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getFromIndex());
+                    fromEnIdx = viewModel.indexOf(selectedInteraction
+                            .getFromEvent().getEntity());
+                    fromEvIdx = viewModel
+                            .getViewIndexFromModelIndex(selectedInteraction
+                                    .getFromIndex());
                 }
                 if (selectedInteraction.getToIndex() != -1) {
-                    toEnIdx = viewModel.indexOf(selectedInteraction.getToEvent().getEntity());
-                    toEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getToIndex());
+                    toEnIdx = viewModel.indexOf(selectedInteraction
+                            .getToEvent().getEntity());
+                    toEvIdx = viewModel
+                            .getViewIndexFromModelIndex(selectedInteraction
+                                    .getToIndex());
                 }
                 if (fromEnIdx >= 0 && toEnIdx >= 0) {
                     if (fromEnIdx < toEnIdx)
@@ -1047,13 +1123,13 @@ public class MSCRenderer {
                         setSelectedEventByViewIndex(toEvIdx);
                     // do nothing if on same entity
                 } else if (fromEnIdx >= 0) {
-                    //outgoing stub, drawn to right of Event, select Event
+                    // outgoing stub, drawn to right of Event, select Event
                     setSelectedEventByViewIndex(fromEvIdx);
                 } else if (toEnIdx >= 0) {
-                    //incoming stub, open source
-                    Event fromEv = selectedInteraction.getFromEvent();
+                    // incoming stub, open source
+                    final Event fromEv = selectedInteraction.getFromEvent();
                     if (fromEv != null) {
-                        Entity en = fromEv.getEntity();
+                        final Entity en = fromEv.getEntity();
                         if (en != null) {
                             viewModel.add(toEnIdx, en);
                             setSelectedEventByViewIndex(fromEvIdx);
@@ -1065,35 +1141,40 @@ public class MSCRenderer {
     }
 
     /**
-     * If on event, move to the interaction outgoing or incoming which is drawn at the right of the event.
-     * if more than one exists, the first one is selected.
-     * If on interaction, move to the event at the right of the interaction, if there is only one. 
-     * If more than one event is at the right (for example, for a lane interaction), does nothing, the 
-     * user can use cursorUp() cursorDown() instead.
+     * If on event, move to the interaction outgoing or incoming which is drawn
+     * at the right of the event. if more than one exists, the first one is
+     * selected. If on interaction, move to the event at the right of the
+     * interaction, if there is only one. If more than one event is at the right
+     * (for example, for a lane interaction), does nothing, the user can use
+     * cursorUp() cursorDown() instead.
+     * 
      * @param ctrl
      */
     public void cursorRight(boolean ctrl) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (selectedEvent != null) {
-                Entity selEn = selectedEvent.getEntity();
-                int selEnIdx = viewModel.indexOf(selEn);
-                Interaction[] incoming = dataModel.getIncomingInteractions(selectedEvent);			
+                final Entity selEn = selectedEvent.getEntity();
+                final int selEnIdx = viewModel.indexOf(selEn);
+                final Interaction[] incoming = dataModel
+                        .getIncomingInteractions(selectedEvent);
                 if (incoming != null) {
-                    for(Interaction in:incoming) {
+                    for (final Interaction in : incoming) {
                         if (in.getIRenderer() instanceof BlockInteractionRenderer)
                             continue;
-                        Event otherEv = in.getOtherEvent(selectedEvent);
-                        int otherEnIdx = (otherEv != null) ? viewModel.indexOf(otherEv.getEntity()) : -1;
+                        final Event otherEv = in.getOtherEvent(selectedEvent);
+                        final int otherEnIdx = (otherEv != null) ? viewModel
+                                .indexOf(otherEv.getEntity()) : -1;
                         if (otherEnIdx >= selEnIdx) {
                             setSelectedInteraction(in);
                             return;
                         }
                     }
-                }               
-                Interaction[] outgoings = dataModel.getOutgoingInteractions(selectedEvent);
+                }
+                final Interaction[] outgoings = dataModel
+                        .getOutgoingInteractions(selectedEvent);
                 if (outgoings != null) {
-                    for(Interaction in: outgoings) {
+                    for (final Interaction in : outgoings) {
                         if (!(in.getIRenderer() instanceof BlockInteractionRenderer)) {
                             setSelectedInteraction(in);
                             return;
@@ -1101,77 +1182,83 @@ public class MSCRenderer {
                     }
                 }
             } else if (selectedInteraction != null) {
-                int fromEnIdx=-1, toEnIdx=-1;
-                int fromEvIdx=-1, toEvIdx = -1;
+                int fromEnIdx = -1, toEnIdx = -1;
+                int fromEvIdx = -1, toEvIdx = -1;
                 if (selectedInteraction.getFromIndex() != -1) {
-                    fromEnIdx = viewModel.indexOf(selectedInteraction.getFromEvent().getEntity());
-                    fromEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getFromIndex());
+                    fromEnIdx = viewModel.indexOf(selectedInteraction
+                            .getFromEvent().getEntity());
+                    fromEvIdx = viewModel
+                            .getViewIndexFromModelIndex(selectedInteraction
+                                    .getFromIndex());
                 }
                 if (selectedInteraction.getToIndex() != -1) {
-                    toEnIdx = viewModel.indexOf(selectedInteraction.getToEvent().getEntity());
-                    toEvIdx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getToIndex());
+                    toEnIdx = viewModel.indexOf(selectedInteraction
+                            .getToEvent().getEntity());
+                    toEvIdx = viewModel
+                            .getViewIndexFromModelIndex(selectedInteraction
+                                    .getToIndex());
                 }
                 if (fromEnIdx >= 0 && toEnIdx >= 0) {
                     if (fromEnIdx > toEnIdx)
                         setSelectedEventByViewIndex(fromEvIdx);
                     else if (fromEnIdx < toEnIdx)
                         setSelectedEventByViewIndex(toEvIdx);
-                    // do nothing if on same entity			
+                    // do nothing if on same entity
                 } else if (fromEnIdx >= 0) {
-                    //outgoing stub, open sink
-                    Event toEv = selectedInteraction.getToEvent();
+                    // outgoing stub, open sink
+                    final Event toEv = selectedInteraction.getToEvent();
                     if (toEv != null) {
-                        Entity en = toEv.getEntity();
+                        final Entity en = toEv.getEntity();
                         if (en != null) {
-                            viewModel.add(fromEnIdx+1, en);
-                            int idx = viewModel.getViewIndexFromModelIndex(selectedInteraction.getToIndex());
+                            viewModel.add(fromEnIdx + 1, en);
+                            final int idx = viewModel
+                                    .getViewIndexFromModelIndex(selectedInteraction
+                                            .getToIndex());
                             setSelectedEventByViewIndex(idx);
                         }
                     }
                 } else if (toEnIdx >= 0) {
-                    //incoming stub, drawn to left of Event, select event				
+                    // incoming stub, drawn to left of Event, select event
                     setSelectedEventByViewIndex(toEvIdx);
                 }
             }
         }
     }
 
-
     public Rectangle getEventBoundingRect(int evIdx) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (evIdx >= viewModel.getEventCount())
                 return null;
-            Event ev = viewModel.getEventAt(evIdx);
-            int enIdx = viewModel.indexOf(ev.getEntity());
+            final Event ev = viewModel.getEventAt(evIdx);
+            final int enIdx = viewModel.indexOf(ev.getEntity());
             if (enIdx < 0)
                 return null;
-            int entityWidth = viewModel.getEntityWidth(enIdx);
-            Dimension maxDim = new Dimension(entityWidth, eventHeight);
-            int x = viewModel.getEntityCenterX(enIdx);
-            int y = evIdx*eventHeight;
-            Rectangle bb = new Rectangle();
+            final int entityWidth = viewModel.getEntityWidth(enIdx);
+            final Dimension maxDim = new Dimension(entityWidth, eventHeight);
+            final int x = viewModel.getEntityCenterX(enIdx);
+            final int y = evIdx * eventHeight;
+            final Rectangle bb = new Rectangle();
             ev.getRenderer().getBoundingBox(maxDim, x, y, bb);
             return bb;
         }
     }
 
     public Point getEventPoint(int evIdx) {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
-            Event ev = viewModel.getEventAt(evIdx);
-            int enIdx = viewModel.indexOf(ev.getEntity());
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
+            final Event ev = viewModel.getEventAt(evIdx);
+            final int enIdx = viewModel.indexOf(ev.getEntity());
             if (enIdx < 0)
                 return null;
-            int x = viewModel.getEntityCenterX(enIdx);
-            int y = evIdx*eventHeight+eventHeight/2;
+            final int x = viewModel.getEntityCenterX(enIdx);
+            final int y = evIdx * eventHeight + eventHeight / 2;
             return new Point(x, y);
         }
     }
 
-
     public void setShowUnits(boolean showUnits) {
-        this.showUnits = showUnits;		
+        this.showUnits = showUnits;
     }
 
     public boolean getShowUnits() {
@@ -1189,10 +1276,10 @@ public class MSCRenderer {
     public void setShowTime(boolean sd) {
         showTime = sd;
     }
+
     public boolean sShowTime() {
         return showTime;
     }
-
 
     public void setShowLeadingZeroes(boolean showLeadingZeroes) {
         this.showLeadingZeroes = showLeadingZeroes;
@@ -1203,21 +1290,26 @@ public class MSCRenderer {
     }
 
     public String getSelectedStatusString() {
-    	MSCDataModel dataModel = MSCDataModel.getInstance();
-        synchronized(dataModel) {
+        final MSCDataModel dataModel = MSCDataModel.getInstance();
+        synchronized (dataModel) {
             if (selectedEvent != null) {
-                return "Event: local, t="+getTimeRepr(selectedEvent.getTimestamp());
+                return "Event: local, t="
+                        + getTimeRepr(selectedEvent.getTimestamp());
             } else if (selectedInteraction != null) {
-                String s ="Selected Event:";
-                Event fev = selectedInteraction.getFromEvent();
-                Event tev = selectedInteraction.getToEvent();			
-                if (fev!= null) 
-                    s += "from: ("+getTimeRepr(fev.getTimestamp())+":"+fev.getEntity().getName()+")";
+                String s = "Selected Event:";
+                final Event fev = selectedInteraction.getFromEvent();
+                final Event tev = selectedInteraction.getToEvent();
+                if (fev != null)
+                    s += "from: (" + getTimeRepr(fev.getTimestamp()) + ":"
+                            + fev.getEntity().getName() + ")";
                 if (tev != null) {
-                    s +=" to: ("+getTimeRepr(tev.getTimestamp())+":"+tev.getEntity().getName()+")";
+                    s += " to: (" + getTimeRepr(tev.getTimestamp()) + ":"
+                            + tev.getEntity().getName() + ")";
                 }
                 if (fev != null && tev != null)
-                    s += " latency="+getTimeRepr(tev.getTimestamp()-fev.getTimestamp());
+                    s += " latency="
+                            + getTimeRepr(tev.getTimestamp()
+                                    - fev.getTimestamp());
                 return s;
             }
             return "";
@@ -1229,7 +1321,7 @@ public class MSCRenderer {
     }
 
     public void setCompactView(boolean b) {
-        compactView = b;		
+        compactView = b;
     }
 
     public Interaction getSelectedInteraction() {
@@ -1245,17 +1337,16 @@ public class MSCRenderer {
     }
 
     public void setZoomFactor(int v) {
-        zoomFactor  = v;
-        eventHeight = EVENT_HEIGHT*v/100;
+        zoomFactor = v;
+        eventHeight = EVENT_HEIGHT * v / 100;
     }
 
     public void setShowBlocks(boolean show) {
         showBlocks = show;
     }
 
-	public void setShowLabels(boolean show) {
-		showLabels = show;
-	}
-
+    public void setShowLabels(boolean show) {
+        showLabels = show;
+    }
 
 }

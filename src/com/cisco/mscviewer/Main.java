@@ -7,38 +7,38 @@
  *
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer;
+
 import java.awt.Font;
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
 import javax.script.ScriptException;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import com.cisco.mscviewer.graph.Graph;
 import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.gui.MainPanel;
 import com.cisco.mscviewer.gui.graph.HeatGraphWindow;
 import com.cisco.mscviewer.io.JsonLoader;
-import com.cisco.mscviewer.io.LegacyLoader;
 import com.cisco.mscviewer.io.Loader;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
-import com.cisco.mscviewer.model.JSonArrayValue;
 import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.script.Python;
 import com.cisco.mscviewer.script.ScriptResult;
+import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 
@@ -54,6 +54,7 @@ abstract class Opt {
         hasArg = arg;
         descr = ds;
     }
+
     abstract void found(String arg);
 }
 
@@ -61,21 +62,21 @@ abstract class Opt {
  * class containing the main() method.
  * 
  * @author Roberto Attias
- * @since   Jun 2012 
+ * @since Jun 2012
  */
 public class Main {
-    public static final String VERSION = "2.0B3";
+    public static final String VERSION = "2.0.0";
     public static final boolean WITH_BLOCKS = true;
+    
     private static Loader loader;
-    public static String[] pypath;
-    public static MainFrame mf;
-    public static boolean extra;
-    public static String script;
-    public static String loaderClass = "JsonLoader";
-    //    public static String loaderClass = "LegacyLoader";
-    public static boolean batchMode = false;
-    public static String batchFun = null;
-    public static ProgressMonitor pm;
+    private static MainFrame mf;
+    private static boolean extra;
+    private static String script;
+    private static String loaderClass = "JsonLoader";
+    // public static String loaderClass = "LegacyLoader";
+    static boolean batchMode = false;
+    private static String batchFun = null;
+    private static ProgressMonitor pm;
 
     private static final void appendToPyPath(String s) {
         String v = System.getProperty("pypath");
@@ -87,89 +88,93 @@ public class Main {
     }
 
     private static final Opt[] opts = new Opt[] {
-        new Opt('h', "help", true, "shows this help") {
-            @Override
-            void found(String arg) {
-                printHelp();
-                System.exit(0);
-            }
-        },
-        new Opt('b', "batch", true, "executes the passed python script in batch mode") {
-            @Override
-            void found(String arg) {
-                Main.batchMode = true;
-                int idx = arg.indexOf(',');
-                if (idx == -1)
+            new Opt('h', "help", true, "shows this help") {
+                @Override
+                void found(String arg) {
+                    printHelp();
+                    System.exit(0);
+                }
+            },
+            new Opt('b', "batch", true,
+                    "executes the passed python script in batch mode") {
+                @Override
+                void found(String arg) {
+                    Main.batchMode = true;
+                    final int idx = arg.indexOf(',');
+                    if (idx == -1)
+                        Main.script = arg;
+                    else {
+                        Main.script = arg.substring(0, idx);
+                        batchFun = arg.substring(idx + 1);
+                    }
+                }
+            },
+            new Opt('p', "pypath", true, "specify a Python module search path") {
+                @Override
+                void found(String arg) {
+                    appendToPyPath(arg);
+                }
+            },
+            new Opt('x', "extra", false, "enable some extra features") {
+                @Override
+                void found(String arg) {
+                    Main.extra = true;
+                }
+            },
+            new Opt('s', "script", true,
+                    "opens the GUI and executes the passed python script") {
+                @Override
+                void found(String arg) {
                     Main.script = arg;
-                else {
-                    Main.script = arg.substring(0, idx);
-                    batchFun = arg.substring(idx+1);
                 }
-            }
-        },
-        new Opt('p', "pypath", true, "specify a Python module search path") {
-            @Override
-            void found(String arg) {
-                appendToPyPath(arg);
-            }
-        },
-        new Opt('x', "extra", false, "enable some extra features") {
-            @Override
-            void found(String arg) {
-                Main.extra = true;
-            }
-        },
-        new Opt('s', "script", true, "opens the GUI and executes the passed python script") {
-            @Override
-            void found(String arg) {
-                Main.script = arg;
-            }
-        },
-        new Opt('l', "loader", true, "specify loader to use for input file") {
-            @Override
-            void found(String arg) {
-                Main.loaderClass = arg;
-            }
-        },
-        new Opt('r', "resource", true, "specify a path for domain-specific resources") {
-            @Override
-            void found(String arg) {
-                Main.plugins = arg;
-                for (String s : arg.split(File.pathSeparator)) {
-                    String dir = s+"/script";
-                    if (new File(dir).isDirectory())
-                        appendToPyPath(dir);
+            },
+            new Opt('l', "loader", true, "specify loader to use for input file") {
+                @Override
+                void found(String arg) {
+                    Main.loaderClass = arg;
                 }
-            }
-        }
-    };
-    public static String plugins;
+            },
+            new Opt('r', "resource", true,
+                    "specify a path for domain-specific resources") {
+                @Override
+                void found(String arg) {
+                    Main.plugins = arg;
+                    for (final String s : arg.split(File.pathSeparator)) {
+                        final String dir = s + "/script";
+                        if (new File(dir).isDirectory())
+                            appendToPyPath(dir);
+                    }
+                }
+            } };
+    private static String plugins;
 
     private static void printHelp() {
         System.out.println("mscviewer options [file]");
         System.out.println("  starts mscviewer");
-        for (Opt opt: opts) {
-            System.out.println("-"+opt.shortName+"\t--"+opt.longName+(opt.hasArg ? " arg\t" : "\t")+opt.descr);
+        for (final Opt opt : opts) {
+            System.out.println("-" + opt.shortName + "\t--" + opt.longName
+                    + (opt.hasArg ? " arg\t" : "\t") + opt.descr);
         }
 
     }
 
-
     public static void main(String args[]) throws IOException,
-    ClassNotFoundException, SecurityException, NoSuchMethodException,
-    IllegalArgumentException, IllegalAccessException,
-    InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
-        System.setProperty("pypath", Utils.getInstallDir()+"/resources/default/script");
+            ClassNotFoundException, SecurityException, NoSuchMethodException,
+            IllegalArgumentException, IllegalAccessException,
+            InstantiationException, ScriptException, InterruptedException,
+            InvocationTargetException {
+        System.setProperty("pypath", Utils.getInstallDir()
+                + "/resources/default/script");
 
         setupUIDefaults();
-        int idx = processOptions(args);
+        final int idx = processOptions(args);
 
-        final String fname = (idx<args.length) ? args[idx]: null;
-        Class<?> cl = Class.forName("com.cisco.mscviewer.io."+loaderClass);
+        final String fname = (idx < args.length) ? args[idx] : null;
+        final Class<?> cl = Class.forName("com.cisco.mscviewer.io." + loaderClass);
 
         Resources.init(Main.plugins);
 
-        loader = (Loader)cl.newInstance();
+        loader = (Loader) cl.newInstance();
         if (batchMode()) {
             if (fname == null) {
                 System.err.println("Missing input file");
@@ -178,11 +183,12 @@ public class Main {
             loader.load(fname, MSCDataModel.getInstance(), true);
         } else {
             try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                // If Nimbus is not available, you can set the GUI to another look and feel.
+                UIManager.setLookAndFeel(UIManager
+                        .getSystemLookAndFeelClassName());
+            } catch (UnsupportedLookAndFeelException e) {
+                // nothing to do, keep default look&feel.
             }
-            SwingUtilities.invokeAndWait(new Runnable(){
+            SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     mf = new MainFrame(10, 10, 1024, 600);
@@ -195,10 +201,11 @@ public class Main {
         }
         if (script != null) {
             loader.waitIfLoading();
-            MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
-            Python p = new Python(mp);
-            ScriptResult sr = new ScriptResult();
-            String text = new String(Files.readAllBytes(Paths.get(script)), StandardCharsets.UTF_8);
+            final MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
+            final Python p = new Python(mp);
+            final ScriptResult sr = new ScriptResult();
+            final String text = new String(Files.readAllBytes(Paths.get(script)),
+                    StandardCharsets.UTF_8);
             p.exec(text);
             if (batchFun != null) {
                 p.eval(batchFun, sr);
@@ -208,26 +215,26 @@ public class Main {
 
     private static int processOptions(String[] args) {
         int idx = 0;
-        int len = args.length;
-        while(idx < len && args[idx].startsWith("-")) {
+        final int len = args.length;
+        while (idx < len && args[idx].startsWith("-")) {
             char sa = '\0';
             String la = null;
             if (args[idx].length() == 2) {
-                sa =  args[idx].charAt(1);
+                sa = args[idx].charAt(1);
                 la = null;
             } else if (args[idx].charAt(1) == '-') {
-                sa =  0;
+                sa = 0;
                 la = args[idx].substring(2);
             } else {
-                System.err.println("Invalid option "+args[idx]);
+                System.err.println("Invalid option " + args[idx]);
                 System.exit(1);
             }
             int i;
-            for(i=0; i<opts.length; i++) {
+            for (i = 0; i < opts.length; i++) {
                 if (opts[i].shortName == sa || opts[i].longName.equals(la)) {
                     String arg;
-                    if (opts[i].hasArg && len > idx+1) {
-                        arg = args[idx+1];
+                    if (opts[i].hasArg && len > idx + 1) {
+                        arg = args[idx + 1];
                         idx += 2;
                     } else {
                         arg = null;
@@ -238,16 +245,15 @@ public class Main {
                 }
             }
             if (i == opts.length) {
-                System.err.println("Invalid option "+args[idx]);
+                System.err.println("Invalid option " + args[idx]);
                 System.exit(1);
             }
         }
         return idx;
     }
 
-
     private static void setupUIDefaults() {
-        Font f = (Font)UIManager.getDefaults().get("Tree.font");
+        final Font f = (Font) UIManager.getDefaults().get("Tree.font");
         UIManager.put("Button.font", f);
         UIManager.put("ToggleButton.font", f);
         UIManager.put("RadioButton.font", f);
@@ -279,14 +285,14 @@ public class Main {
         UIManager.put("ToolBar.font", f);
         UIManager.put("ToolTip.font", f);
 
-        //        ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
-        //        if (icon != null) {
-        //            UIManager.put("Tree.leafIcon", icon);
-        //            UIManager.put("Tree.openIcon", icon);
-        //            UIManager.put("Tree.closedIcon", icon);
-        //        } else {
-        //            throw new Error("Couldn't find file entity.gif");
-        //        }
+        // ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
+        // if (icon != null) {
+        // UIManager.put("Tree.leafIcon", icon);
+        // UIManager.put("Tree.openIcon", icon);
+        // UIManager.put("Tree.closedIcon", icon);
+        // } else {
+        // throw new Error("Couldn't find file entity.gif");
+        // }
     }
 
     public static boolean batchMode() {
@@ -298,11 +304,13 @@ public class Main {
     }
 
     public static Event getSelectedEvent() {
-        return MainFrame.getInstance().getMainPanel().getMSCRenderer().getSelectedEvent();
+        return MainFrame.getInstance().getMainPanel().getMSCRenderer()
+                .getSelectedEvent();
     }
 
     public static Interaction getSelectedInteraction() {
-        return MainFrame.getInstance().getMainPanel().getMSCRenderer().getSelectedInteraction();
+        return MainFrame.getInstance().getMainPanel().getMSCRenderer()
+                .getSelectedInteraction();
     }
 
     public static void open(final Entity en) {
@@ -319,12 +327,17 @@ public class Main {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
-                MainFrame mf = MainFrame.getInstance();
+                final MainFrame mf = MainFrame.getInstance();
                 if (en == null) {
-                    StringBuilder ents = new StringBuilder();
-                    for(Iterator<Entity> it = MSCDataModel.getInstance().getEntityIterator(false); it.hasNext();)
-                        ents.append(it.next().getId()+", ");
-                    throw new Error("Entity '"+id+"' not present in model. Available entities are: "+ents.toString());
+                    final StringBuilder ents = new StringBuilder();
+                    for (final Iterator<Entity> it = MSCDataModel.getInstance()
+                            .getEntityIterator(false); it.hasNext();)
+                        ents.append(it.next().getId() + ", ");
+                    throw new Error(
+                            "Entity '"
+                                    + id
+                                    + "' not present in model. Available entities are: "
+                                    + ents.toString());
                 }
                 mf.getViewModel().add(en);
             }
@@ -345,12 +358,13 @@ public class Main {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
             @Override
             public void run() {
-                MainFrame mf = MainFrame.getInstance();
-                ViewModel vm = mf.getViewModel();
+                final MainFrame mf = MainFrame.getInstance();
+                final ViewModel vm = mf.getViewModel();
                 vm.add(ev.getEntity());
-                int idx = vm.indexOf(ev);
+                final int idx = vm.indexOf(ev);
                 mf.getMainPanel().makeEventWithIndexVisible(idx);
-                mf.getMainPanel().getMSCRenderer().setSelectedEventByViewIndex(idx);
+                mf.getMainPanel().getMSCRenderer()
+                        .setSelectedEventByViewIndex(idx);
             }
         });
     }
@@ -368,14 +382,16 @@ public class Main {
         });
     }
 
-    //    public static Loader getLoader() {
-    //        return loader;
-    //    }
+    // public static Loader getLoader() {
+    // return loader;
+    // }
 
-    public static void load(String path) throws IOException, InvocationTargetException, InterruptedException {
-        Loader l = new JsonLoader();
+    public static void load(String path) throws IOException,
+            InvocationTargetException, InterruptedException {
+        final Loader l = new JsonLoader();
         final MainFrame mf = MainFrame.getInstance();
         SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 mf.getViewModel().reset();
                 MSCDataModel.getInstance().reset();
@@ -385,26 +401,28 @@ public class Main {
         l.waitIfLoading();
     }
 
-    //    public static void start(String[] args) throws IOException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, ScriptException, InterruptedException, InvocationTargetException {
-    //        main(args);
-    //    }
+    // public static void start(String[] args) throws IOException,
+    // SecurityException, IllegalArgumentException, ClassNotFoundException,
+    // NoSuchMethodException, IllegalAccessException, InstantiationException,
+    // ScriptException, InterruptedException, InvocationTargetException {
+    // main(args);
+    // }
 
     public static void clearModel() {
-        MainFrame mf = MainFrame.getInstance();
+        final MainFrame mf = MainFrame.getInstance();
         mf.getViewModel().reset();
         MSCDataModel.getInstance().reset();
     }
 
     public static void maximize() {
-        MainFrame mf = MainFrame.getInstance();
-        mf.setExtendedState(mf.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        final MainFrame mf = MainFrame.getInstance();
+        mf.setExtendedState(mf.getExtendedState() | Frame.MAXIMIZED_BOTH);
     }
 
-
-    //    public static MSCDataModel getDataModel() {
-    //		MainFrame mf = MainFrame.getInstance();
-    //		return mf.getDataModel();
-    //    }
+    // public static MSCDataModel getDataModel() {
+    // MainFrame mf = MainFrame.getInstance();
+    // return mf.getDataModel();
+    // }
 
     public static void quit() {
         System.exit(0);
@@ -412,6 +430,7 @@ public class Main {
 
     public static void captureDiagram(final String fname) {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
+            @Override
             public void run() {
                 Utils.getPNGSnapshot("MainPanelJSP", fname);
             }
@@ -420,6 +439,7 @@ public class Main {
 
     public static void captureGUI(final String compName, final String fname) {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
+            @Override
             public void run() {
                 Utils.getPNGSnapshot(compName, fname);
             }
@@ -428,8 +448,10 @@ public class Main {
 
     public static void select(Event ev) {
         Utils.dispatchOnAWTThreadNow(new Runnable() {
+            @Override
             public void run() {
-                MainFrame.getInstance().getMainPanel().getMSCRenderer().setSelectedEvent(ev);
+                MainFrame.getInstance().getMainPanel().getMSCRenderer()
+                        .setSelectedEvent(ev);
             }
         });
     }
@@ -446,7 +468,7 @@ public class Main {
         MainFrame.getInstance().getEntityTree().expandAll();
     }
 
-    public static void setLeftSplitPaneDividerLocation(float f){    	
+    public static void setLeftSplitPaneDividerLocation(float f) {
         MainFrame.getInstance().getLeftSplitPane().setDividerLocation(0);
         MainFrame.getInstance().getLeftSplitPane().setDividerLocation(f);
     }
@@ -460,14 +482,13 @@ public class Main {
         MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(0);
         MainFrame.getInstance().getLeftRightSplitPane().setDividerLocation(f);
     }
-    
+
     public static void show(Graph g) {
         try {
-            HeatGraphWindow w = new HeatGraphWindow(g);
-        }catch(Throwable t) {
-            t.printStackTrace();
+            final HeatGraphWindow w = new HeatGraphWindow(g);
+        } catch (final Exception t) {
+            Report.exception(t);
         }
     }
-
 
 }

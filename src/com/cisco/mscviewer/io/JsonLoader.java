@@ -11,21 +11,13 @@
  */
 package com.cisco.mscviewer.io;
 
-import com.cisco.mscviewer.Main;
-import com.cisco.mscviewer.gui.MainFrame;
-import com.cisco.mscviewer.gui.renderer.*;
-import com.cisco.mscviewer.model.*;
-import com.cisco.mscviewer.tree.Interval;
-import com.cisco.mscviewer.util.JSonParser;
-import com.cisco.mscviewer.util.ProgressReport;
-import com.cisco.mscviewer.util.Resources;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,71 +31,98 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import com.cisco.mscviewer.Main;
+import com.cisco.mscviewer.gui.MainFrame;
+import com.cisco.mscviewer.gui.renderer.DefaultInteractionRenderer;
+import com.cisco.mscviewer.gui.renderer.EventRenderer;
+import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
+import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.model.JSonArrayValue;
+import com.cisco.mscviewer.model.JSonObject;
+import com.cisco.mscviewer.model.JSonStringValue;
+import com.cisco.mscviewer.model.JSonValue;
+import com.cisco.mscviewer.model.LogListModel;
+import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.SimpleInterval;
+import com.cisco.mscviewer.tree.Interval;
+import com.cisco.mscviewer.util.JSonParser;
+import com.cisco.mscviewer.util.Prefs;
+import com.cisco.mscviewer.util.ProgressReport;
+import com.cisco.mscviewer.util.Resources;
+
 public class JsonLoader implements Loader {
     public enum TypeEn {
 
         SOURCE, SINK, LOCAL
     };
+
     private static final String MSC_EVENT = "@msc_event";
     private static final String MSC_EVENT1 = "@event";
     private static final String MSC_ENTITY = "@msc_entity";
     private static final String MSC_ENTITY1 = "@entity";
-    private static final String MSC_KEY_SRC= "src";
-    private static final String MSC_KEY_DST= "dst";
+    private static final String MSC_KEY_SRC = "src";
+    private static final String MSC_KEY_DST = "dst";
     private static final String MSC_KEY_INTER_ID = "id";
-    private static final String MSC_KEY_ENT_ID= "id";
-    private static final String MSC_KEY_ENT_NAME= "name";
+    private static final String MSC_KEY_ENT_ID = "id";
+    private static final String MSC_KEY_ENT_NAME = "name";
     @SuppressWarnings("unused")
     private static final String MSC_KEY_INTER_TYPE = "type";
     private static final String MSC_KEY_BLOCK = "block";
     private static final String MSC_KEY_BLOCK_BEGIN = "begin";
-    
+
     private CountDownLatch latch;
     private static SimpleDateFormat formatter[] = {
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS"),
             new SimpleDateFormat("MMM d HH:mm:ss.SSS"),
             new SimpleDateFormat("MMM d HH:mm:ss"),
-            new SimpleDateFormat("HH:mm:ss"),
-        };
-    
+            new SimpleDateFormat("HH:mm:ss"), };
+
     private static boolean isIdentifierStart(String str, int pos) {
-        char c = str.charAt(pos);
+        final char c = str.charAt(pos);
         return Character.isLetter(c) || c == '_';
     }
 
     private static boolean isIdentifierPart(String str, int pos) {
-        char c = str.charAt(pos);
+        final char c = str.charAt(pos);
         return Character.isLetterOrDigit(c) || c == '_';
     }
 
-    private static int skipSpaces(String str, int start, String fname, int lineNum) {
+    private static int skipSpaces(String str, int start, String fname,
+            int lineNum) {
         int i;
         for (i = start; Character.isWhitespace(str.charAt(i)); i++)
             ;
         return i;
     }
 
-    private static int expect(String str, int pos, char expected, String fname, int lineNum) {
+    private static int expect(String str, int pos, char expected, String fname,
+            int lineNum) {
         pos = skipSpaces(str, pos, fname, lineNum);
         if (str.charAt(pos) != expected) {
-            throw new IllegalArgumentException(fname + ":" + lineNum + ":" + pos + ":Expecting " + expected + ", found '" + str.charAt(pos) + "'.");
+            throw new IllegalArgumentException(fname + ":" + lineNum + ":"
+                    + pos + ":Expecting " + expected + ", found '"
+                    + str.charAt(pos) + "'.");
         }
         return pos + 1;
     }
 
-    
     @SuppressWarnings("unused")
-    private static Properties parseProps(String fname, int lineNum, String str, int pos, int stop) {
+    private static Properties parseProps(String fname, int lineNum, String str,
+            int pos, int stop) {
         int start;
         String expected = "{";
         try {
             pos = expect(str, pos, '{', fname, lineNum) + 1;
-            Properties prop = new Properties();
+            final Properties prop = new Properties();
             while (true) {
                 expected = "letter or underscore";
                 pos = skipSpaces(str, pos, fname, lineNum);
                 if (!isIdentifierStart(str, pos)) {
-                    throw new IllegalArgumentException(fname + ":" + lineNum + ":" + pos + ":Expected " + expected + ", found '" + str.charAt(pos) + "'.");
+                    throw new IllegalArgumentException(fname + ":" + lineNum
+                            + ":" + pos + ":Expected " + expected + ", found '"
+                            + str.charAt(pos) + "'.");
                 }
                 start = pos;
                 // PARSE KEY
@@ -111,16 +130,16 @@ public class JsonLoader implements Loader {
                 while (isIdentifierPart(str, pos)) {
                     pos++;
                 }
-                String key = str.substring(start, pos);
+                final String key = str.substring(start, pos);
                 pos = expect(str, pos, ':', fname, lineNum);
                 pos = expect(str, pos, '"', fname, lineNum);
                 // PARSE DOUBLE-QUOTE-ENCLOSED VALUE
-                StringBuilder sb = new StringBuilder();
+                final StringBuilder sb = new StringBuilder();
                 while (true) {
-                    char c = str.charAt(pos);
+                    final char c = str.charAt(pos);
                     pos++;
                     if (c == '"') {
-                        char cc = str.charAt(pos - 1);
+                        final char cc = str.charAt(pos - 1);
                         if (cc == '\\') {
                             sb.setCharAt(sb.length() - 1, c);
                         } else {
@@ -139,19 +158,23 @@ public class JsonLoader implements Loader {
                 if (str.charAt(pos) == ',') {
                     pos++;
                 } else {
-                    throw new IllegalArgumentException(fname + ":" + lineNum + ":" + pos + ":Expecting " + expected + ", found end-of-line.");
+                    throw new IllegalArgumentException(fname + ":" + lineNum
+                            + ":" + pos + ":Expecting " + expected
+                            + ", found end-of-line.");
                 }
             }
-        } catch (IndexOutOfBoundsException ex) {
-            throw new IllegalArgumentException(fname + ":" + lineNum + ":" + pos + ":Expecting " + expected + ", found end-of-line.");
+        } catch (final IndexOutOfBoundsException ex) {
+            throw new IllegalArgumentException(fname + ":" + lineNum + ":"
+                    + pos + ":Expecting " + expected + ", found end-of-line.");
         }
     }
 
-    private static Interaction createInteraction(MSCDataModel dm, String pairingId, JSonObject props, Event ev,
-            TypeEn type, int index, String fname, int lineNum) throws IOException {
+    private static Interaction createInteraction(MSCDataModel dm,
+            String pairingId, JSonObject props, Event ev, TypeEn type,
+            int index, String fname, int lineNum) throws IOException {
         Interaction inter;
         String t;
-        if  (props != null && props.get("type") != null)
+        if (props != null && props.get("type") != null)
             t = props.get("type").toString();
         else
             t = "DefaultInteraction";
@@ -159,23 +182,31 @@ public class JsonLoader implements Loader {
         if (t == null) {
             irenderer = new DefaultInteractionRenderer();
         } else {
-            String irendererName = t + "Renderer";
+            final String irendererName = t + "Renderer";
             try {
-                irenderer = (InteractionRenderer) Class.forName("com.cisco.mscviewer.gui.renderer." + irendererName).newInstance();
-            } catch (ClassNotFoundException e) {
-                throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + irendererName + ".", e);
-            } catch (InstantiationException e) {
-                throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + irendererName + ".", e);
-            } catch (IllegalAccessException e) {
-                throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + irendererName + ".", e);
+                irenderer = (InteractionRenderer) Class.forName(
+                        "com.cisco.mscviewer.gui.renderer." + irendererName)
+                        .newInstance();
+            } catch (final ClassNotFoundException e) {
+                throw new IOException(
+                        fname + ":" + lineNum + ":Unable to instantiate class "
+                                + irendererName + ".", e);
+            } catch (final InstantiationException e) {
+                throw new IOException(
+                        fname + ":" + lineNum + ":Unable to instantiate class "
+                                + irendererName + ".", e);
+            } catch (final IllegalAccessException e) {
+                throw new IOException(
+                        fname + ":" + lineNum + ":Unable to instantiate class "
+                                + irendererName + ".", e);
             }
         }
         if (type == TypeEn.SOURCE) {
             inter = new Interaction(dm, index, -1, irenderer);
-            //ev.addOutgoingInteraction(inter);
+            // ev.addOutgoingInteraction(inter);
         } else {
             inter = new Interaction(dm, -1, index, irenderer);
-            //ev.setIncomingInteraction(inter);
+            // ev.setIncomingInteraction(inter);
         }
         irenderer.initialize(inter, props, ev);
         return inter;
@@ -183,39 +214,44 @@ public class JsonLoader implements Loader {
 
     private static Date parseDate(String s) {
         Date d = null;
-        for (int i=0; i<formatter.length; i++) {
+        for (int i = 0; i < formatter.length; i++) {
             try {
                 formatter[i].setTimeZone(TimeZone.getDefault());
                 d = formatter[i].parse(s);
                 if (i > 0) {
-                    SimpleDateFormat f = formatter[i];
+                    final SimpleDateFormat f = formatter[i];
                     formatter[i] = formatter[0];
                     formatter[0] = f;
                 }
                 return d;
-            }catch(ParseException ex){
+            } catch (final ParseException ex) {
             }
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
-    private static void loadInternal(String fname, MSCDataModel dm) throws IOException {
-        HashMap<String, Interaction> pendingSourced = new HashMap<String, Interaction>();
-        HashMap<String, Interaction> pendingSinked = new HashMap<String, Interaction>();
-        HashMap<String, Interval> pendingBlocks = new HashMap<String, Interval>();
-        HashMap<String, String> alias = new HashMap<String, String>(); 
-        File file = new File(fname);
-        int flen = (int) file.length();
+    private static void loadInternal(String fname, MSCDataModel dm)
+            throws IOException {
+        final HashMap<String, Interaction> pendingSourced = new HashMap<String, Interaction>();
+        final HashMap<String, Interaction> pendingSinked = new HashMap<String, Interaction>();
+        final HashMap<String, Interval> pendingBlocks = new HashMap<String, Interval>();
+        final HashMap<String, String> alias = new HashMap<String, String>();
+        final File file = new File(fname);
+        final int flen = (int) file.length();
         dm.setFilePath(fname);
-        dm.enableNotification(false);
-        BufferedReader fr = new BufferedReader(new FileReader(file));
+        dm.setLoading(true);
+        final BufferedReader fr = new BufferedReader(new FileReader(file));
         String line;
         int lineNum = 0;
+        // readCnt and writeCnt can differ because we may read different type of line separators,
+        // but we always do println, which will use the system (platform dependent) line separator.
         int readCnt = 0;
-        ProgressReport pr = new ProgressReport("Loading file", fname, 0, flen-1);
+        final ProgressReport pr = new ProgressReport("Loading file", fname, 0,
+                flen - 1);
+        final int LSLEN = System.lineSeparator().length();
         try {
-            int x = 0;            
+            int x = 0;
             while ((line = fr.readLine()) != null) {
                 readCnt += line.length();
                 x++;
@@ -233,16 +269,17 @@ public class JsonLoader implements Loader {
                     start += eventlen + 1;
                     JSonObject jo;
                     try {
-                        jo = JSonParser.parseObject(line.substring(start), fname, lineNum);
-                    }catch(JSonException ex) {
+                        jo = JSonParser.parseObject(line.substring(start),
+                                fname, lineNum);
+                    } catch (final JSonException ex) {
                         throw new IOException(ex);
                     }
-                    String entityPath = jo.get("entity").toString();
-                    String dn = alias.get(entityPath);
+                    final String entityPath = jo.get("entity").toString();
+                    final String dn = alias.get(entityPath);
                     Entity entity = dm.addEntity(entityPath, dn);
-                    Entity parentEntity = entity.getParentEntity();
+                    final Entity parentEntity = entity.getParentEntity();
 
-                    JSonValue jlabel = jo.get("label");
+                    final JSonValue jlabel = jo.get("label");
                     String label;
                     if (jlabel == null) {
                         label = "";
@@ -250,203 +287,236 @@ public class JsonLoader implements Loader {
                         label = jlabel.toString();
 
                     long ts = -1;
-                    JSonValue tm = jo.get("time");
+                    final JSonValue tm = jo.get("time");
                     if (tm != null) {
-                        String time = tm.toString();
+                        final String time = tm.toString();
                         if (time.endsWith("s")) {
-                            int len = time.length();
-                            char pre = time.charAt(len - 2);
+                            final int len = time.length();
+                            final char pre = time.charAt(len - 2);
                             switch (pre) {
-                                case 'n':
-                                    ts = Long.parseLong(time.substring(0, len - 2));
-                                    break;
-                                case 'u':
-                                    ts = Long.parseLong(time.substring(0, len - 2)) * 1000;
-                                    break;
-                                case 'm':
-                                    ts = Long.parseLong(time.substring(0, len - 2)) * 1000000;
-                                    break;
-                                default:
-                                    if (Character.isDigit(pre)) {
-                                        ts = Long.parseLong(time.substring(0, len - 1)) * 1000000000;
-                                    } else {
-                                        throw new IOException(fname + ":" + lineNum + ":Invalid time unit specifier");
-                                    }
+                            case 'n':
+                                ts = Long.parseLong(time.substring(0, len - 2));
+                                break;
+                            case 'u':
+                                ts = Long.parseLong(time.substring(0, len - 2)) * 1000;
+                                break;
+                            case 'm':
+                                ts = Long.parseLong(time.substring(0, len - 2)) * 1000000;
+                                break;
+                            default:
+                                if (Character.isDigit(pre)) {
+                                    ts = Long.parseLong(time.substring(0,
+                                            len - 1)) * 1000000000;
+                                } else {
+                                    throw new IOException(fname + ":" + lineNum
+                                            + ":Invalid time unit specifier");
+                                }
                             }
                         } else {
                             try {
                                 ts = Long.parseLong(time);
-                            }catch(NumberFormatException ex) {
-                                Date d = parseDate(time);
+                            } catch (final NumberFormatException ex) {
+                                final Date d = parseDate(time);
                                 if (d != null) {
-                                    ts = d.getTime()*1000000;                                
-                                    System.out.println("d = "+d+", time = "+time+", ts = "+ts);
+                                    ts = d.getTime() * 1000000;
+                                    System.out.println("d = " + d + ", time = "
+                                            + time + ", ts = " + ts);
                                 }
                             }
                         }
                     } else {
                         // parse date from syslog timestamp
-                        Date d = parseDate(line);
+                        final Date d = parseDate(line);
                         if (d != null)
-                            ts = d.getTime()*1000000;
+                            ts = d.getTime() * 1000000;
                     }
-                    JSonValue tt = jo.get("type");
+                    final JSonValue tt = jo.get("type");
                     EventRenderer renderer = null;
                     if (tt != null) {
-                        String t = tt.toString();
+                        final String t = tt.toString();
                         renderer = Resources.getImageRenderer(t);
                         if (renderer == null) {
                             Class<?> c = null;
-                            String rendererName = "com.cisco.mscviewer.gui.renderer." + t + "Renderer";
+                            String rendererName = "com.cisco.mscviewer.gui.renderer."
+                                    + t + "Renderer";
                             try {
                                 c = Class.forName(rendererName);
-                            } catch (ClassNotFoundException e) {
-                                System.err.println(fname + ":" + lineNum + ": Neither an image renderer "+t+", nor a class "+rendererName+" was found.");
+                            } catch (final ClassNotFoundException e) {
+                                System.err.println(fname + ":" + lineNum
+                                        + ": Neither an image renderer " + t
+                                        + ", nor a class " + rendererName
+                                        + " was found.");
                                 rendererName = "com.cisco.mscviewer.gui.renderer.DefaultEventRenderer";
                                 try {
                                     c = Class.forName(rendererName);
-                                } catch (ClassNotFoundException e1) {
-                                    throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + rendererName + ".", e);
+                                } catch (final ClassNotFoundException e1) {
+                                    throw new IOException(fname + ":" + lineNum
+                                            + ":Unable to instantiate class "
+                                            + rendererName + ".", e);
                                 }
                             }
                             try {
                                 renderer = (EventRenderer) c.newInstance();
-                            } catch (InstantiationException e) {
-                                throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + rendererName + ".", e);
-                            } catch (IllegalAccessException e) {
-                                throw new IOException(fname + ":" + lineNum + ":Unable to instantiate class " + rendererName + ".", e);
+                            } catch (final InstantiationException e) {
+                                throw new IOException(fname + ":" + lineNum
+                                        + ":Unable to instantiate class "
+                                        + rendererName + ".", e);
+                            } catch (final IllegalAccessException e) {
+                                throw new IOException(fname + ":" + lineNum
+                                        + ":Unable to instantiate class "
+                                        + rendererName + ".", e);
                             }
                         }
                     }
-                    JSonValue pushSourceVal = jo.get("push_source");
+                    final JSonValue pushSourceVal = jo.get("push_source");
                     if (pushSourceVal != null && parentEntity != null) {
                         parentEntity.pushSourceEntityForFromEvents(entity);
                     }
-                    JSonValue popSourceVal = jo.get("pop_source");
+                    final JSonValue popSourceVal = jo.get("pop_source");
                     if (popSourceVal != null && parentEntity != null) {
                         parentEntity.popSourceEntityForFromEvents();
                     }
                     entity = entity.getSourceEntityForFromEvents();
-                    Event ev = new Event(dm, ts, entity, label, lineNum, renderer, jo);
-//                    if (entity.getPath().equals("XRVR")) {
-//                        System.out.println("{XRVR}: "+ts);
-//                    }
-                    int evIdx = dm.addEvent(ev);
-                    
-                    JSonValue data = jo.get("data");
+                    final Event ev = new Event(dm, ts, entity, label, lineNum,
+                            renderer, jo);
+                    // if (entity.getPath().equals("XRVR")) {
+                    // System.out.println("{XRVR}: "+ts);
+                    // }
+                    final int evIdx = dm.addEvent(ev);
+
+                    final JSonValue data = jo.get("data");
                     if (data != null) {
                         ev.setData(data);
                     }
-                    
-                    JSonValue block = jo.get(MSC_KEY_BLOCK);
+
+                    final JSonValue block = jo.get(MSC_KEY_BLOCK);
                     if (block != null) {
                         if (block.toString().equals(MSC_KEY_BLOCK_BEGIN))
                             ev.setBlockBegin();
-//                        else
-//                            ev.setBlockEnd();
+                        // else
+                        // ev.setBlockEnd();
                     }
-                    
+
                     // HANDLE "source" KEY
                     try {
                         Interaction inter = null;
-                        ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
-                        ArrayList<String> sourcePairingId = new ArrayList<String>();
-                        JSonValue sourceValue = jo.getValueByPath(MSC_KEY_SRC);
+                        final ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
+                        final ArrayList<String> sourcePairingId = new ArrayList<String>();
+                        final JSonValue sourceValue = jo.getValueByPath(MSC_KEY_SRC);
                         if (sourceValue instanceof JSonStringValue) {
-                            // this event is source for an interaction with default
+                            // this event is source for an interaction with
+                            // default
                             // attributes
                             sourcePairingId.add(sourceValue.toString());
                             interAttrs.add(null);
                         } else if (sourceValue instanceof JSonObject) {
-                            // this event is source for an interaction with 
+                            // this event is source for an interaction with
                             // non-default attributes
-                            interAttrs.add((JSonObject)sourceValue);                        
-                            sourcePairingId.add(((JSonObject)sourceValue).get(MSC_KEY_INTER_ID).toString());
+                            interAttrs.add((JSonObject) sourceValue);
+                            sourcePairingId.add(((JSonObject) sourceValue).get(
+                                    MSC_KEY_INTER_ID).toString());
                         } else if (sourceValue instanceof JSonArrayValue) {
                             // this event is source for multiple interactions
-                            ArrayList<JSonValue> al = ((JSonArrayValue)sourceValue).value();
-                            for(JSonValue j : al) {
-                                interAttrs.add((JSonObject)j);                        
-                                sourcePairingId.add(((JSonObject)j).get(MSC_KEY_INTER_ID).toString());      
+                            final ArrayList<JSonValue> al = ((JSonArrayValue) sourceValue)
+                                    .value();
+                            for (final JSonValue j : al) {
+                                interAttrs.add((JSonObject) j);
+                                sourcePairingId.add(((JSonObject) j).get(
+                                        MSC_KEY_INTER_ID).toString());
                             }
                         }
 
-                        for(int i=0; i<sourcePairingId.size(); i++) {
-                            String id = sourcePairingId.get(i);
-                            JSonObject attrs = interAttrs.get(i);
-                            
+                        for (int i = 0; i < sourcePairingId.size(); i++) {
+                            final String id = sourcePairingId.get(i);
+                            final JSonObject attrs = interAttrs.get(i);
+
                             inter = pendingSourced.remove(id);
                             if (inter != null) {
-                                // there is already a pending source for this pairingId. add it to 
-                                //model as orphaned (no sink)
+                                // there is already a pending source for this
+                                // pairingId. add it to
+                                // model as orphaned (no sink)
                                 dm.addInteraction(inter);
                             }
                             inter = pendingSinked.remove(id);
-                            // if there is pending sinked interaction with this pairing Id:
-                            // if it is from the same entity, then a (sink, source) sequence
-                            // indicates that sink was orphaned, and we should remove it.
+                            // if there is pending sinked interaction with this
+                            // pairing Id:
+                            // if it is from the same entity, then a (sink,
+                            // source) sequence
+                            // indicates that sink was orphaned, and we should
+                            // remove it.
                             // if not on same entity, pair and add
                             // fix the source and add it to the model.
-                            if (inter != null && inter.getToEvent().getEntity() != ev.getEntity()) {
+                            if (inter != null
+                                    && inter.getToEvent().getEntity() != ev
+                                            .getEntity()) {
                                 inter.setFromIndex(evIdx);
                                 dm.addInteraction(inter);
                             } else {
-                                // new interaction. create and add to pendingSourced
-                                inter = createInteraction(dm, id, attrs, ev, TypeEn.SOURCE, evIdx, fname, lineNum);
+                                // new interaction. create and add to
+                                // pendingSourced
+                                inter = createInteraction(dm, id, attrs, ev,
+                                        TypeEn.SOURCE, evIdx, fname, lineNum);
                                 pendingSourced.put(id, inter);
                             }
                         }
-                    }catch(NoSuchFieldError ex) {                        
+                    } catch (final NoSuchFieldError ex) {
                     }
                     // HANDLE "dst" KEY
                     try {
                         Interaction inter = null;
-                        ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
-                        ArrayList<String> sinkPairingId = new ArrayList<String>();
-                        // next line will throw exception if no such field 
-                        JSonValue sinkValue = jo.getValueByPath(MSC_KEY_DST);
+                        final ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
+                        final ArrayList<String> sinkPairingId = new ArrayList<String>();
+                        // next line will throw exception if no such field
+                        final JSonValue sinkValue = jo.getValueByPath(MSC_KEY_DST);
                         if (sinkValue instanceof JSonStringValue) {
-                            // this event is sink for an interaction with default
+                            // this event is sink for an interaction with
+                            // default
                             // attributes
-                            sinkPairingId.add(((JSonStringValue)sinkValue).toString());
+                            sinkPairingId.add(((JSonStringValue) sinkValue)
+                                    .toString());
                             interAttrs.add(null);
                         } else if (sinkValue instanceof JSonObject) {
-                            // this event is sink for an interaction with 
+                            // this event is sink for an interaction with
                             // non-default attributes
-                            JSonObject jo1 = (JSonObject)sinkValue;
-                            sinkPairingId.add(jo1.get(MSC_KEY_INTER_ID).toString());
-                            interAttrs.add((JSonObject)sinkValue);                        
+                            final JSonObject jo1 = (JSonObject) sinkValue;
+                            sinkPairingId.add(jo1.get(MSC_KEY_INTER_ID)
+                                    .toString());
+                            interAttrs.add((JSonObject) sinkValue);
                         } else if (sinkValue instanceof JSonArrayValue) {
                             // this event is sink for multiple interactions
-                            for(JSonObject j : (ArrayList<JSonObject>)sinkValue) {
-                                sinkPairingId.add(j.get("id").toString());                                
-                                interAttrs.add(j);                        
-                            }                            
+                            for (final JSonObject j : (ArrayList<JSonObject>) sinkValue) {
+                                sinkPairingId.add(j.get("id").toString());
+                                interAttrs.add(j);
+                            }
                         }
 
-                        for(int i=0; i<sinkPairingId.size(); i++) {
-                            String id = sinkPairingId.get(i);
-                            JSonObject attrs = interAttrs.get(i);
-                            
+                        for (int i = 0; i < sinkPairingId.size(); i++) {
+                            final String id = sinkPairingId.get(i);
+                            final JSonObject attrs = interAttrs.get(i);
+
                             inter = pendingSinked.remove(id);
                             if (inter != null) {
-                                // there is a pending source for this pairingId. add it to 
+                                // there is a pending source for this pairingId.
+                                // add it to
                                 // model as orphaned (no source)
                                 dm.addInteraction(inter);
                             }
                             inter = pendingSourced.remove(id);
-                            // if there is a pending sourced interaction with this pairing Id, 
+                            // if there is a pending sourced interaction with
+                            // this pairing Id,
                             // fix the sink and add it to the model
                             if (inter != null) {
                                 inter.setToIndex(evIdx);
                                 dm.addInteraction(inter);
                             } else {
-                                // new interaction. create and add to pendingSinked
-                                inter = createInteraction(dm, id, attrs, ev, TypeEn.SINK, evIdx, fname, lineNum);
+                                // new interaction. create and add to
+                                // pendingSinked
+                                inter = createInteraction(dm, id, attrs, ev,
+                                        TypeEn.SINK, evIdx, fname, lineNum);
                                 pendingSinked.put(id, inter);
                             }
                         }
-                    }catch(NoSuchFieldError ex) {
+                    } catch (final NoSuchFieldError ex) {
                     }
                 } else {
                     start = line.indexOf(MSC_ENTITY);
@@ -460,78 +530,87 @@ public class JsonLoader implements Loader {
                     if (start >= 0) {
                         JSonObject jo;
                         try {
-                            jo = JSonParser.parseObject(line.substring(start), fname, lineNum);
-                            alias.put(jo.get("id").toString(), jo.get("name").toString());
-                        }catch(JSonException ex) {
+                            jo = JSonParser.parseObject(line.substring(start),
+                                    fname, lineNum);
+                            alias.put(jo.get("id").toString(), jo.get("name")
+                                    .toString());
+                        } catch (final JSonException ex) {
                             throw new IOException(ex);
                         }
-                        String id = jo.get(MSC_KEY_ENT_ID).toString();
+                        final String id = jo.get(MSC_KEY_ENT_ID).toString();
                         if (id == null)
-                            throw new IllegalArgumentException(fname + ":" + lineNum + ":Missing \"id\" key");
+                            throw new IllegalArgumentException(fname + ":"
+                                    + lineNum + ":Missing \"id\" key");
 
-                        String name = jo.get(MSC_KEY_ENT_NAME).toString();
+                        final String name = jo.get(MSC_KEY_ENT_NAME).toString();
                         if (name == null)
-                            throw new IllegalArgumentException(fname + ":" + lineNum + ":Missing \"name\" key");
+                            throw new IllegalArgumentException(fname + ":"
+                                    + lineNum + ":Missing \"name\" key");
                         Entity en = dm.getEntity(id);
                         if (en == null) {
                             en = dm.addEntity(id, name);
-                        } else {                            
+                        } else {
                             en.setName(name);
                         }
                     }
                 }
-                dm.addDataLine(line);
+                dm.addSourceLine(line);
             }
             if (dm != null) {
                 // add all remaining pending
-                for(Interaction inter: pendingSourced.values()) {
+                for (final Interaction inter : pendingSourced.values()) {
                     dm.addInteraction(inter);
                 }
-                for(Interaction inter: pendingSinked.values()) {
+                for (final Interaction inter : pendingSinked.values()) {
                     dm.addInteraction(inter);
                 }
 
                 // sort topologically
                 dm.topoSort();
                 if (Main.WITH_BLOCKS) {
-                    for(int i=0; i<dm.getEventCount(); i++) {
-                        Event ev = dm.getEventAt(i);
-                        Entity en = ev.getEntity();
-                        String entityPath = en.getPath();
-                        String blkPath = entityPath+"/block";
-                        SimpleInterval blk = (SimpleInterval)pendingBlocks.get(blkPath);
-                        if (ev.getIncomingInteractions().length > 0|| ev.isBlockBegin()) {
+                    for (int i = 0; i < dm.getEventCount(); i++) {
+                        final Event ev = dm.getEventAt(i);
+                        final Entity en = ev.getEntity();
+                        final String entityPath = en.getPath();
+                        final String blkPath = entityPath + "/block";
+                        SimpleInterval blk = (SimpleInterval) pendingBlocks
+                                .get(blkPath);
+                        if (ev.getIncomingInteractions().length > 0
+                                || ev.isBlockBegin()) {
                             if (blk != null) {
-                            	ev.setBlockBegin();
+                                ev.setBlockBegin();
                                 dm.addBlock(blk);
                             }
                             blk = new SimpleInterval(i, i);
-                            pendingBlocks.put(entityPath+"/block", blk);
-                        } else if (blk != null){
+                            pendingBlocks.put(entityPath + "/block", blk);
+                        } else if (blk != null) {
                             blk.setEnd(i);
                         }
                     }
-                    for(Interval inter: pendingBlocks.values()) {
+                    for (final Interval inter : pendingBlocks.values()) {
                         dm.addBlock(inter);
                     }
                 }
 
             }
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             ex.printStackTrace();
-            throw new IOException(fname + ":" + lineNum + ":error: at this location", ex);
-        } catch (NumberFormatException ex) {
+            throw new IOException(fname + ":" + lineNum
+                    + ":error: at this location", ex);
+        } catch (final NumberFormatException ex) {
             ex.printStackTrace();
-            throw new IOException(fname + ":" + lineNum + ":error: at this location", ex);
-        } catch(Exception ex){
+            throw new IOException(fname + ":" + lineNum
+                    + ":error: at this location", ex);
+        } catch (final Exception ex) {
             System.err.println("-----------------");
             ex.printStackTrace();
         } finally {
             pr.progressDone();
             fr.close();
+            dm.setLoading(false);
         }
     }
-    
+
     @Override
     public void waitIfLoading() {
         if (latch == null) {
@@ -539,56 +618,55 @@ public class JsonLoader implements Loader {
         }
         try {
             latch.await();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     @Override
-    public void load(final String fname, final MSCDataModel dm, boolean batchMode) throws IOException {
+    public void load(final String fname, final MSCDataModel dm,
+            boolean batchMode) throws IOException {
+        dm.reset();
         dm.setOpenPath(new File(fname).getParent());
-//        if (batchMode) {
-//            loadInternal(fname, dm);
-//        } else {
-            latch = new CountDownLatch(1);
-            SwingWorker<Object, Object> sw = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground() throws Exception {
-                    loadInternal(fname, dm);
-                    return null;
-                }
+        latch = new CountDownLatch(1);
+        final SwingWorker<Object, Object> sw = new SwingWorker<Object, Object>() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                loadInternal(fname, dm);
+                return null;
+            }
 
-                @Override
-                public void done() {
-                    try {
-                        get();
-                    } catch (ExecutionException e) {
-                        e.getCause().printStackTrace();
-                        String msg = String.format("Unexpected problem: %s",
-                                e.getCause().toString());
-                        JOptionPane.showMessageDialog(MainFrame.getInstance(),
-                                msg, "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (InterruptedException e) {
-                        // Process e here
-                    }
-                    MainFrame.getInstance().setFilename(fname);
-                    dm.enableNotification(true);
-                    dm.notifyModelChanged();
-                    latch.countDown();
+            @Override
+            public void done() {
+                try {
+                    get();
+                } catch (final ExecutionException e) {
+                    e.getCause().printStackTrace();
+                    final String msg = String.format("Unexpected problem: %s", e
+                            .getCause().toString());
+                    JOptionPane.showMessageDialog(MainFrame.getInstance(), msg,
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (final InterruptedException e) {
+                    // Process e here
                 }
-            };
+                MainFrame.getInstance().setFilename(fname);
+                dm.setLoading(false);
+                dm.notifyModelChanged();
+                latch.countDown();
+            }
+        };
 
-            sw.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("progress".equals(evt.getPropertyName())) {
-                        //cMSC.progress((Integer) evt.getNewValue());
-                    }
+        sw.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("progress".equals(evt.getPropertyName())) {
+                    // cMSC.progress((Integer) evt.getNewValue());
                 }
-            });
-            sw.execute();
-//        }
+            }
+        });
+        sw.execute();
+        // }
     }
 
 }

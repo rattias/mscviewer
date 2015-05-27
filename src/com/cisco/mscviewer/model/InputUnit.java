@@ -12,17 +12,11 @@
 package com.cisco.mscviewer.model;
 
 public enum InputUnit {
-    NS("ns"),
-    US("us"),
-    MS("ms"),
-    S("s"),
-    M("m"),
-    H("h"),
-    T("ticks");
+    NS("ns"), US("us"), MS("ms"), S("s"), M("m"), H("h"), T("ticks");
 
     private final String str;
 
-    private InputUnit(String s){
+    private InputUnit(String s) {
         str = s;
     }
 
@@ -32,7 +26,7 @@ public enum InputUnit {
     }
 
     public long getNsCount() {
-        switch(this) {
+        switch (this) {
         case T:
         case NS:
             return 1L;
@@ -43,9 +37,9 @@ public enum InputUnit {
         case S:
             return 1000000000L;
         case M:
-            return 1000000000L*60;
+            return 1000000000L * 60;
         case H:
-            return 1000000000L*60*60;
+            return 1000000000L * 60 * 60;
         default:
             return -1;
         }

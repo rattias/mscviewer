@@ -6,16 +6,19 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer.gui;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.cisco.mscviewer.model.*;
+import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.MSCDataModelEventFilter;
+import com.cisco.mscviewer.model.ViewModel;
 
 /**
  * @author Roberto Attias
- * @since  Jan 2012
+ * @since Jan 2012
  */
-class CompactViewFilter implements MSCDataModelEventFilter { 
+class CompactViewFilter implements MSCDataModelEventFilter {
     private final ViewModel m;
     private Matcher matcher;
 
@@ -30,9 +33,9 @@ class CompactViewFilter implements MSCDataModelEventFilter {
 
     @Override
     public boolean filter(Event ev) {
-        return 
-        m.indexOf(ev.getEntity()) != -1 && 
-        (matcher != null ? matcher.reset(ev.getLabel()).matches() : true);
+        return m.indexOf(ev.getEntity()) != -1
+                && (matcher != null ? matcher.reset(ev.getLabel()).matches()
+                        : true);
     }
 
 }

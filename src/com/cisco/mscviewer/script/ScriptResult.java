@@ -11,10 +11,9 @@
  */
 package com.cisco.mscviewer.script;
 
-
 public class ScriptResult {
     final static public int STATUS_COMPLETED = 1;
-    final static public int STATUS_EXCEPTION = 2; 
+    final static public int STATUS_EXCEPTION = 2;
     private Object result;
     private Throwable t;
 

@@ -11,22 +11,21 @@
  */
 package com.cisco.mscviewer.tree;
 
-
 /**
  *
  * @author rattias
  */
 @SuppressWarnings("serial")
 public class TreeIntegrityException extends Exception {
-    private String path;
+    private final String path;
     int value;
-    
+
     public TreeIntegrityException(String msg, String path, int v) {
         super(msg);
         this.path = path;
         value = v;
     }
-    
+
     public String getTreePath() {
         return path;
     }
