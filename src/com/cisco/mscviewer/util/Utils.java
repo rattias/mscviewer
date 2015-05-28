@@ -211,10 +211,12 @@ public class Utils {
         final URL resourceURL = ClassLoader.getSystemResource("com/cisco/mscviewer");
         final String urlStr = resourceURL.getPath();
         final int idx = urlStr.indexOf("mscviewer.jar!");
+        String result;
         if (idx < 0) {
-            return urlStr.substring(1, urlStr.indexOf("classes"));
+            result = urlStr.substring(1, urlStr.indexOf("classes"));
         } else {
-            return urlStr.substring("file:/".length(), idx);
+            result = urlStr.substring("file:".length(), idx);
         }
+        return result;
     }
 }

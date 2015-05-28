@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.CopyOption;
@@ -74,9 +75,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.python.google.common.io.Files;
-
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.expression.ParsedExpression;
 import com.cisco.mscviewer.io.JsonLoader;
@@ -794,7 +792,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 if(Desktop.isDesktopSupported()) {
                     try {
                         String path = Utils.getInstallDir()+"/doc/release.html";
-                        Desktop.getDesktop().browse(new File(path).toURI());
+                        URI uri = new File(path).toURI();
+                        Desktop.getDesktop().browse(uri);
                     } catch (IOException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
