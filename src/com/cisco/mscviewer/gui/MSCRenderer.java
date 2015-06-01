@@ -15,16 +15,21 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 import com.cisco.mscviewer.gui.renderer.BlockInteractionRenderer;
 import com.cisco.mscviewer.gui.renderer.ErrorRenderer;
@@ -201,7 +206,7 @@ public class MSCRenderer {
         synchronized (dataModel) {
             // render blocks first
             final Dimension max = new Dimension(64, eventHeight);
-            final int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
+            int modelMinIdx = viewModel.getModelIndexFromViewIndex(viewMinIdx);
             final int modelMaxIdx = viewModel.getModelIndexFromViewIndex(viewMaxIdx);
             if (showBlocks) {
                 IntervalTree.dbg = true;
@@ -274,7 +279,7 @@ public class MSCRenderer {
                 ir.render(r1, r2, g2d, in == selectedInteraction, m);
             }
 
-            // render events last
+            // render events 
             for (int i = viewMinIdx; i <= viewMaxIdx; i++) {
                 final Event ev = viewModel.getEventAt(i);
                 final Entity en = ev.getEntity();
@@ -298,11 +303,6 @@ public class MSCRenderer {
                         g2d.scale(.7, .7);
                     }
                     r.render(g2d, maxDim);
-                    if (ev.getNote() != null) {
-                        final Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
-                        g2d.drawImage(infoIcon.getImage(), -bb.width / 2 - 8,
-                                0, null);
-                    }
                     if (scaled)
                         g2d.setTransform(t1);
                     if (ev == selectedEvent) {
@@ -339,6 +339,69 @@ public class MSCRenderer {
                     if (showLabels)
                         g2d.drawString(ev.getLabel(), x + maxBBwidth, i
                                 * eventHeight + ascent);
+                }
+            }
+            // render notes
+            if (viewMinIdx > 4)
+                viewMinIdx -= 4;
+            else
+                viewMinIdx = 0;
+            for (int i = viewMinIdx; i <= viewMaxIdx; i++) {
+                final Event ev = viewModel.getEventAt(i);
+                final Entity en = ev.getEntity();
+                final int entityIndex = viewModel.indexOf(en);
+                if (entityIndex == -1)
+                    continue;
+                final int entityWidth = viewModel.getEntityWidth(entityIndex);
+                final Dimension maxDim = new Dimension(entityWidth, eventHeight);
+                final EventRenderer r = ev.getRenderer();
+                final Rectangle bb = new Rectangle();
+                final int x = viewModel.getEntityCenterX(entityIndex);
+                final int y = i * eventHeight + eventHeight / 2;
+                r.getBoundingBox(maxDim, x, y, bb);            
+                if (ev.getNote() != null) {
+                    g2d.setColor(Color.yellow);
+                    final int W = 10;
+                    int miniStickX = bb.x;
+                    int miniStickY = bb.y+(bb.height-W)/2;
+                    g2d.fillRect(miniStickX, miniStickY, W, W);
+                    g2d.setColor(Color.black);
+                    g2d.drawRect(miniStickX, miniStickY, W, W);
+                    //AffineTransform at = g2d.getTransform();
+                    Point p = ev.getNoteOffset();
+                    if (p.x == -1 && p.y == -1) {
+                        p.x = bb.width+16;
+                        p.y = 0;
+                        ev.setNotePosition(p);
+                    }
+                    if (ev.noteIsVisible()) {
+                        String n = ev.getNote();
+                        final String BAD_HD = "<html dir=\"ltr\">";
+                        if (n.startsWith(BAD_HD))
+                            n = "<html>" + n.substring(BAD_HD.length());
+                        JLabel l = new JLabel(n);
+                        Dimension bubbleDim = l.getPreferredSize();
+                        l.setSize(bubbleDim);
+                        BufferedImage bi = new BufferedImage(
+                                bubbleDim.width+4,
+                                bubbleDim.height+4,
+                                BufferedImage.TYPE_INT_ARGB);
+                        Graphics g = bi.getGraphics();
+                        g.setColor(Color.yellow);
+                        g.fillRect(0,  0,  bi.getWidth(), bi.getHeight());
+                        g.setColor(Color.black);
+                        g.drawRect(0,  0,  bi.getWidth()-1, bi.getHeight()-1);
+                        g.translate(2, 2);
+                        l.paint(g);
+                        g2d.drawImage(bi, bb.x+p.x, bb.y+p.y, null);
+                        int[] xpts = new int[]{miniStickX+W/2, bb.x+p.x, bb.x+p.x, bb.x+p.x-W};
+                        int[] ypts = new int[]{miniStickY+W/2, bb.y+p.y, bb.y+p.y+bubbleDim.height, bb.y+p.y+W};
+                        g2d.setColor(Color.yellow);
+                        Polygon poly = new Polygon(xpts, ypts, 4);
+                        g2d.fillPolygon(poly);
+                        g2d.setColor(Color.black);
+                        g2d.drawPolygon(poly);
+                    }
                 }
             }
         }
@@ -821,10 +884,12 @@ public class MSCRenderer {
         if (inter != null) {
             selectedEvent = null;
             viewModelSelectedEventIndex = -1;
-        }
-        selectedInteraction = inter;
-        for (final SelectionListener selListener : selListeners) {
-            selListener.interactionSelected(this, selectedInteraction);
+            if (selectedInteraction != inter) {
+                selectedInteraction = inter;
+                for (final SelectionListener selListener : selListeners) {
+                    selListener.interactionSelected(this, selectedInteraction);
+                }
+            }
         }
     }
 

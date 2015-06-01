@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import javax.swing.AbstractListModel;
 
 import com.cisco.mscviewer.util.Prefs;
+import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
 public class LogListModel extends AbstractListModel<String> {
-    private final static File dir = new File(Prefs.getWorkDirPath());
+    private final static File dir = new File(Utils.getWorkDirPath());
     private final static int BLOCK_SIZE = 1024;
     private RandomAccessFile raf;
     private BufferedWriter fw;

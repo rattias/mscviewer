@@ -26,7 +26,7 @@ JAVA = $(JAVA_BIN)/java
 JAR  = $(JAVA_BIN)/jar
 endif
 
-JYTHON_JAR:=jython-standalone-2.7-rc2.jar
+JYTHON_JAR:=jython-standalone-2.7.0.jar
 SWINGX_JAR:=swingx-all-1.6.4.jar
 UNAME:=$(shell uname -s)
 MSCVER = $(shell cat src/com/cisco/mscviewer/Main.java |\
@@ -65,11 +65,8 @@ distrib: banner jar manual-pdf release-help
 	@mkdir -p $(INSTALL_DIR)
 	@cp -rf bin batch examples licenses third-parties $(INSTALL_DIR)
 	@mkdir -p $(INSTALL_DIR)/doc/user-guide
-	@#mkdir -p $(INSTALL_DIR)/doc/python-api
 	@cp -rf doc/manual/mscviewer.pdf $(INSTALL_DIR)/doc/user-guide
-	@#cp -rf doc/manual/*.svg doc/manual/*.png doc/manual/images doc/manual/*.html $(INSTALL_DIR)/doc/user-guide
-	@#cp -rf doc/python-api/build/html/* $(INSTALL_DIR)/doc/python-api/
-	@#cp -rf doc/python-api/build/latex/mscviewer_python_api.pdf $(INSTALL_DIR)/doc/python-api/
+	@cp doc/release.html $(INSTALL_DIR)/doc
 	@cp -rf mscviewer.jar resources $(INSTALL_DIR)
 	@chmod 755 $(INSTALL_DIR)/bin/*
 	@rm -rf $(INSTALL_DIR)/.[a-z]*
@@ -85,7 +82,7 @@ distrib: banner jar manual-pdf release-help
 release-help:
 	@echo "*** Generating Release Help..."
 	@mkdir -p doc
-	@java -jar third-parties/jython-standalone-2.7.0.jar bin/github_milestones_history.py V2.0.0 >doc/release.html
+	@java -jar third-parties/jython-standalone-2.7.0.jar bin/github_milestones_history.py $(MSCVER) >doc/release.html
 
 banner:
 	@echo "Creating MSCViewer distribution. In case of error please"
@@ -100,6 +97,7 @@ build:
 	@$(JAVAC) -g -Xlint:-options -classpath "src" -d classes -source 1.3 src/com/cisco/mscviewer/TestVersion.java
 	@mkdir -p classes/com/cisco/mscviewer
 	-@cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
+	-@cp src/com/cisc/mscivewer/io/msc-session.dtd classes/com/cisco/mscviewer/io
 	@echo "*** Generating Release Help..."
 
 

@@ -840,7 +840,9 @@ public final class MSCDataModel {
      */
     public void setLoading(boolean v) {
         notificationEnabled = !v;
-        if (! v)
+        if (v)
+            llm.reset();
+        else
             llm.doneLoading();
     }
 

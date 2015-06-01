@@ -11,10 +11,14 @@
  */
 package com.cisco.mscviewer.model;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+
 import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.gui.renderer.DefaultEventRenderer;
 import com.cisco.mscviewer.gui.renderer.EventRenderer;
 import com.cisco.mscviewer.gui.renderer.ImageRenderer;
+import com.cisco.mscviewer.io.Session;
 
 /**
  * An <code>Event</code> represents an occurence of relevance for an
@@ -44,7 +48,7 @@ public class Event {
     /** renderer object associated to this event */
     private final String label;
     /** label for the Event */
-    private String note;
+    private Note note;
     /** note associated to the Event */
     private JSonValue data;
     /** some data */
@@ -156,7 +160,16 @@ public class Event {
      *            the note
      */
     public void setNote(String n) {
-        note = n;
+        if (note == null)
+            note = new Note(n);
+        else
+            note.setText(n);
+        Session.setUpToDate(false);
+    }
+    
+
+    public boolean noteIsVisible() {
+        return note != null && note.isVisible();
     }
 
     /**
@@ -165,7 +178,25 @@ public class Event {
      * @return the note
      */
     public String getNote() {
-        return note;
+        return note != null ? note.getText() : null;
+    }
+
+    public void setNoteVisible(boolean v) {
+        if (note == null) 
+            note = new Note("");
+        note.setVisible(v);
+        Session.setUpToDate(false);
+    }
+    
+    public Point getNoteOffset() {
+        return note == null ? new Point(-1, -1) : note.getPosition();
+    }
+
+    public void setNotePosition(Point  p) {
+        if (note == null) 
+            note = new Note("");
+        note.setPosition(p);
+        Session.setUpToDate(false);
     }
 
     /**
@@ -200,6 +231,7 @@ public class Event {
      */
     public void setMarker(Marker m) {
         marker = m;
+        Session.setUpToDate(false);
     }
 
     /**
@@ -319,4 +351,5 @@ public class Event {
     public boolean isBlockBegin() {
         return blockBegin;
     }
+
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT msc-session (entities, selected-event?, selected-interaction?)>
+    <!ATTLIST msc-session msc-path CDATA #REQUIRED>
+    <!ELEMENT entities (entity+)>
+        <!ELEMENT entity EMPTY>
+        <!ATTLIST entity id CDATA #REQUIRED>
+    <!ELEMENT selected-event EMPTY>
+        <!ATTLIST selected-event index CDATA #REQUIRED>
+    <!ELEMENT selected-interaction EMPTY>
+        <!ATTLIST selected-event from-index CDATA #REQUIRED>
+        <!ATTLIST selected-event to-index CDATA #REQUIRED>
+    

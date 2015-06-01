@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.cisco.mscviewer.Main;
@@ -239,6 +241,8 @@ public class JsonLoader implements Loader {
         final HashMap<String, String> alias = new HashMap<String, String>();
         final File file = new File(fname);
         final int flen = (int) file.length();
+        dm.reset();
+        dm.setOpenPath(new File(fname).getParent());
         dm.setFilePath(fname);
         dm.setLoading(true);
         final BufferedReader fr = new BufferedReader(new FileReader(file));
@@ -249,7 +253,6 @@ public class JsonLoader implements Loader {
         int readCnt = 0;
         final ProgressReport pr = new ProgressReport("Loading file", fname, 0,
                 flen - 1);
-        final int LSLEN = System.lineSeparator().length();
         try {
             int x = 0;
             while ((line = fr.readLine()) != null) {
@@ -602,7 +605,6 @@ public class JsonLoader implements Loader {
             throw new IOException(fname + ":" + lineNum
                     + ":error: at this location", ex);
         } catch (final Exception ex) {
-            System.err.println("-----------------");
             ex.printStackTrace();
         } finally {
             pr.progressDone();
@@ -613,6 +615,8 @@ public class JsonLoader implements Loader {
 
     @Override
     public void waitIfLoading() {
+        if (SwingUtilities.isEventDispatchThread())
+            throw new Error("waitForLoading() shouldn't be called from EDT");
         if (latch == null) {
             return;
         }
@@ -627,8 +631,24 @@ public class JsonLoader implements Loader {
     @Override
     public void load(final String fname, final MSCDataModel dm,
             boolean batchMode) throws IOException {
-        dm.reset();
-        dm.setOpenPath(new File(fname).getParent());
+        if (SwingUtilities.isEventDispatchThread())
+            throw new Error("load should not be called from the EDT.");
+        loadInternal(fname, dm);
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                dm.notifyModelChanged();            
+                MainFrame.getInstance().setFilename(fname);
+            });
+        } catch (InvocationTargetException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    public void loadAsync(final String fname, final MSCDataModel dm,
+            boolean batchMode) throws IOException {
+        if (! SwingUtilities.isEventDispatchThread())
+            throw new Error("loadAsync should be called only from the EDT.");
         latch = new CountDownLatch(1);
         final SwingWorker<Object, Object> sw = new SwingWorker<Object, Object>() {
             @Override
@@ -651,7 +671,6 @@ public class JsonLoader implements Loader {
                     // Process e here
                 }
                 MainFrame.getInstance().setFilename(fname);
-                dm.setLoading(false);
                 dm.notifyModelChanged();
                 latch.countDown();
             }
@@ -665,6 +684,7 @@ public class JsonLoader implements Loader {
                 }
             }
         });
+        System.out.println("STARTING WORKER THREAD");
         sw.execute();
         // }
     }

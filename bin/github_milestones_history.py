@@ -71,7 +71,7 @@ if __name__ == "__main__":
     milestones = get_milestones()
     issues = get_issues()
     html = ""
-    for m in sorted(milestones, key= lambda ms: ms['created_at']):
+    for m in sorted(milestones, key= lambda ms: ms['created_at'], reverse=True):
         release = m['title']
         match = re.match('V([0-9]+)\\.([0-9]+)\\.([0-9])+(.*)', release)
         if match:

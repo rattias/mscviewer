@@ -219,4 +219,14 @@ public class Utils {
         }
         return result;
     }
+
+    
+    public static String getWorkDirPath() {
+        String WORKDIR_PATH = System.getProperties().getProperty("user.home")+"/.msc";
+        File f = new File(WORKDIR_PATH);
+        if (! f.exists()) {
+            f.mkdirs();
+        }
+        return WORKDIR_PATH;
+    }
 }

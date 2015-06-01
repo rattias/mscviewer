@@ -40,8 +40,10 @@ import java.nio.file.CopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+import java.util.Timer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -50,6 +52,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -75,10 +78,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.expression.ParsedExpression;
 import com.cisco.mscviewer.io.JsonLoader;
 import com.cisco.mscviewer.io.PNGSaver;
+import com.cisco.mscviewer.io.Session;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
@@ -117,6 +122,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private boolean isMarking;
     private final JTabbedPane jtabbed;
     private final JSplitPane leftRightSplitPane, leftSplitPane, rightSplitPane;
+    private NotesPanel notes;
 
     class MouseHandler implements MouseListener, MouseMotionListener {
 
@@ -309,6 +315,25 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 });
                 jpm.add(it);
             }
+            Event ev = r.getSelectedEvent();
+            it = new JCheckBoxMenuItem("Note Sticker");
+            it.setEnabled(ev != null && ev.getNote() != null);
+            if (ev != null) {
+                it.setEnabled(ev.getNote() != null);
+                it.setSelected(ev.noteIsVisible());
+            } else
+                it.setEnabled(false);
+            it.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    JCheckBoxMenuItem jc = (JCheckBoxMenuItem)actionEvent.getSource(); 
+                    ev.setNoteVisible(jc.isSelected());
+                    repaint();
+                }
+            });
+       
+            jpm.add(it);
+
             if (jpm.getComponentCount() > 0) {
                 jpm.show((Component) me.getSource(), me.getX(), me.getY());
             }
@@ -603,6 +628,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         final String status = mainPanel.getMSCRenderer()
                                 .getSelectedStatusString();
                         info.setText(status);
+                        notes.selectionChanged(selectedEvent);
                     }
 
                     @Override
@@ -611,6 +637,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                         final String status = mainPanel.getMSCRenderer()
                                 .getSelectedStatusString();
                         info.setText(status);
+                        notes.selectionChanged(null);
                     }
 
                 });
@@ -683,18 +710,40 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         results = new ResultPanel(MSCDataModel.getInstance());
         data = new DataPanel();
         mainPanel.getMSCRenderer().addSelectionListener(data);
-
+        notes = new NotesPanel(mainPanel);
+        
         jtabbed = new CustomJTabbedPane();
         jtabbed.setName("bottom-right");
         jtabbed.add("input", logPanel);
         jtabbed.add("results", results);
         jtabbed.add("data", data);
+        jtabbed.add("notes", notes);
+        Timer timer = null;
+        jtabbed.addChangeListener(new ChangeListener(){
+            private Timer timer;
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (jtabbed.getSelectedComponent() == notes) {
+                    timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        public void run() {
+                            notes.updateSelectedEvent();
+                        }
+                    }, 1000, 1000);
+                } else {
+                    if (timer != null) {
+                        timer.cancel();
+                        timer = null;
+                    }
+                }
+            }
+        });
         rightSplitPane.setBottomComponent(jtabbed);
         rightSplitPane.setDividerLocation((int) (VER_SPLIT * h));
         rightSplitPane.setResizeWeight(1.0);
         final JMenuBar jmb = new JMenuBar();
         final JMenu fileMenu = new JMenu("File");
-        JMenuItem mi = new JMenuItem(new AbstractAction("Load...") {
+        JMenuItem mi = new JMenuItem(new AbstractAction("Load model...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadFile();
@@ -704,7 +753,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
 
-        mi = new JMenuItem(new AbstractAction("Reload") {
+        mi = new JMenuItem(new AbstractAction("Reload model") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reloadFile();
@@ -713,6 +762,40 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
+
+        fileMenu.addSeparator();
+        mi = new JMenuItem(new AbstractAction("Load Session...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Session.loadAsync();
+            }
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
+                ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
+        fileMenu.add(mi);
+        
+        mi = new JMenuItem(new AbstractAction("Save Session") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Session.save();
+            }
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
+
+        mi = new JMenuItem(new AbstractAction("Save Session as...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Session.saveAs();
+            }
+        });
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+                ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
+        fileMenu.add(mi);
+        fileMenu.addSeparator();
+
+
 
         mi = new JMenuItem(new AbstractAction("Export PNG...") {
             @Override
@@ -740,6 +823,14 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
                 ActionEvent.ALT_MASK));
+        fileMenu.add(mi);
+        fileMenu.addSeparator();
+        mi = new JMenuItem(new AbstractAction("Quit") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                quit();
+            }
+        });
         fileMenu.add(mi);
 
         final JMenu editMenu = new JMenu("Edit");
@@ -1119,4 +1210,25 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         return leftRightSplitPane;
     }
 
+    private void quit() {
+        if (! Session.isUpToDate()) {
+            String[] options = new String[]{"Save & Quit", "Quit", "Cancel"};
+            int v = JOptionPane.showOptionDialog(null,
+                    "Some notes or markers have changed since session was last saved." +
+                    " Do you want to save the session, quit without saving, or cancel?",
+                    "Quit", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+            switch(v){
+            case 0:
+                Session.save();
+                System.exit(0);
+                break;
+            case 1:
+                System.exit(0);
+                break;
+            case 2:
+                break;
+            }
+        } else
+            System.exit(0);
+    }
 }

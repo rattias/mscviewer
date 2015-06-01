@@ -111,21 +111,7 @@ public class ProgressReport {
         this.shouldShow = shouldShow;
         if (Main.batchMode())
             return;
-        try {
-            if (SwingUtilities.isEventDispatchThread())
-                createProgressGUI(activity, msg, minValue, maxValue);
-            else {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        createProgressGUI(activity, msg, minValue, maxValue);
-                    }
-                });
-            }
-        } catch (final InterruptedException ex) {
-        } catch (final InvocationTargetException ex) {
-        }
-
+        createProgressGUI(activity, msg, minValue, maxValue);
     }
 
     public ProgressReport subReport(String activity, String msg, int percent,
@@ -229,15 +215,24 @@ public class ProgressReport {
     private void progressInternal(int v) {
         if (Main.batchMode())
             return;
-        if (!pb.isIndeterminate())
-            pb.setValue(v);
-        if (parent != null)
-            parent.updateForChildren();
-        updateDialog();
+        synchronized(d) {
+            if (pb == null)
+                return;
+            if (!pb.isIndeterminate())
+                pb.setValue(v);
+            if (parent != null)
+                parent.updateForChildren();
+            updateDialog();
+        }
     }
 
     public int getProgress() {
-        return pb.getValue();
+        synchronized(d) {
+            if (pb != null)
+                return pb.getValue();
+            else
+                return 0;
+        }
     }
 
     private void updateForChildren() {
