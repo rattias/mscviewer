@@ -44,6 +44,9 @@ public class StyledDocumentUtils {
                 Color c = StyleConstants.getForeground(as);
                 if (c != Color.black)
                     attrs += "c"+String.format("%06x", c.getRGB() & 0xFFFFFF);
+                Color C = StyleConstants.getBackground(as);
+                if (C != Color.black)
+                    attrs += "C"+String.format("%06x", C.getRGB() & 0xFFFFFF);
                 String txt = "";
                 try {
                     int len = eoff-soff;
@@ -70,10 +73,12 @@ public class StyledDocumentUtils {
         if (prevAttrs != null)
             sb.append("</Element>\n");
         sb.append("</Note>");
+        System.out.println("export XML:"+sb.toString());
         return sb.toString();
     }
     
     public static void  importXML(String xml, StyledDocument doc) {
+        System.out.println("import XML:"+xml);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         // use the factory to take an instance of the document builder
         org.w3c.dom.Document dom = null;
@@ -94,6 +99,7 @@ public class StyledDocumentUtils {
                 boolean underline = false;
                 boolean italic = false;
                 Color fg = Color.black;
+                Color bg = Color.white;
                 for(int a=0; a<attrs.length(); a++) {
                     switch(attrs.charAt(a)) {
                     case 'b': bold = true;      break;
@@ -103,12 +109,17 @@ public class StyledDocumentUtils {
                         fg = new Color(Integer.parseInt(attrs.substring(a+1), 16));
                         a += 6;
                         break;
+                    case 'C': 
+                        bg = new Color(Integer.parseInt(attrs.substring(a+1), 16));
+                        a += 6;
+                        break;
                     }
                 }
                 StyleConstants.setBold(as, bold);
                 StyleConstants.setUnderline(as, underline);
                 StyleConstants.setItalic(as, italic);
                 StyleConstants.setForeground(as, fg);
+                StyleConstants.setBackground(as, bg);
                 String txt = n.getChildNodes().item(0).getTextContent();
                 doc.insertString(doc.getLength(), txt, as);
             }

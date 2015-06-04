@@ -30,20 +30,15 @@ import java.awt.event.MouseMotionListener;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.CopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-import java.util.Timer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -72,6 +67,7 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -870,6 +866,15 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 }
             }
         }));
+        helpMenu.add(new JMenuItem(new AbstractAction("About Memory") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                long free = Runtime.getRuntime().freeMemory()/(1024*1024);
+                long total = Runtime.getRuntime().totalMemory()/(1024*1024);
+                long used = total - free;
+                JOptionPane.showMessageDialog(MainFrame.this, new String[]{"<html><b>Total Memory:</b> "+total+"Mb", "<html><b>Used Memory:</b> "+used+"Mb", "<html><b>Free Memory:</b> "+free+"Mb"});
+            }
+        }));
         jmb.add(fileMenu);
         jmb.add(editMenu);
         jmb.add(viewMenu);
@@ -1110,6 +1115,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             final char[] charArray = new char[fname.length()];
             Arrays.fill(charArray, ' ');
             final String pad = new String(charArray);
+            long total = Runtime.getRuntime().totalMemory();
+            long free = total - Runtime.getRuntime().freeMemory();
             setTitle(pad + "      " + progName + "      " + fname);
         } else
             setTitle(progName);

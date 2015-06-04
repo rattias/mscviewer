@@ -5,18 +5,10 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayer;
 import javax.swing.JPanel;
@@ -26,29 +18,18 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.rtf.RTFEditorKit;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.cisco.mscviewer.io.Session;
 
 
+@SuppressWarnings("serial")
 public class NoteEditor extends JPanel {
+    public static Color DEFAULT_FOREGROUND = Color.black;
+    public static Color DEFAULT_BACKGROUND = Color.white;
+    
     private JTextPane tp;
     private JToggleButton bold;
     private JToggleButton italic;
@@ -73,11 +54,17 @@ public class NoteEditor extends JPanel {
         italic.setEnabled(v);
         underline.setEnabled(v);
         fgPicker.setEnabled(v);
+        bgPicker.setEnabled(v);
     }
     public NoteEditor() {
         setLayout(new BorderLayout());
         StyledDocument doc = new DefaultStyledDocument();
+        
         tp = new JTextPane(doc);
+        SimpleAttributeSet set = new SimpleAttributeSet();
+        StyleConstants.setForeground(set, DEFAULT_FOREGROUND);
+        StyleConstants.setBackground(set, DEFAULT_BACKGROUND);
+        tp.setCharacterAttributes(set, false);
         tp.setEditable(true);
         Font fontB = new Font("Serif", Font.BOLD, FONT_SIZE);
         Font fontI = new Font("Serif", Font.ITALIC, FONT_SIZE);
@@ -136,35 +123,40 @@ public class NoteEditor extends JPanel {
         HashMap<Color, SimpleAttributeSet> hm = new HashMap<Color, SimpleAttributeSet>();
         
         bold = new JToggleButton("B");
+        tb.add(bold);
+        bold.setToolTipText("bold");
         bold.setFont(fontB);
         bold.setMaximumSize(bold.getPreferredSize());
         bold.addActionListener((ev) -> {
             setStyle(bold.isSelected() ? boldOn : boldOff);
         });
-        tb.add(bold);
         tb.add(Box.createHorizontalStrut(20));
   
         italic = new JToggleButton("I");
+        tb.add(italic);
+        italic.setToolTipText("Italic");
         italic.setFont(fontI);
         italic.setMaximumSize(bold.getPreferredSize());
         italic.addActionListener((ev) -> {
             setStyle(italic.isSelected() ? italicOn : italicOff);
         });
-        tb.add(italic);
         tb.add(Box.createHorizontalStrut(20));
 
         underline = new JToggleButton("U");
+        tb.add(underline);
+        underline.setToolTipText("Underline");
         underline.setFont(fontU);
         underline.setMaximumSize(bold.getPreferredSize());
         underline.addActionListener((ev) -> {
             setStyle(underline.isSelected() ? underlineOn : underlineOff);
         });
-        tb.add(underline);
         tb.add(Box.createHorizontalStrut(20));
 
-        fgPicker = new ColorPicker(ColorPicker.TYPE_FOREGROUND);
+        fgPicker = new ColorPicker(ColorPicker.TYPE_FOREGROUND, DEFAULT_FOREGROUND);
         JLayer jl = new JLayer<ColorPicker>(fgPicker, new RolloverUI());
         tb.add(jl);
+        jl.setToolTipText("Foreground Color");
+        fgPicker.setToolTipText("Foreground Color");
         fgPicker.addColorSelectionListener((c) -> {
            SimpleAttributeSet s = hm.get(c);
            if (s == null) {
@@ -174,9 +166,13 @@ public class NoteEditor extends JPanel {
            }
            setStyle(s);
         });
-        bgPicker = new ColorPicker(ColorPicker.TYPE_FOREGROUND);
+        tb.add(Box.createHorizontalStrut(20));
+
+        bgPicker = new ColorPicker(ColorPicker.TYPE_BACKGROUND, DEFAULT_BACKGROUND);
         jl = new JLayer<ColorPicker>(bgPicker, new RolloverUI());
+        jl.setToolTipText("Background Color");
         tb.add(jl);
+        bgPicker.setToolTipText("Background Color");
         bgPicker.addColorSelectionListener((c) -> {
            SimpleAttributeSet s = hm.get(c);
            if (s == null) {
@@ -187,31 +183,9 @@ public class NoteEditor extends JPanel {
            setStyle(s);
         });
         tb.add(Box.createHorizontalGlue());
+
     }
     
-
-    public String getStyledContent1() {
-        StyledDocument doc = tp.getStyledDocument();
-        Element[] roots = doc.getRootElements();
-        int cnt = roots[0].getElementCount();
-        for(int i=0; i<cnt; i++) {
-            Element el = roots[0].getElement(i);
-            try {
-                String txt = tp.getStyledDocument().getText(el.getStartOffset(), el.getEndOffset()- el.getStartOffset());
-                AttributeSet as = el.getAttributes();
-                Enumeration<?> en = as.getAttributeNames();
-                System.out.print("[");
-                while(en.hasMoreElements()) {
-                    System.out.print(en.nextElement()+",");
-                }
-                System.out.print(":"+txt+"]");
-            } catch (BadLocationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return getStyledContent1();
-    }
 
     private void setStyle(SimpleAttributeSet attrs) {
         int start = tp.getSelectionStart();
@@ -223,19 +197,6 @@ public class NoteEditor extends JPanel {
         tp.requestFocusInWindow();
     }
     
-    private void dump() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            RTFEditorKit rtfk=new RTFEditorKit();
-            rtfk.write(baos, tp.getDocument(), 0, tp.getDocument().getLength());
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (BadLocationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
     
     public void registerDocumentChangeListener(DocumentListener l) {
         listeners .add(l);

@@ -6,13 +6,17 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -32,11 +36,53 @@ import javax.swing.JToolBar;
 public class ColorPicker extends JPanel {
     public static final int TYPE_FOREGROUND = 1;
     public static final int TYPE_BACKGROUND = 2;
+
+    class Letter extends JPanel {
+        private int type;
+        private Font f;
+        private int height;
+        private String txt;
+        private Color c;
+        
+        public Letter(int type, String txt, int height, Color color) {
+            c = color;
+            this.height = height;
+            this.txt = txt;
+            this.type = type;
+            f = new Font("Serif", Font.BOLD, height);
+            setPreferredSize(new Dimension(height*3/2, height));
+        }
+        
+        public void setColor(Color c) {
+            this.c = c;
+        }
+        
+        @Override
+        public void paintComponent(Graphics g) {
+            g.setColor(c);
+            if (type == TYPE_FOREGROUND) {
+                g.fillRect(1, getHeight()-4, getWidth()-2, getHeight()-2);
+            } else {
+                g.fillRect(3, 3, getWidth()-4, getHeight()-4);                
+            }
+            g.setFont(f);
+            FontMetrics fm = g.getFontMetrics();
+            Rectangle2D r = fm.getStringBounds(txt, g);
+            int x = (int)(getWidth()-r.getWidth())/2;
+            int y = (int)(getHeight()-r.getHeight())/2+fm.getAscent();
+            g.setColor(Color.white);
+            g.drawString(txt, x, y);
+            g.setColor(Color.black);
+            g.drawString(txt, x+2, y+2);
+        }
+    };
+
+    
     
     public final int W = 30;
-    private JLabel B;
+    private Letter B;
     private JButton arr;
-    private JPanel coloredLine;
+//    private JPanel coloredLine;
     private Color selected = null;
     private Vector<ColorSelectionListener> listeners = new Vector<ColorSelectionListener>();
     private JLabel B1;
@@ -74,10 +120,10 @@ public class ColorPicker extends JPanel {
         super.setEnabled(v);
         B.setEnabled(v);
         arr.setEnabled(v);
-        coloredLine.setEnabled(v);
+        //coloredLine.setEnabled(v);
     }
     
-    public ColorPicker(int type) {
+    public ColorPicker(int type, Color color) {
         if (type != TYPE_FOREGROUND && type != TYPE_BACKGROUND)
             throw new Error("Invalid type "+type);
         Color[][] colors = {
@@ -90,32 +136,23 @@ public class ColorPicker extends JPanel {
                 {new Color(0xc0c0c0), Color.cyan,   Color.cyan.darker(),    Color.cyan.darker().darker(),   Color.cyan.darker().darker().darker()},
                 {new Color(0xf0f0f0), Color.blue,   Color.blue.darker(),    Color.blue.darker().darker(),   Color.blue.darker().darker().darker()}
         };                
-
+ 
         setLayout(new BorderLayout());
         setMaximumSize(new Dimension(60,1000));
-        B = new JLabel("A", SwingConstants.CENTER);
-        B.setFont(new Font("Serif", Font.BOLD, 15));
-        selected = Color.black;
+        B = new Letter(type, "A", 16, color);
+        selected = color;
         arr = new JButton() {
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Dimension d = getSize();
                 int w = getWidth();
                 int h = getHeight();
-                g.setColor(Color.black);
+                g.setColor(isEnabled() ? Color.black : Color.gray);
                 g.fillPolygon(new int[]{w/4, 3*w/4, w/2}, new int[]{h/2-w/4, h/2-w/4, h/2+w/4}, 3);
             }
         };
         arr.setPreferredSize(new Dimension(16,2));
-        coloredLine = new JPanel();
-        coloredLine.setOpaque(true);
-        coloredLine.setBackground(Color.black);
-        coloredLine.setBorder(BorderFactory.createLineBorder(Color.black));
-        JPanel left = new JPanel();
-        left.setLayout(new BorderLayout());
-        left.add(B, BorderLayout.CENTER);
-        left.add(coloredLine, BorderLayout.SOUTH);
-        this.add(left, BorderLayout.CENTER);
+        this.add(B, BorderLayout.CENTER);
         this.add(arr, BorderLayout.EAST);
         arr.addActionListener((ev) -> {
             JPanel d = new JPanel();
@@ -144,7 +181,7 @@ public class ColorPicker extends JPanel {
                                 gp.remove(d);
                                 gp.setVisible(false);  
                                 selected = b.getBackground();
-                                coloredLine.setBackground(selected);
+                                B.setColor(selected);
                                 B.repaint();
                                 for(ColorSelectionListener l: listeners)
                                     l.colorSelected(selected);
@@ -211,11 +248,22 @@ public class ColorPicker extends JPanel {
         c.setLayout(new BorderLayout());
         JToolBar b = new JToolBar();
         c.add(b, BorderLayout.NORTH);
-        b.add(new ColorPicker(TYPE_FOREGROUND));
+        b.add(new ColorPicker(TYPE_FOREGROUND, Color.black));
         f.setVisible(true);
     }
 
     public void addColorSelectionListener(ColorSelectionListener l) {
         listeners.add(l);
+    }
+    
+    public void setToolTipText(String str) {
+        super.setToolTipText(str);
+        setToolTipText(this, str);
+    }
+
+    private void setToolTipText(JComponent c, String str) {
+        for (Component cc : c.getComponents())
+            if (cc instanceof JComponent)
+                setToolTipText((JComponent) cc, str);   
     }
 }
