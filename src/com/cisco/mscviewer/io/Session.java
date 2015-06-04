@@ -209,7 +209,7 @@ public class Session {
             Element root = dom.getDocumentElement();
             root.normalize();
             String path = root.getAttribute(ATTR_MSC_PATH);
-            if (model != null && !model.getFilePath().equals(path)) {
+            if (model != null && !path.equals(model.getFilePath())) {
                 int res = JOptionPane.showConfirmDialog(null, "You're loading a session for model file "+path+", while the loaded model is from file "+model.getFilePath()+". This will load the former model. Do you want to continue?");
                 if (res != JOptionPane.YES_OPTION) 
                     return;

@@ -37,7 +37,7 @@ public class Point implements Comparable<Point> {
         if (this == other)
             return true;
         Point p = (Point)other;
-        return p.x == x && p.y == y;
+        return p.x == x && Double.doubleToLongBits(p.y) == Double.doubleToLongBits(y);
     }
 
     public long x() {

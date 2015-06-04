@@ -24,12 +24,19 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.rtf.RTFEditorKit;
 
 import com.cisco.mscviewer.gui.renderer.BlockInteractionRenderer;
 import com.cisco.mscviewer.gui.renderer.ErrorRenderer;
@@ -46,6 +53,7 @@ import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.tree.IntervalTree;
 import com.cisco.mscviewer.util.Resources;
+import com.cisco.mscviewer.util.StyledDocumentUtils;
 
 public class MSCRenderer {
     public final static int EVENT_HEIGHT = 20;
@@ -57,6 +65,7 @@ public class MSCRenderer {
     private boolean showTime = true;
     private boolean showBlocks = true;
     private boolean showLabels = true;
+    private boolean showNotes = true;
     private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
     private InputUnit deltaTimeUnit = InputUnit.NS;
     // private InputUnit timestampUnit = InputUnit.NS;
@@ -374,14 +383,13 @@ public class MSCRenderer {
                         p.y = 0;
                         ev.setNotePosition(p);
                     }
-                    if (ev.noteIsVisible()) {
+                    if (showNotes) {
                         String n = ev.getNote();
-                        final String BAD_HD = "<html dir=\"ltr\">";
-                        if (n.startsWith(BAD_HD))
-                            n = "<html>" + n.substring(BAD_HD.length());
-                        JLabel l = new JLabel(n);
-                        Dimension bubbleDim = l.getPreferredSize();
-                        l.setSize(bubbleDim);
+                        StyledDocument doc = new DefaultStyledDocument();
+                        StyledDocumentUtils.importXML(n, doc);                        
+                        JTextPane tp = new JTextPane(doc);
+                        Dimension bubbleDim = tp.getPreferredSize();
+                        tp.setSize(bubbleDim);
                         BufferedImage bi = new BufferedImage(
                                 bubbleDim.width+4,
                                 bubbleDim.height+4,
@@ -392,7 +400,7 @@ public class MSCRenderer {
                         g.setColor(Color.black);
                         g.drawRect(0,  0,  bi.getWidth()-1, bi.getHeight()-1);
                         g.translate(2, 2);
-                        l.paint(g);
+                        tp.paint(g);
                         g2d.drawImage(bi, bb.x+p.x, bb.y+p.y, null);
                         int[] xpts = new int[]{miniStickX+W/2, bb.x+p.x, bb.x+p.x, bb.x+p.x-W};
                         int[] ypts = new int[]{miniStickY+W/2, bb.y+p.y, bb.y+p.y+bubbleDim.height, bb.y+p.y+W};
@@ -1414,4 +1422,7 @@ public class MSCRenderer {
         showLabels = show;
     }
 
+    public void setShowNotes(boolean show) {
+        showNotes = show;
+    }
 }

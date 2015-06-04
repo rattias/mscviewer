@@ -1,26 +1,26 @@
 package com.cisco.mscviewer.model;
 
 import java.awt.Point;
-import java.awt.Rectangle;
+
 
 public class Note {
     private String text;
     private Point position;
     private boolean visible;
-    
+
     public Note(String text) {
         this.text = text;
         position = new Point(-1, -1);
     }
-    
+
     public String getText() {
         return text;
     }
-    
+
     public void setPosition(Point p) {
         position.setLocation(p);
     }
-    
+
     public Point getPosition() {
         return (Point)position.clone();
     }
@@ -36,4 +36,5 @@ public class Note {
     public void setText(String n) {
         text = n;   
     }
+
 }

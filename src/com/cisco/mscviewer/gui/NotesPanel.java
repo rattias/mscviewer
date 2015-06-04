@@ -4,88 +4,61 @@ import java.awt.BorderLayout;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.web.HTMLEditor;
-
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.util.StyledDocumentUtils;
 
 @SuppressWarnings("serial")
-public class NotesPanel extends JPanel {
-    private HTMLEditor htmlEditor;
-    private Event selectedEvent;
+public class NotesPanel extends JPanel implements DocumentListener {
     private Pattern pat = Pattern.compile("<body contenteditable=\"true\">(.*)</body>");
     private MainPanel mainPanel;
+    private NoteEditor editor;
     
     public NotesPanel(MainPanel mp) {
         mainPanel = mp;
         setLayout(new BorderLayout());
-        final JFXPanel fxPanel = new JFXPanel();
-        this.add(fxPanel, BorderLayout.CENTER);
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                initFX(fxPanel);
-            }
-       });
-    }
-
-    private void initFX(JFXPanel fxPanel) {
-        // This method is invoked on the JavaFX thread
-        Scene scene = createScene();
-        fxPanel.setScene(scene);
-    }
-
-    private Scene createScene() {
-        htmlEditor = new HTMLEditor();
-        htmlEditor.setPrefHeight(245);
-        htmlEditor.setDisable(true);
-        Scene scene = new Scene(htmlEditor);       
-        return (scene);
+        editor = new NoteEditor();
+        editor.setEnabled(false);
+        editor.registerDocumentChangeListener(this);
+        add(editor, BorderLayout.CENTER);
     }
 
     public void selectionChanged(Event ev) {
-        final Event prevSelected = selectedEvent;
-        final String newSelectedHtml;
+        final String newSelectedContent;
         if (ev == null || ev.getNote() == null) {
-            newSelectedHtml = "";
+            newSelectedContent = null;
         } else
-            newSelectedHtml = ev.getNote();
-        Platform.runLater(() -> {
-            htmlEditor.setDisable(ev == null);
-            if (prevSelected != null) {
-                updateEventInternal(prevSelected);
-            }
-            htmlEditor.setHtmlText(newSelectedHtml);
-        });
-        selectedEvent = ev;
+            newSelectedContent = ev.getNote();
+        editor.setEnabled(ev != null);
+        StyledDocumentUtils.importXML(newSelectedContent, editor.getDocument());
     }
 
-    private void updateEventInternal(Event ev) {
-        String currEditorHtml = htmlEditor.getHtmlText();
-        SwingUtilities.invokeLater(() -> {
-            Matcher m = pat.matcher(currEditorHtml);
-            if (m.find()) {
-                String body = m.group(1);
-                String prevSelectedNote = body.trim().equals("") ? null : currEditorHtml;
-                ev.setNote(prevSelectedNote);
-                mainPanel.repaint();
-            }
-        });       
-    }
-    
-    public void updateSelectedEvent() {
-        final Event selEvent = selectedEvent;
-        if (selEvent != null) {
-            Platform.runLater(() -> {
-                updateEventInternal(selEvent);
-            });
+    private void updateEventFromEditor() {
+        Event ev = mainPanel.getMSCRenderer().getSelectedEvent();
+        if (ev != null) {
+            String content = StyledDocumentUtils.exportXML(editor.getDocument());
+//            System.out.println("CONTENT: "+content);
+            ev.setNote(content);
+            mainPanel.repaint();
         }
     }
     
-  
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        updateEventFromEditor();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        updateEventFromEditor();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        updateEventFromEditor();
+    }
 }

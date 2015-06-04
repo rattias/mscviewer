@@ -121,6 +121,8 @@ public class ExpressionParser {
                 return "(" + toJS(t.l) + " == " + toJS(t.r) + ")";
             else if (t.l.type == Token.TT.TYPE)
                 return "(" + toJS(t.l) + " == " + toJS(t.r) + ")";
+            else if (t.l.type == Token.TT.NOTE)
+                return "(" + toJS(t.l) + " == " + toJS(t.r) + ")";
             else if (t.l.type == Token.TT.TIME)
                 return toJS(t.l) + ".equals(DateFormat.parse(" + toJS(t.r)
                         + "))";
@@ -132,6 +134,8 @@ public class ExpressionParser {
             return "label";
         case TYPE:
             return "type";
+        case NOTE:
+            return "note";
         case TIME:
             return "time";
         case UNKNOWN:
@@ -149,7 +153,12 @@ public class ExpressionParser {
             engine.put("time", ev.getTimestampRepr());
             final String type = ev.getType();
             engine.put("type", type);
+            final String note = ev.getNote();
+            if (note == null)
+                return false;
+            engine.put("note", note);
             final String js = toJS(expr.getFirstToken());
+            System.out.println("note = "+note+", eval "+js);
             final boolean b = (Boolean) engine.eval(js);
             return b;
         } catch (final ScriptException e) {
@@ -526,7 +535,7 @@ public class ExpressionParser {
 
         try {
             final Token l = ps.next();
-            if (l.type == Token.TT.LABEL || l.type == Token.TT.TYPE) {
+            if (l.type == Token.TT.LABEL || l.type == Token.TT.TYPE || l.type == Token.TT.NOTE) {
                 final Token op = ps.next();
                 if (op.type != Token.TT.EQ && op.type != Token.TT.STARTSWITH
                         && op.type != Token.TT.ENDSWITH
@@ -555,6 +564,7 @@ public class ExpressionParser {
             } else {
                 ps.compl(Token.TT.LABEL.toString());
                 ps.compl(Token.TT.TYPE.toString());
+                ps.compl(Token.TT.NOTE.toString());
             }
             ps.setPos(pos);
             return null;

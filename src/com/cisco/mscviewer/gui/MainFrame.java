@@ -315,20 +315,17 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 });
                 jpm.add(it);
             }
+            jpm.addSeparator();
             Event ev = r.getSelectedEvent();
-            it = new JCheckBoxMenuItem("Note Sticker");
+            it = new JMenuItem("Remove Note");
+            String n = ev.getNote();
             it.setEnabled(ev != null && ev.getNote() != null);
-            if (ev != null) {
-                it.setEnabled(ev.getNote() != null);
-                it.setSelected(ev.noteIsVisible());
-            } else
-                it.setEnabled(false);
             it.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    JCheckBoxMenuItem jc = (JCheckBoxMenuItem)actionEvent.getSource(); 
-                    ev.setNoteVisible(jc.isSelected());
-                    repaint();
+                    ev.setNote(null);
+                    notes.selectionChanged(ev);
+                    mainPanel.repaint();
                 }
             });
        
@@ -718,26 +715,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         jtabbed.add("results", results);
         jtabbed.add("data", data);
         jtabbed.add("notes", notes);
-        Timer timer = null;
-        jtabbed.addChangeListener(new ChangeListener(){
-            private Timer timer;
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (jtabbed.getSelectedComponent() == notes) {
-                    timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        public void run() {
-                            notes.updateSelectedEvent();
-                        }
-                    }, 1000, 1000);
-                } else {
-                    if (timer != null) {
-                        timer.cancel();
-                        timer = null;
-                    }
-                }
-            }
-        });
         rightSplitPane.setBottomComponent(jtabbed);
         rightSplitPane.setDividerLocation((int) (VER_SPLIT * h));
         rightSplitPane.setResizeWeight(1.0);
@@ -1081,6 +1058,15 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mainPanel.getMSCRenderer().setShowLabels(
+                        ((JToggleButton) e.getSource()).isSelected());
+                mainPanel.repaint();
+            }
+        });
+        jtb = addToggleButton(bar, sz + "note.png", "show notes", true);
+        jtb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainPanel.getMSCRenderer().setShowNotes(
                         ((JToggleButton) e.getSource()).isSelected());
                 mainPanel.repaint();
             }

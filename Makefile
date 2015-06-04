@@ -97,7 +97,7 @@ build:
 	@$(JAVAC) -g -Xlint:-options -classpath "src" -d classes -source 1.3 src/com/cisco/mscviewer/TestVersion.java
 	@mkdir -p classes/com/cisco/mscviewer
 	-@cp -rf src/com/cisco/mscviewer/resources classes/com/cisco/mscviewer
-	-@cp src/com/cisc/mscivewer/io/msc-session.dtd classes/com/cisco/mscviewer/io
+	-@cp src/com/cisco/mscviewer/io/msc-session.dtd classes/com/cisco/mscviewer/io
 	@echo "*** Generating Release Help..."
 
 

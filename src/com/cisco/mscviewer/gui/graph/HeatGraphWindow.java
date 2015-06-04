@@ -20,40 +20,10 @@ import com.cisco.mscviewer.model.Event;
 
 @SuppressWarnings({ "serial" })
 public class HeatGraphWindow extends JFrame {
-    private final Graph graph;
-    private CheckBoxList list;
     private JTextField xtf;
     private final GraphPanel gp;
-/*
-    private JComponent mkLegend() {
-        list = new CheckBoxList();
-        list.setBackground(Color.black);
-        final EntityCheckBox[] cbs = new EntityCheckBox[graph.getSeries().size()];
-        int idx = 0;
-        for (final GraphSeries gd : graph.getSeries()) {
-            cbs[idx] = new EntityCheckBox(gd);
-            cbs[idx].setBackground(Color.black);
-            cbs[idx].setForeground(gp.getForeground(gd));
-            cbs[idx].setSelected(true);
-            cbs[idx].addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent ev) {
-                    final EntityCheckBox c = (EntityCheckBox) ev.getItem();
-                    gp.setEnabled(c.data,
-                            ev.getStateChange() == ItemEvent.SELECTED);
-                    revalidate();
-                    gp.repaint();
-                }
-            });
-            idx++;
-        }
-        list.setListData(cbs);
-        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        return list;
-    }
-*/
+
     public HeatGraphWindow(Graph graph) {
-        this.graph = graph;
         gp = new HeatGraphPanel();
         final MSCRenderer mscRenderer = MainFrame.getInstance().getMainPanel()
                 .getMSCRenderer();

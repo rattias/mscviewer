@@ -14,6 +14,8 @@ package com.cisco.mscviewer.model;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.swing.text.StyledDocument;
+
 import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.gui.renderer.DefaultEventRenderer;
 import com.cisco.mscviewer.gui.renderer.EventRenderer;
@@ -198,7 +200,7 @@ public class Event {
         note.setPosition(p);
         Session.setUpToDate(false);
     }
-
+    
     /**
      * returns the type of the Event. The type corresponds to the name of the
      * Renderer class, stripped of the "Renderer" suffix.
