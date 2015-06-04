@@ -3,5 +3,18 @@
 *.project
 *.pydevproject
 *.tgz
+*.zip
+.project
 mscviewer.jar
+doc/manual/images/*
+.externalToolBuilders/
+.log/
+.settings/org.eclipse.ltk.core.refactoring.prefs
+.settings/org.sonar.ide.eclipse.core.prefs
+.sonar/
+.srclist
+doc/manual/generated/
+doc/manual/mscviewer.pdf
+doc/manual/tocnotoc.tex
+sonar-project.properties
 
