@@ -117,8 +117,6 @@ public class HeatGraphPanel extends GraphPanel {
         if (l == null)
             return;
         final Integer gy = l.getY() + l.getHeight() / 2;
-        if (gy == null)
-            return;
         g2d.drawOval(cursorScreenX - 3, gy - BAR_HEIGHT / 2, 6, BAR_HEIGHT);
     }
 

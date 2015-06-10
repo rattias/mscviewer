@@ -325,8 +325,6 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new Error("should be in event dispatch thread!");
             }
-
-            final int count = ehm.entityCount();
             final int totalW = getWidth();
             final JViewport jvp = (JViewport) getParent();
             final Rectangle rec = jvp.getViewRect();

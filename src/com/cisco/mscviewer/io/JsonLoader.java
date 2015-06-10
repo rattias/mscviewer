@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,12 +44,10 @@ import com.cisco.mscviewer.model.JSonArrayValue;
 import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.JSonStringValue;
 import com.cisco.mscviewer.model.JSonValue;
-import com.cisco.mscviewer.model.LogListModel;
 import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.SimpleInterval;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.util.JSonParser;
-import com.cisco.mscviewer.util.Prefs;
 import com.cisco.mscviewer.util.ProgressReport;
 import com.cisco.mscviewer.util.Resources;
 
@@ -684,9 +681,7 @@ public class JsonLoader implements Loader {
                 }
             }
         });
-        System.out.println("STARTING WORKER THREAD");
         sw.execute();
-        // }
     }
 
 }

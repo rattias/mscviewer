@@ -7,11 +7,9 @@ import java.util.List;
 import com.cisco.mscviewer.model.MSCDataModel;
 
 public class Graph {
-    private final String name;
     private final ArrayList<GraphSeries> series;
 
     public Graph(String name) {
-        this.name = name;
         this.series = new ArrayList<GraphSeries>();
         MSCDataModel.getInstance().addGraph(this);
     }

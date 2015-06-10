@@ -2,16 +2,13 @@ package com.cisco.mscviewer.model;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
 
-import com.cisco.mscviewer.util.Prefs;
 import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
@@ -20,15 +17,16 @@ public class LogListModel extends AbstractListModel<String> {
     private final static int BLOCK_SIZE = 1024;
     private RandomAccessFile raf;
     private BufferedWriter fw;
-    ArrayList<long[]> offsets = new ArrayList<long[]>();
-    private int numLines = 0;
-    private long fileSize = 0;
-    private long cachedOffset = Long.MIN_VALUE;
-    private byte[] cache = new byte[8192];
-    private boolean loading = true;
+    ArrayList<long[]> offsets;
+    private int numLines;
+    private long fileSize;
+    private long cachedOffset;
+    private byte[] cache;
+    private boolean loading;
     private File f;
 
     public LogListModel() {
+        reset();
         long[] el = new long[BLOCK_SIZE];
         offsets.add(el);
     }
@@ -140,6 +138,11 @@ public class LogListModel extends AbstractListModel<String> {
                 e.printStackTrace();
             }
         }
+        offsets = new ArrayList<long[]>();
+        numLines = 0;
+        fileSize = 0;
+        cachedOffset = Long.MIN_VALUE;
+        cache = new byte[8192];
         loading = true;
     }
 

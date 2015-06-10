@@ -89,7 +89,7 @@ class PyScriptTree extends JTree {
         final DefaultTreeModel dtm = (DefaultTreeModel) getModel();
         final DefaultMutableTreeNode root = (DefaultMutableTreeNode) dtm.getRoot();
         root.removeAllChildren();
-        dtm.reload();
+        Utils.dispatchOnAWTThreadLater(() -> dtm.reload());
         if (py == null) {
             // System.out.println("Instantiating python");
             py = new Python(mainPanel);
@@ -126,7 +126,7 @@ class PyScriptTree extends JTree {
                     pkgNode.add(fnNode);
                 }
             }
-            dtm.reload();
+            Utils.dispatchOnAWTThreadLater(() -> dtm.reload());
         } catch (final Exception ex) {
             ex.printStackTrace();
             Report.exception(ex);

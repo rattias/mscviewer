@@ -27,7 +27,7 @@ def graph_series():
 
 def series_point_at(series, idx):
     p = series.getPointAt(idx)
-    return (p.x, p.y, p.o)
+    return (p.x(), p.y(), p.object())
 
 def series_points(series):
     class ThisIter:

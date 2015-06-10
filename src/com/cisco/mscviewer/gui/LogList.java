@@ -20,14 +20,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
@@ -102,17 +99,11 @@ class LogListRenderer extends JPanel {
         g.setColor(Color.black);
         g.drawString("" + line, 0, fm.getAscent());
         int bi, bo, ei, eo;
-        if (copyBeginIndex <= copyEndIndex) {
-            bi = copyBeginIndex;
-            bo = copyBeginOffset;
-            ei = copyEndIndex;
-            eo = copyEndOffset;
-        } else {
-            ei = copyBeginIndex;
-            eo = copyBeginOffset;
-            bi = copyEndIndex;
-            bo = copyEndOffset;            
-        }
+        int[] v = getCopyInfo();
+        bi = v[0];
+        bo = v[1];
+        ei = v[2];
+        eo = v[3];
         if (currLineIdx<bi || currLineIdx>ei) {
             if (isSelected) {
                 g.setColor(selBackground);
@@ -194,7 +185,19 @@ class LogListRenderer extends JPanel {
     }
 
     public int[] getCopyInfo() {
-        int[] v = new int[]{copyBeginIndex, copyBeginOffset, copyEndIndex, copyEndOffset};
+        int[] v;
+        if (copyBeginIndex < copyEndIndex) {
+            v = new int[]{copyBeginIndex, copyBeginOffset, copyEndIndex, copyEndOffset};
+        } else if (copyBeginIndex > copyEndIndex) {
+            v = new int[]{copyEndIndex, copyEndOffset, copyBeginIndex, copyBeginOffset};
+        } else if (copyBeginOffset < copyEndOffset) {
+            // index is same
+            v = new int[]{copyBeginIndex, copyBeginOffset, copyEndIndex, copyEndOffset};
+        } else {
+            // index is same
+            v = new int[]{copyEndIndex, copyEndOffset, copyBeginIndex, copyBeginOffset};
+        }
+
         return v;
     }
     
@@ -282,6 +285,7 @@ public class LogList extends JList<String> implements SelectionListener,
                 LogListRenderer r = cellRenderer.getRenderer();
                 if (r == null)
                     return;
+                @SuppressWarnings("unchecked")
                 JList<String> list = (JList<String>) evt.getSource();
                 final int index = list.locationToIndex(evt.getPoint());
                 String line = dm.getLogListModel().getElementAt(index);
@@ -295,24 +299,17 @@ public class LogList extends JList<String> implements SelectionListener,
             @Override
             public void mouseReleased(MouseEvent evt) {
                 LogListRenderer r = cellRenderer.getRenderer();
+                @SuppressWarnings("unchecked")
                 JList<String> list = (JList<String>) evt.getSource();
 
                 if (r == null)
                     return;
                 StringBuilder sb = new StringBuilder();
                 int[] ci = r.getCopyInfo();
-                int bi, bo, ei, eo;
-                if (ci[0] <= ci[2]) {
-                    bi = ci[0];
-                    bo = ci[1];
-                    ei = ci[2];
-                    eo = ci[3];
-                } else {
-                    ei = ci[0];
-                    eo = ci[1];
-                    bi = ci[2];
-                    bo = ci[3];            
-                }
+                int bi = ci[0];
+                int bo = ci[1];
+                int ei = ci[2];
+                int eo = ci[3];
                 if (bi == ei)
                     sb.append(list.getModel().getElementAt(bi).substring(bo, eo));
                 else {
@@ -334,6 +331,7 @@ public class LogList extends JList<String> implements SelectionListener,
                 LogListRenderer r = cellRenderer.getRenderer();
                 if (r == null)
                     return;
+                @SuppressWarnings("unchecked")
                 JList<String> list = (JList<String>) evt.getSource();
                 final int index = list.locationToIndex(evt.getPoint());
                 String line = dm.getLogListModel().getElementAt(index);

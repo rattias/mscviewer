@@ -115,8 +115,11 @@ abstract public class GraphPanel extends JPanel {
     private final AbstractAction moveLeft = new AbstractAction(LEFT) {
         @Override
         public void actionPerformed(ActionEvent e) {
+            long l0 = System.currentTimeMillis();
             moveCursorLeft(false);
             repaint();
+            long l1 = System.currentTimeMillis();
+            System.out.println("ELAPSED: "+(l1-l0));
         }
     };
 
@@ -205,8 +208,6 @@ abstract public class GraphPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent ev) {
                 endX = ev.getX();
-                final long l = Math.min(startX, endX);
-                final long r = Math.max(startX, endX);
                 repaint();
             }
 

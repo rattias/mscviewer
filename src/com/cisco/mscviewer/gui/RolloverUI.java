@@ -10,9 +10,9 @@ import javax.swing.plaf.LayerUI;
 
 
 //UI which allows to span a rubberband on top of the component
+@SuppressWarnings("serial")
 public class RolloverUI<V extends JComponent> extends LayerUI<V> {
     private JLayer<?> l;
-    private boolean selecting;
 
     @Override
     public void installUI(JComponent c) {

@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -43,10 +42,10 @@ public class StyledDocumentUtils {
                     attrs += 'u';
                 Color c = StyleConstants.getForeground(as);
                 if (c != Color.black)
-                    attrs += "c"+String.format("%06x", c.getRGB() & 0xFFFFFF);
+                    attrs += "c["+String.format("%06x", c.getRGB() & 0xFFFFFF)+"]";
                 Color C = StyleConstants.getBackground(as);
                 if (C != Color.black)
-                    attrs += "C"+String.format("%06x", C.getRGB() & 0xFFFFFF);
+                    attrs += "C["+String.format("%06x", C.getRGB() & 0xFFFFFF)+"]";
                 String txt = "";
                 try {
                     int len = eoff-soff;
@@ -73,12 +72,10 @@ public class StyledDocumentUtils {
         if (prevAttrs != null)
             sb.append("</Element>\n");
         sb.append("</Note>");
-        System.out.println("export XML:"+sb.toString());
         return sb.toString();
     }
     
     public static void  importXML(String xml, StyledDocument doc) {
-        System.out.println("import XML:"+xml);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         // use the factory to take an instance of the document builder
         org.w3c.dom.Document dom = null;
@@ -105,12 +102,14 @@ public class StyledDocumentUtils {
                     case 'b': bold = true;      break;
                     case 'u': underline = true; break;
                     case 'i': italic = true;    break;
-                    case 'c': 
-                        fg = new Color(Integer.parseInt(attrs.substring(a+1), 16));
+                    case 'c':
+                        String arg = attrs.substring(a+2, attrs.indexOf(']', a+2));
+                        fg = new Color(Integer.parseInt(arg, 16));
                         a += 6;
                         break;
                     case 'C': 
-                        bg = new Color(Integer.parseInt(attrs.substring(a+1), 16));
+                        arg = attrs.substring(a+2, attrs.indexOf(']', a+2));
+                        bg = new Color(Integer.parseInt(arg, 16));
                         a += 6;
                         break;
                     }

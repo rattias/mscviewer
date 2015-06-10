@@ -20,7 +20,6 @@ import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
@@ -72,7 +71,8 @@ class GPane extends JComponent {
  * @author rattias
  */
 public class ProgressReport {
-    private static final JDialog d = new JDialog(MainFrame.getInstance(),
+
+    private static final JDialog singletonDialog = new JDialog(MainFrame.getInstance(),
             "Progress Status", false);
     private static final GPane gpane = new GPane();
     private JPanel innerPane;
@@ -89,7 +89,7 @@ public class ProgressReport {
     private String activity;
     @SuppressWarnings("unused")
     private String msg;
-
+    
     public ProgressReport(final String activity, final String msg) {
         this(activity, msg, -1, -1);
     }
@@ -128,7 +128,7 @@ public class ProgressReport {
 
     private void createProgressGUI(String activity, String msg, int minValue,
             int maxValue) {
-        synchronized (d) {
+        synchronized (singletonDialog) {
             msgLabel = new JLabel("<html>" + Utils.stringToHTML(msg)
                     + "</html>");
             pb = new JProgressBar(minValue, maxValue);
@@ -154,7 +154,7 @@ public class ProgressReport {
             @Override
             public void run() {
                 if (elements.isEmpty()) {
-                    d.setVisible(false);
+                    singletonDialog.setVisible(false);
                     final MainFrame mf = MainFrame.getInstance();
                     if (mf != null) {
                         mf.setGlassPane(gpane);
@@ -163,25 +163,25 @@ public class ProgressReport {
                     return;
                 }
                 if (!elementShowing) {
-                    d.setContentPane(new JOptionPane(elements
+                    singletonDialog.setContentPane(new JOptionPane(elements
                             .toArray(new Object[elements.size()]),
                             JOptionPane.PLAIN_MESSAGE,
                             JOptionPane.DEFAULT_OPTION, null,
                             new String[] { "Cancel" }));
-                    d.pack();
+                    singletonDialog.pack();
                     final JFrame f = MainFrame.getInstance();
                     if (f != null) {
                         final Rectangle r = f.getBounds();
-                        r.x = r.x + (r.width - d.getWidth()) / 2;
-                        r.y = r.y + (r.height - d.getHeight()) / 2;
-                        d.setLocation(r.x, r.y);
+                        r.x = r.x + (r.width - singletonDialog.getWidth()) / 2;
+                        r.y = r.y + (r.height - singletonDialog.getHeight()) / 2;
+                        singletonDialog.setLocation(r.x, r.y);
                     }
                     final MainFrame mf = MainFrame.getInstance();
                     if (mf != null) {
                         mf.setGlassPane(gpane);
                         gpane.setVisible(true);
                     }
-                    d.setVisible(true);
+                    singletonDialog.setVisible(true);
                     elementShowing = true;
                 }
             }
@@ -215,7 +215,7 @@ public class ProgressReport {
     private void progressInternal(int v) {
         if (Main.batchMode())
             return;
-        synchronized(d) {
+        synchronized(singletonDialog) {
             if (pb == null)
                 return;
             if (!pb.isIndeterminate())
@@ -227,7 +227,7 @@ public class ProgressReport {
     }
 
     public int getProgress() {
-        synchronized(d) {
+        synchronized(singletonDialog) {
             if (pb != null)
                 return pb.getValue();
             else
@@ -331,4 +331,14 @@ public class ProgressReport {
         System.out.println("done");
     }
 
+    public static void cleanup() {
+        singletonDialog.setVisible(false);
+        final MainFrame mf = MainFrame.getInstance();
+        if (mf != null) {
+            mf.setGlassPane(gpane);
+            gpane.setVisible(false);
+        }
+
+    }
 }
+

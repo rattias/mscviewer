@@ -24,6 +24,9 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import com.cisco.mscviewer.gui.colorpicker.ColorPicker;
+import com.cisco.mscviewer.gui.colorpicker.TextColorPicker;
+
 
 @SuppressWarnings("serial")
 public class NoteEditor extends JPanel {
@@ -31,9 +34,9 @@ public class NoteEditor extends JPanel {
     public static Color DEFAULT_BACKGROUND = Color.white;
     
     private JTextPane tp;
-    private JToggleButton bold;
-    private JToggleButton italic;
-    private JToggleButton underline;
+    private StyledToggleButton bold;
+    private StyledToggleButton italic;
+    private StyledToggleButton underline;
     private ColorPicker fgPicker;
     private Vector<DocumentListener> listeners = new Vector<DocumentListener>();
     private ColorPicker bgPicker;
@@ -122,7 +125,7 @@ public class NoteEditor extends JPanel {
         
         HashMap<Color, SimpleAttributeSet> hm = new HashMap<Color, SimpleAttributeSet>();
         
-        bold = new JToggleButton("B");
+        bold = new StyledToggleButton("B");
         tb.add(bold);
         bold.setToolTipText("bold");
         bold.setFont(fontB);
@@ -132,7 +135,7 @@ public class NoteEditor extends JPanel {
         });
         tb.add(Box.createHorizontalStrut(20));
   
-        italic = new JToggleButton("I");
+        italic = new StyledToggleButton("I");
         tb.add(italic);
         italic.setToolTipText("Italic");
         italic.setFont(fontI);
@@ -142,7 +145,7 @@ public class NoteEditor extends JPanel {
         });
         tb.add(Box.createHorizontalStrut(20));
 
-        underline = new JToggleButton("U");
+        underline = new StyledToggleButton("U");
         tb.add(underline);
         underline.setToolTipText("Underline");
         underline.setFont(fontU);
@@ -152,8 +155,8 @@ public class NoteEditor extends JPanel {
         });
         tb.add(Box.createHorizontalStrut(20));
 
-        fgPicker = new ColorPicker(ColorPicker.TYPE_FOREGROUND, DEFAULT_FOREGROUND);
-        JLayer jl = new JLayer<ColorPicker>(fgPicker, new RolloverUI());
+        fgPicker = new TextColorPicker(TextColorPicker.TYPE_FOREGROUND);
+        JLayer<ColorPicker> jl = new JLayer<ColorPicker>(fgPicker, new RolloverUI<ColorPicker>());
         tb.add(jl);
         jl.setToolTipText("Foreground Color");
         fgPicker.setToolTipText("Foreground Color");
@@ -168,8 +171,8 @@ public class NoteEditor extends JPanel {
         });
         tb.add(Box.createHorizontalStrut(20));
 
-        bgPicker = new ColorPicker(ColorPicker.TYPE_BACKGROUND, DEFAULT_BACKGROUND);
-        jl = new JLayer<ColorPicker>(bgPicker, new RolloverUI());
+        bgPicker = new TextColorPicker(TextColorPicker.TYPE_BACKGROUND);
+        jl = new JLayer<ColorPicker>(bgPicker, new RolloverUI<ColorPicker>());
         jl.setToolTipText("Background Color");
         tb.add(jl);
         bgPicker.setToolTipText("Background Color");

@@ -12,10 +12,14 @@
 package com.cisco.mscviewer.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -24,9 +28,12 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -35,10 +42,22 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -47,7 +66,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -59,6 +78,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -67,7 +87,7 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -75,8 +95,23 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.expression.ParsedExpression;
+import com.cisco.mscviewer.gui.colorpicker.HighlighterColorPicker;
 import com.cisco.mscviewer.io.JsonLoader;
 import com.cisco.mscviewer.io.PNGSaver;
 import com.cisco.mscviewer.io.Session;
@@ -88,12 +123,15 @@ import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.script.PythonFunction;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
+import com.cisco.mscviewer.util.PersistentPrefs;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
+import com.sun.javafx.geom.RoundRectangle2D;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final static double VER_SPLIT = 0.6;
+
     private static MainFrame mf;
     private final ViewModel viewModel;
     private final EntityTree entityTree;
@@ -119,6 +157,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final JTabbedPane jtabbed;
     private final JSplitPane leftRightSplitPane, leftSplitPane, rightSplitPane;
     private NotesPanel notes;
+    private JMenu recentFilesMenu;
+    private JMenu recentSessionMenu;
 
     class MouseHandler implements MouseListener, MouseMotionListener {
 
@@ -314,7 +354,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             jpm.addSeparator();
             Event ev = r.getSelectedEvent();
             it = new JMenuItem("Remove Note");
-            String n = ev.getNote();
             it.setEnabled(ev != null && ev.getNote() != null);
             it.addActionListener(new ActionListener() {
                 @Override
@@ -324,7 +363,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     mainPanel.repaint();
                 }
             });
-       
+
             jpm.add(it);
 
             if (jpm.getComponentCount() > 0) {
@@ -455,8 +494,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         case JFileChooser.APPROVE_OPTION:
             final File f = jfc.getSelectedFile();
             try {
-                viewModel.reset();            
-                new JsonLoader().load(f.getPath(), dm, false);
+                loadFile(f.getPath());                
             } catch (final Exception e1) {
                 e1.printStackTrace();
             }
@@ -468,6 +506,18 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         }
     }
 
+    private void loadFile(String path) {
+        final MSCDataModel dm = MSCDataModel.getInstance();
+        viewModel.reset();            
+        try {
+            new JsonLoader().loadAsync(path, dm, false);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        addRecentModel(path);
+    }
+    
     private void reloadFile() {
         final MSCDataModel dm = MSCDataModel.getInstance();
         try {
@@ -481,7 +531,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
 
     private void exportPNG() {
         final Object[] choices = { "Highlighted Elements", "Open Entities",
-                "Entire Model" };
+        "Entire Model" };
         final String s = (String) JOptionPane.showInputDialog(MainFrame.this,
                 "What image do you want to capture?", "Choose ",
                 JOptionPane.PLAIN_MESSAGE, null, choices, choices[0]);
@@ -569,6 +619,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         jfc = new JFileChooser();
         getContentPane().setLayout(new BorderLayout());
         final JToolBar toolBar = new JToolBar("jtb");
+        toolBar.setRollover(true);
         toolBar.setFloatable(false);
         toolBar.setBorder(BorderFactory
                 .createEtchedBorder(EtchedBorder.LOWERED));
@@ -704,7 +755,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         data = new DataPanel();
         mainPanel.getMSCRenderer().addSelectionListener(data);
         notes = new NotesPanel(mainPanel);
-        
+
         jtabbed = new CustomJTabbedPane();
         jtabbed.setName("bottom-right");
         jtabbed.add("input", logPanel);
@@ -715,7 +766,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         rightSplitPane.setDividerLocation((int) (VER_SPLIT * h));
         rightSplitPane.setResizeWeight(1.0);
         final JMenuBar jmb = new JMenuBar();
-        final JMenu fileMenu = new JMenu("File");
+        JMenu fileMenu = new JMenu("File");
         JMenuItem mi = new JMenuItem(new AbstractAction("Load model...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -736,17 +787,22 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
 
+        recentFilesMenu = new JMenu("Recent model");
+        updateRecentModelsMenu();
+        fileMenu.add(recentFilesMenu);
+
         fileMenu.addSeparator();
         mi = new JMenuItem(new AbstractAction("Load Session...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Session.loadAsync();
+                String path = Session.loadAsync();
+                addRecentSession(path);
             }
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
                 ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
         fileMenu.add(mi);
-        
+
         mi = new JMenuItem(new AbstractAction("Save Session") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -757,6 +813,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
 
+        
         mi = new JMenuItem(new AbstractAction("Save Session as...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -766,6 +823,10 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
         fileMenu.add(mi);
+
+        recentSessionMenu = new JMenu("Recent session");
+        updateRecentSessionsMenu();
+        fileMenu.add(recentSessionMenu);
         fileMenu.addSeparator();
 
 
@@ -897,12 +958,12 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         final ImageIcon ii = Resources.getImageIcon(resource, description);
         if (ii == null)
             throw new Error("missing " + resource);
-        final JToggleButton jtb = new JToggleButton(ii);
+        StyledToggleButton jtb = new StyledToggleButton();
+        jtb.setToolTipText(description);
+        jtb.setIcon(ii);
+        jtb.setSelected(isSelected);
         bar.add(jtb);
         bar.add(Box.createHorizontalStrut(2));
-        jtb.setMargin(new Insets(1, 1, 1, 1));
-        jtb.setToolTipText(ii.getDescription());
-        jtb.setSelected(isSelected);
         return jtb;
     }
 
@@ -916,22 +977,38 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         final ImageIcon ii = Resources.getImageIcon(resource, description);
         if (ii == null)
             throw new Error("missing " + resource);
-        final JButton jtb = btn != null ? btn : new JButton();
-        ToolTipManager.sharedInstance().registerComponent(jtb);
+        final JButton jtb = btn != null ? btn : new StyledButton();
         jtb.setIcon(ii);
-        jtb.setBorderPainted(false);
-        jtb.setContentAreaFilled(false);
-        bar.add(jtb);
-        bar.add(Box.createHorizontalStrut(2));
-        jtb.setMargin(new Insets(1, 1, 1, 1));
         jtb.setToolTipText(ii.getDescription());
         jtb.setSelected(isSelected);
+        bar.add(jtb);
+        bar.add(Box.createHorizontalStrut(2));
         return jtb;
+    }
+
+    private JComponent addHighlighter(JToolBar bar) {
+        HighlighterColorPicker hcp = new HighlighterColorPicker(32);
+        hcp.addColorSelectionListener((c) -> {
+            Color[] colors = HighlighterColorPicker.colors;
+            for(int i=0; i<colors.length; i++) {
+                if (colors[i].equals(c)) {
+                    Marker m = HighlighterColorPicker.markers[i];
+                    String name = m.getName();
+                    setMainPanelCursor(Resources.getImageIcon("32x32/highlight_"+name+".png", name).getImage(), 0, 0);                
+                    currentMarker = m;
+                }
+            }
+        });
+        ToolTipManager.sharedInstance().registerComponent(hcp);
+        hcp.setToolTipText("Highlighter");
+        bar.add(hcp);
+        bar.add(Box.createHorizontalStrut(2));
+        return hcp.getButton();
     }
 
     private void populateToolbar(JToolBar bar) {
         final String sz = "32x32/";
-        final String hsz = "16x16/";
+        //final String hsz = "16x16/";
         bar.add(Box.createHorizontalStrut(10));
         final ButtonGroup toolGroup = new ButtonGroup();
 
@@ -966,16 +1043,17 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         });
 
-        jb = addButton(bar, sz + "run.png", "Rerun Latest Script", true,
-                new JButton() {
-                    @Override
-                    public String getToolTipText() {
-                        super.getToolTipText();
-                        final PythonFunction fun = scriptTree.getLatestFunction();
-                        return (fun != null) ? "Rerun Latest Script: "
-                                + fun.getName() : "Rerun Latest Script: <none>";
-                    }
-                });
+        jb = addButton(bar, sz + "run.png", "Rerun Latest Script", true);
+//        jb.
+//                new JButton() {
+//            @Override
+//            public String getToolTipText() {
+//                super.getToolTipText();
+//                final PythonFunction fun = scriptTree.getLatestFunction();
+//                return (fun != null) ? "Rerun Latest Script: "
+//                + fun.getName() : "Rerun Latest Script: <none>";
+//            }
+//        });
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -990,9 +1068,13 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 openPreferences();
             }
         });
-        bar.addSeparator(new Dimension(30, 32));
-
-        final ImageIcon ii = Resources.getImageIcon(sz + "select.png", "select");
+        Dimension separatorDim = new Dimension(16, 32);
+        bar.addSeparator(separatorDim);
+        JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
+        
+        sep.setPreferredSize(separatorDim);
+        sep.setMaximumSize(separatorDim);
+        bar.add(sep);
         JToggleButton jtb = addToggleButton(bar, sz + "select.png", "select",
                 true);
         toolGroup.add(jtb);
@@ -1003,43 +1085,20 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 if (jtb.isSelected()) {
                     setMainPanelCursor(
                             Resources.getImageIcon(sz + "select.png", "")
-                                    .getImage(), 0, 0);
+                            .getImage(), 0, 0);
                     currentMarker = null;
                 }
             }
         });
 
-        final String colors[] = { "Green", "Blue", "Yellow", "Red" };
-        for (final String c : colors) {
-            final JToggleButton highlightBtn = addToggleButton(bar, sz + "highlight_"
-                    + c.toLowerCase() + ".png", c + " Highlighter", false);
-            highlightBtn.setName(c);
-            toolGroup.add(highlightBtn);
-            bar.add(highlightBtn);
-            highlightBtn.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    final JToggleButton jtb = (JToggleButton) e.getSource();
-                    if (jtb.isSelected()) {
-                        final String color = jtb.getName().toLowerCase();
-                        setMainPanelCursor(
-                                Resources.getImageIcon(
-                                        sz + "highlight_" + color + ".png", "")
-                                        .getImage(), 0, 0);
-                        if (color.equals("green"))
-                            currentMarker = Marker.GREEN;
-                        else if (color.equals("blue"))
-                            currentMarker = Marker.BLUE;
-                        else if (color.equals("yellow"))
-                            currentMarker = Marker.YELLOW;
-                        else if (color.equals("red"))
-                            currentMarker = Marker.RED;
-                    }
-                }
-            });
-        }
+        JToggleButton tb = (JToggleButton)addHighlighter(bar);
+        toolGroup.add(tb);
+        bar.addSeparator(separatorDim);
+        sep = new JSeparator(SwingConstants.VERTICAL);
+        sep.setPreferredSize(separatorDim);
+        sep.setMaximumSize(separatorDim);
+        bar.add(sep);
 
-        bar.addSeparator(new Dimension(30, 32));
         jtb = addToggleButton(bar, sz + "blocks.png", "show blocks", true);
         jtb.addActionListener(new ActionListener() {
             @Override
@@ -1076,6 +1135,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 mainPanel.repaint();
             }
         });
+        
     }
 
     int getLifeLineY(int entityIdx) {
@@ -1115,8 +1175,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             final char[] charArray = new char[fname.length()];
             Arrays.fill(charArray, ' ');
             final String pad = new String(charArray);
-            long total = Runtime.getRuntime().totalMemory();
-            long free = total - Runtime.getRuntime().freeMemory();
             setTitle(pad + "      " + progName + "      " + fname);
         } else
             setTitle(progName);
@@ -1208,8 +1266,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             String[] options = new String[]{"Save & Quit", "Quit", "Cancel"};
             int v = JOptionPane.showOptionDialog(null,
                     "Some notes or markers have changed since session was last saved." +
-                    " Do you want to save the session, quit without saving, or cancel?",
-                    "Quit", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+                            " Do you want to save the session, quit without saving, or cancel?",
+                            "Quit", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
             switch(v){
             case 0:
                 Session.save();
@@ -1223,5 +1281,47 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         } else
             System.exit(0);
+    }
+    
+    private void addRecentModel(String path) {
+        ArrayList<String> items = PersistentPrefs.getInstance().addRecentModel(path);
+        updateRecentModelsMenu();
+    }
+
+    public void addRecentSession(String path) {
+        ArrayList<String> items = PersistentPrefs.getInstance().addRecentSession(path);
+        updateRecentSessionsMenu();
+    }
+
+    private void updateRecentModelsMenu() {
+        ArrayList<String> models = PersistentPrefs.getInstance().getRecentModels();
+        recentFilesMenu.removeAll();
+        for(int i=0; i<models.size(); i++) {
+            String item = models.get(i);
+            JMenuItem mi = new JMenuItem(new AbstractAction(item) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    loadFile(item);
+                }
+            });
+            mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0+i, ActionEvent.ALT_MASK));
+            recentFilesMenu.add(mi);
+        }
+    }
+    
+    private void updateRecentSessionsMenu() {
+        ArrayList<String> sessions = PersistentPrefs.getInstance().getRecentSessions();
+        recentSessionMenu.removeAll();
+        for(int i=0; i<sessions.size(); i++) {
+            String item = sessions.get(i);
+            JMenuItem mi = new JMenuItem(new AbstractAction(item) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    loadFile(item);
+                }
+            });
+            mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0+i, ActionEvent.ALT_MASK|ActionEvent.SHIFT_MASK));
+            recentSessionMenu.add(mi);
+        }
     }
 }

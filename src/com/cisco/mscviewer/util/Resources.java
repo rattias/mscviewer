@@ -27,7 +27,6 @@ public class Resources {
     public static void init(String plugins) {
         imgRenderers = new HashMap<String, ImageRenderer>();
 
-        final String sz = "/32x32/";
         readDefaultRenderers();
         if (plugins == null)
             return;
@@ -54,7 +53,6 @@ public class Resources {
 
     public static ImageIcon getImageIcon(String path, String description) {
         java.net.URL imgURL;
-        final String filePath;
         if (imgIcons == null)
             imgIcons = new HashMap<String, ImageIcon>();
         ImageIcon im = imgIcons.get(RESOURCE_PATH + path);

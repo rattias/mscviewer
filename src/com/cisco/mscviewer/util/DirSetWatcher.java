@@ -137,7 +137,6 @@ public class DirSetWatcher extends Thread {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void destroy() {
         if (dirWatcherThread != null) {
             exit = true;

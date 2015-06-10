@@ -238,11 +238,25 @@ public class MainPanel extends JPanel implements Scrollable, KeyListener,
             if (y < 0)
                 y = 0;
         }
-        final Point p = new Point(x, y);
-        jvp.setViewPosition(p);
-        view.repaint();
+        setViewPosition(x, y);
     }
 
+    public void setViewPosition(int x, int y) {
+        final JViewport jvp = getAncestorViewport();
+        final Point p = new Point(x, y);
+        jvp.setViewPosition(p);
+        final Component view = jvp.getView();
+        view.repaint();        
+    }
+    
+    public Point getViewPosition() {
+        final JViewport jvp = getAncestorViewport();
+        final Rectangle rec = jvp.getViewRect();
+        return new Point(rec.x, rec.y);
+    }
+
+
+    
     @Override
     public void keyReleased(KeyEvent e) {
         // TODO Auto-generated method stub
@@ -417,4 +431,11 @@ public class MainPanel extends JPanel implements Scrollable, KeyListener,
     public void entityMoved(ViewModel eh, Entity en, int toIdx) {
         updateView();
     }
+    
+    public int getFirstVisibleEventIndex() {
+        final JViewport jvp = getAncestorViewport();
+        final Rectangle rec = jvp.getViewRect();
+        return rec.y / r.getEventHeight();
+    }
+
 }

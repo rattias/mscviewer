@@ -172,6 +172,8 @@ class RuleComponent extends JComboBox<String> {
         // TODO Auto-generated method stub
         ParsedExpression expr = null;
         try {
+            if (doc.getLength() == 0)
+                return null;
             final ParserState ps = new ParserState(doc.getText(0, doc.getLength()));
             expr = new ExpressionParser().parse(ps);
         } catch (final BadLocationException e) {

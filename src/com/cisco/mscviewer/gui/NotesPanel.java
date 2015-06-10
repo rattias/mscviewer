@@ -1,11 +1,8 @@
 package com.cisco.mscviewer.gui;
 
 import java.awt.BorderLayout;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -14,7 +11,6 @@ import com.cisco.mscviewer.util.StyledDocumentUtils;
 
 @SuppressWarnings("serial")
 public class NotesPanel extends JPanel implements DocumentListener {
-    private Pattern pat = Pattern.compile("<body contenteditable=\"true\">(.*)</body>");
     private MainPanel mainPanel;
     private NoteEditor editor;
     

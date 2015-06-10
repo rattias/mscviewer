@@ -38,10 +38,8 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
-import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.script.PythonFunction;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
-import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
 class FunctionParametersDialog extends JDialog implements PNGSnapshotTarget {

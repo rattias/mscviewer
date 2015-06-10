@@ -15,18 +15,35 @@ import java.awt.Color;
 
 public enum Marker {
 
-    ERROR(Color.red), RED(Color.red), YELLOW(new Color(0xFFFF99)), BLUE(
-            new Color(0x99FFFF)), GREEN(new Color(0x29FF29));
+    ERROR(Color.red, "error"), 
+    RED(Color.red, "red"), 
+    YELLOW(new Color(0xFFFF99), "yellow"), 
+    BLUE(new Color(0x99FFFF), "blue"), 
+    GREEN(new Color(0x29FF29), "green");
 
     private Color transparentColor;
     private final Color color;
+    private final String name;
 
-    Marker(Color c) {
+    public static Marker forColor(Color c) {
+        for(Marker m: Marker.values()) {
+            if (m.getColor().equals(c))
+                return m;
+        }
+        return null;
+    }
+    
+    Marker(Color c, String name) {
         color = c;
+        this.name = name;
     }
 
     public Color getColor() {
         return color;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Color getTransparentColor() {

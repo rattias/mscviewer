@@ -12,9 +12,6 @@
 package com.cisco.mscviewer.model;
 
 import java.awt.Point;
-import java.awt.Rectangle;
-
-import javax.swing.text.StyledDocument;
 
 import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.gui.renderer.DefaultEventRenderer;

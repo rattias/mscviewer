@@ -19,10 +19,9 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 import javax.script.ScriptException;
-import javax.swing.JFrame;
-import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.cisco.mscviewer.graph.Graph;
@@ -70,13 +69,13 @@ public class Main {
     
     private static Loader loader;
     private static MainFrame mf;
+    @SuppressWarnings("unused")
     private static boolean extra;
     private static String script;
     private static String loaderClass = "JsonLoader";
     // public static String loaderClass = "LegacyLoader";
     static boolean batchMode = false;
     private static String batchFun = null;
-    private static ProgressMonitor pm;
 
     private static final void appendToPyPath(String s) {
         String v = System.getProperty("pypath");
@@ -183,8 +182,14 @@ public class Main {
             loader.load(fname, MSCDataModel.getInstance(), true);
         } else {
             try {
-                UIManager.setLookAndFeel(UIManager
-                        .getSystemLookAndFeelClassName());
+                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+                //                UIManager.setLookAndFeel(UIManager
+//                        .getSystemLookAndFeelClassName());
             } catch (UnsupportedLookAndFeelException e) {
                 // nothing to do, keep default look&feel.
             }
@@ -485,7 +490,7 @@ public class Main {
 
     public static void show(Graph g) {
         try {
-            final HeatGraphWindow w = new HeatGraphWindow(g);
+            new HeatGraphWindow(g);
         } catch (final Exception t) {
             Report.exception(t);
         }

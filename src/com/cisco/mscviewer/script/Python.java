@@ -157,6 +157,7 @@ public class Python {
             Report.exception(e);
         } finally {
             pr.progressDone();
+            ProgressReport.cleanup();
         }
     }
 

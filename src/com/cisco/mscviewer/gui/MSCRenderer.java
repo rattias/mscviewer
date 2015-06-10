@@ -24,19 +24,12 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.swing.ImageIcon;
 import javax.swing.JTextPane;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.rtf.RTFEditorKit;
 
 import com.cisco.mscviewer.gui.renderer.BlockInteractionRenderer;
 import com.cisco.mscviewer.gui.renderer.ErrorRenderer;
@@ -52,7 +45,6 @@ import com.cisco.mscviewer.model.OutputUnit;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.tree.IntervalTree;
-import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.StyledDocumentUtils;
 
 public class MSCRenderer {
@@ -78,7 +70,6 @@ public class MSCRenderer {
     private int maxBBwidth = 0;
     private MSCDataModelEventFilter filter;
     private final ViewModel viewModel;
-    private final ImageIcon infoIcon;
     private int zoomFactor = 100;
     private Font font;
     private Font mainFont;
@@ -105,7 +96,6 @@ public class MSCRenderer {
 
     public MSCRenderer(ViewModel eh) {
         viewModel = eh;
-        infoIcon = Resources.getImageIcon("32x32/info.png", "Info icon");
     }
 
     // public MSCRenderer() {

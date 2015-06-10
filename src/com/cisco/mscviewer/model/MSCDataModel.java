@@ -18,8 +18,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
-import javax.swing.ListModel;
-
 import com.cisco.mscviewer.graph.Graph;
 import com.cisco.mscviewer.model.graph.TopologyError;
 import com.cisco.mscviewer.model.graph.TopologyGraph;

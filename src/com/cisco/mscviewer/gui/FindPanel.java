@@ -56,7 +56,8 @@ class FindPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 final ParsedExpression expr = fc.getParsedExpression();
-                findPrev(expr);
+                if (expr != null)
+                    findPrev(expr);
             }
         });
 
@@ -64,7 +65,8 @@ class FindPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 final ParsedExpression expr = fc.getParsedExpression();
-                findNext(expr);
+                if (expr != null)
+                    findNext(expr);
             }
         });
     }
@@ -84,9 +86,6 @@ class FindPanel extends JPanel {
                     break;
                 }
             }
-            // } else if (t.toString().equals("interaction")) {
-            //
-            // }
         }
     }
 

@@ -968,7 +968,6 @@ class ScrollPaneLayout extends javax.swing.ScrollPaneLayout implements
      *             <code>JScrollPane.getViewportBorderBounds()</code>.
      */
     @Override
-    @SuppressWarnings("deprecation")
     @Deprecated
     public Rectangle getViewportBorderBounds(JScrollPane scrollpane) {
         return scrollpane.getViewportBorderBounds();
