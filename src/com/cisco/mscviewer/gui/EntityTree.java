@@ -265,11 +265,11 @@ public class EntityTree extends JTree implements EntityHeaderModelListener {
 
     class EntityTreeRenderer extends DefaultTreeCellRenderer {
         private final ImageIcon entityIcon = Resources.getImageIcon(
-                "32x32/entity.png", "entity");
+                "entity.png", "entity");
         private final ImageIcon entityFadedIcon = Resources.getImageIcon(
-                "32x32/entity_faded.png", "entity");
+                "entity_faded.png", "entity");
         private final ImageIcon entityOpenIcon = Resources.getImageIcon(
-                "32x32/entity_open.png", "entity");
+                "entity_open.png", "entity");
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,

@@ -1007,19 +1007,17 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
 
     private void populateToolbar(JToolBar bar) {
-        final String sz = "32x32/";
-        //final String hsz = "16x16/";
         bar.add(Box.createHorizontalStrut(10));
         final ButtonGroup toolGroup = new ButtonGroup();
 
-        JButton jb = addButton(bar, sz + "load.png", "Load File", true);
+        JButton jb = addButton(bar, "load.png", "Load File", true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadFile();
             }
         });
-        jb = addButton(bar, sz + "reload.png", "Reload File", true);
+        jb = addButton(bar, "reload.png", "Reload File", true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1027,14 +1025,14 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         });
 
-        jb = addButton(bar, sz + "camera.png", "Capture Screenshot", true);
+        jb = addButton(bar, "camera.png", "Capture Screenshot", true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 exportPNG();
             }
         });
-        jb = addButton(bar, sz + "clear_highlights.png", "Clear Highlights",
+        jb = addButton(bar, "clear_highlights.png", "Clear Highlights",
                 true);
         jb.addActionListener(new ActionListener() {
             @Override
@@ -1043,7 +1041,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         });
 
-        jb = addButton(bar, sz + "run.png", "Rerun Latest Script", true);
+        jb = addButton(bar, "run.png", "Rerun Latest Script", true);
 //        jb.
 //                new JButton() {
 //            @Override
@@ -1061,7 +1059,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         });
 
-        jb = addButton(bar, sz + "options.png", "Preferences", true);
+        jb = addButton(bar, "options.png", "Preferences", true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1075,7 +1073,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         sep.setPreferredSize(separatorDim);
         sep.setMaximumSize(separatorDim);
         bar.add(sep);
-        JToggleButton jtb = addToggleButton(bar, sz + "select.png", "select",
+        JToggleButton jtb = addToggleButton(bar, "select.png", "select",
                 true);
         toolGroup.add(jtb);
         jtb.addActionListener(new ActionListener() {
@@ -1084,7 +1082,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 final JToggleButton jtb = (JToggleButton) e.getSource();
                 if (jtb.isSelected()) {
                     setMainPanelCursor(
-                            Resources.getImageIcon(sz + "select.png", "")
+                            Resources.getImageIcon("32x32/select.png", "")
                             .getImage(), 0, 0);
                     currentMarker = null;
                 }
@@ -1099,7 +1097,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         sep.setMaximumSize(separatorDim);
         bar.add(sep);
 
-        jtb = addToggleButton(bar, sz + "blocks.png", "show blocks", true);
+        jtb = addToggleButton(bar, "blocks.png", "show blocks", true);
         jtb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1108,7 +1106,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 mainPanel.repaint();
             }
         });
-        jtb = addToggleButton(bar, sz + "time.png", "show timestamps", true);
+        jtb = addToggleButton(bar, "time.png", "show timestamps", true);
         jtb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1117,7 +1115,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 mainPanel.repaint();
             }
         });
-        jtb = addToggleButton(bar, sz + "label.png", "show labels", true);
+        jtb = addToggleButton(bar, "label.png", "show labels", true);
         jtb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1126,7 +1124,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 mainPanel.repaint();
             }
         });
-        jtb = addToggleButton(bar, sz + "note.png", "show notes", true);
+        jtb = addToggleButton(bar, "note.png", "show notes", true);
         jtb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

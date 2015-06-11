@@ -1,5 +1,6 @@
 package com.cisco.mscviewer.util;
 
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,6 +24,7 @@ public class Resources {
     private static final String RENDERER_PATH = RESOURCE_PATH + "/renderers";
     private static HashMap<String, ImageIcon> imgIcons;
     private static HashMap<String, ImageRenderer> imgRenderers;
+    private static String iconSize;
 
     public static void init(String plugins) {
         imgRenderers = new HashMap<String, ImageRenderer>();
@@ -51,7 +53,20 @@ public class Resources {
         }
     }
 
+    private static String getIconSize() {
+        if (iconSize == null) {
+            int res = Toolkit.getDefaultToolkit().getScreenResolution();
+            if (res >120)
+                iconSize = "32x32";
+            else
+                iconSize = "16x16";
+        }
+        return iconSize;        
+    }
+    
     public static ImageIcon getImageIcon(String path, String description) {
+        if (path.indexOf('/') == -1)
+            path = getIconSize() + "/"+path;
         java.net.URL imgURL;
         if (imgIcons == null)
             imgIcons = new HashMap<String, ImageIcon>();

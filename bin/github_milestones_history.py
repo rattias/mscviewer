@@ -21,8 +21,9 @@ HTML = """
 Welcome to MSCViewer, a Message Sequence Chart Visualization and Analysis Tool.
 
 <ul>
-    <li>MSCViewer leverages <b>Jython</b> for Python integration. see <a href='http://www.jython.org/license.html'>license here</a>
-    <li>MSCViewer leverages <b>SwingX</b> for some GUI elements. see <a href='http://opensource.org/licenses/lgpl-2.1.php'>license here</a>
+    <li>MSCViewer leverages <b>Jython</b> for Python integration. See <a href='http://www.jython.org/license.html'>license here</a>
+    <li>MSCViewer leverages <b>SwingX</b> for some GUI elements. See <a href='http://opensource.org/licenses/lgpl-2.1.php'>license here</a>
+    <li>MSCViewer makes use of some icons from the <b>Nuvola</b> icon set by David Vignoni. For more information see <a href='http://www.icon-king.com/projects/nuvola/'>the Nuvola Home Page</a>
  </ul>
 <h2><span>Release History</span></h2>
 
@@ -46,7 +47,7 @@ def filter(issues, type, milestone):
     return res
 
 def get_milestones():
-    response = urllib2.urlopen(BASE + "/milestones")
+    response = urllib2.urlopen(BASE + "/milestones?state=all")
     data = response.read();
     milestones = json.loads(data)
     return milestones

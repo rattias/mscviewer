@@ -29,7 +29,6 @@ class HighlighterButton extends StyledToggleButton implements ColorSelectionList
     final static ImageIcon[] imgs = new ImageIcon[4];
 
     private ColorPicker cp;
-    private static String dir;
 
     private static ImageIcon getImageIcon(Color c) {
         for(int i=0; i<HighlighterColorPicker.colors.length; i++) {
@@ -42,7 +41,6 @@ class HighlighterButton extends StyledToggleButton implements ColorSelectionList
     }
 
     public HighlighterButton(int sz) {
-        dir = sz+"x"+sz;
         ImageIcon icn = getImageIcon(HighlighterColorPicker.markers[0].getName()); 
         setIcon(icn);
         
@@ -55,7 +53,7 @@ class HighlighterButton extends StyledToggleButton implements ColorSelectionList
 
 
     private static ImageIcon getImageIcon(String name) {
-        String res = dir + "/highlight_"+name+".png";
+        String res = "highlight_"+name+".png";
         ImageIcon icn = Resources.getImageIcon(res, name);
         return icn;
     }
