@@ -45,20 +45,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -94,20 +80,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.expression.ParsedExpression;
@@ -146,7 +118,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private final DataPanel data;
     private final JLabel info;
     final private JFileChooser jfc;
-
+    private JButton reloadButton;
+    private JMenuItem reloadMI;
+    
     private final JSlider zoom;
     private Vector<Vector<String>> filters = new Vector<Vector<String>>();
     private final FilterPanel filterP;
@@ -159,6 +133,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private NotesPanel notes;
     private JMenu recentFilesMenu;
     private JMenu recentSessionMenu;
+
+    private JButton clearHighlightsButton;
+    private JMenuItem clearHighlightsMI;
 
     class MouseHandler implements MouseListener, MouseMotionListener {
 
@@ -399,15 +376,19 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     if (toggle) {
                         if (ev.getMarker() == null) {
                             ev.setMarker(currentMarker);
+                            clearHighlightsButton.setEnabled(true);
+                            clearHighlightsMI.setEnabled(true);
                             res = true;
                         } else {
                             ev.setMarker(null);
                             res = false;
                         }
                     } else {
-                        if (set)
+                        if (set) {
                             ev.setMarker(currentMarker);
-                        else
+                            clearHighlightsButton.setEnabled(true);
+                            clearHighlightsMI.setEnabled(true);
+                        }else
                             ev.setMarker(null);
                     }
                 } else {
@@ -416,14 +397,18 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                                 .getSelectedInteraction();
                         if (in != null) {
                             if (toggle) {
-                                if (in.getMarker() == null)
+                                if (in.getMarker() == null) {
                                     in.setMarker(currentMarker);
-                                else
+                                    clearHighlightsButton.setEnabled(true);
+                                    clearHighlightsMI.setEnabled(true);
+                                } else
                                     in.setMarker(null);
                             } else {
-                                if (set)
+                                if (set) {
                                     in.setMarker(currentMarker);
-                                else
+                                    clearHighlightsButton.setEnabled(true);
+                                    clearHighlightsMI.setEnabled(true);
+                                } else
                                     in.setMarker(null);
                             }
                         }
@@ -495,6 +480,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             final File f = jfc.getSelectedFile();
             try {
                 loadFile(f.getPath());                
+                break;
             } catch (final Exception e1) {
                 e1.printStackTrace();
             }
@@ -502,7 +488,9 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         case JFileChooser.CANCEL_OPTION:
             break;
         case JFileChooser.ERROR_OPTION:
+        default:
             System.out.println("Error");
+            break;
         }
     }
 
@@ -511,6 +499,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         viewModel.reset();            
         try {
             new JsonLoader().loadAsync(path, dm, false);
+            reloadButton.setEnabled(true);
+            reloadMI.setEnabled(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -569,6 +559,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         if (res == JOptionPane.YES_OPTION) {
             final MSCDataModel dm = MSCDataModel.getInstance();
             dm.clearMarkers();
+            clearHighlightsButton.setEnabled(false);
+            clearHighlightsMI.setEnabled(false);
             repaint();
         }
     }
@@ -771,21 +763,22 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadFile();
+                
             }
         });
         mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
 
-        mi = new JMenuItem(new AbstractAction("Reload model") {
+        reloadMI = new JMenuItem(new AbstractAction("Reload model") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reloadFile();
             }
         });
-        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+        reloadMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
                 ActionEvent.ALT_MASK));
-        fileMenu.add(mi);
+        fileMenu.add(reloadMI);
 
         recentFilesMenu = new JMenu("Recent model");
         updateRecentModelsMenu();
@@ -879,15 +872,15 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         editMenu.add(mi);
 
-        mi = new JMenuItem(new AbstractAction("Clear Highlights") {
+        clearHighlightsMI = new JMenuItem(new AbstractAction("Clear Highlights") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearHighlights();
             }
         });
-        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,
+        clearHighlightsMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,
                 ActionEvent.ALT_MASK));
-        editMenu.add(mi);
+        editMenu.add(clearHighlightsMI);
 
         final JMenu viewMenu = new JMenu("View");
         mi = new JMenuItem(new AbstractAction("Preferences...") {
@@ -968,12 +961,12 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
 
     private JButton addButton(JToolBar bar, String resource,
-            String description, boolean isSelected) {
-        return addButton(bar, resource, description, isSelected, null);
+            String description, boolean isSelected, boolean isEnabled) {
+        return addButton(bar, resource, description, isSelected, isEnabled, null);
     }
 
     private JButton addButton(JToolBar bar, String resource,
-            String description, boolean isSelected, JButton btn) {
+            String description, boolean isSelected, boolean isEnabled, JButton btn) {
         final ImageIcon ii = Resources.getImageIcon(resource, description);
         if (ii == null)
             throw new Error("missing " + resource);
@@ -981,6 +974,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         jtb.setIcon(ii);
         jtb.setToolTipText(ii.getDescription());
         jtb.setSelected(isSelected);
+        jtb.setEnabled(isEnabled);
         bar.add(jtb);
         bar.add(Box.createHorizontalStrut(2));
         return jtb;
@@ -1010,38 +1004,38 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         bar.add(Box.createHorizontalStrut(10));
         final ButtonGroup toolGroup = new ButtonGroup();
 
-        JButton jb = addButton(bar, "load.png", "Load File", true);
+        JButton jb = addButton(bar, "load.png", "Load File", true, true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadFile();
             }
         });
-        jb = addButton(bar, "reload.png", "Reload File", true);
-        jb.addActionListener(new ActionListener() {
+        reloadButton = addButton(bar, "reload.png", "Reload File", true, false);
+        reloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reloadFile();
             }
         });
 
-        jb = addButton(bar, "camera.png", "Capture Screenshot", true);
+        jb = addButton(bar, "camera.png", "Capture Screenshot", true, true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 exportPNG();
             }
         });
-        jb = addButton(bar, "clear_highlights.png", "Clear Highlights",
-                true);
-        jb.addActionListener(new ActionListener() {
+        clearHighlightsButton = addButton(bar, "clear_highlights.png", "Clear Highlights",
+                true, false);
+        clearHighlightsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearHighlights();
             }
         });
 
-        jb = addButton(bar, "run.png", "Rerun Latest Script", true);
+        jb = addButton(bar, "run.png", "Rerun Latest Script", true, false);
 //        jb.
 //                new JButton() {
 //            @Override
@@ -1059,7 +1053,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
         });
 
-        jb = addButton(bar, "options.png", "Preferences", true);
+        jb = addButton(bar, "options.png", "Preferences", true, true);
         jb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

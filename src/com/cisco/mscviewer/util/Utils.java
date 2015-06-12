@@ -222,11 +222,18 @@ public class Utils {
 
     
     public static String getWorkDirPath() {
-        String WORKDIR_PATH = System.getProperties().getProperty("user.home")+"/.msc";
+        String WORKDIR_PATH = System.getenv("MSCVIEWER_WORKDIR");
+        if (WORKDIR_PATH == null)
+            WORKDIR_PATH = System.getProperties().getProperty("user.home")+"/.msc";
         File f = new File(WORKDIR_PATH);
         if (! f.exists()) {
             f.mkdirs();
         }
         return WORKDIR_PATH;
+    }
+
+    public static boolean workDirIsDefault() {
+        String WORKDIR_PATH = System.getenv("MSCVIEWER_WORKDIR");
+        return (WORKDIR_PATH == null);
     }
 }

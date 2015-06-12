@@ -803,7 +803,7 @@ public final class MSCDataModel {
                 }
                 notifyModelChanged();
             } catch (final TopologyError e) {
-                Report.exception(e);
+                Report.exception("Exception while performing topological sorting:", e);
             }
             try {
                 interactions.verifyIntegrity();

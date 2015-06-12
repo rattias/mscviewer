@@ -158,66 +158,69 @@ public class Main {
     }
 
     public static void main(String args[]) throws IOException,
-            ClassNotFoundException, SecurityException, NoSuchMethodException,
-            IllegalArgumentException, IllegalAccessException,
-            InstantiationException, ScriptException, InterruptedException,
-            InvocationTargetException {
-        System.setProperty("pypath", Utils.getInstallDir()
-                + "/resources/default/script");
+    ClassNotFoundException, SecurityException, NoSuchMethodException,
+    IllegalArgumentException, IllegalAccessException,
+    InstantiationException, ScriptException, InterruptedException,
+    InvocationTargetException {
+        try {
+            System.setProperty("pypath", Utils.getInstallDir()
+                    + "/resources/default/script");
 
-        setupUIDefaults();
-        final int idx = processOptions(args);
+            setupUIDefaults();
+            final int idx = processOptions(args);
 
-        final String fname = (idx < args.length) ? args[idx] : null;
-        final Class<?> cl = Class.forName("com.cisco.mscviewer.io." + loaderClass);
+            final String fname = (idx < args.length) ? args[idx] : null;
+            final Class<?> cl = Class.forName("com.cisco.mscviewer.io." + loaderClass);
 
-        Resources.init(Main.plugins);
+            Resources.init(Main.plugins);
 
-        loader = (Loader) cl.newInstance();
-        if (batchMode()) {
-            if (fname == null) {
-                System.err.println("Missing input file");
-                System.exit(1);
-            }
-            loader.load(fname, MSCDataModel.getInstance(), true);
-        } else {
-            try {
-                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
-                        UIManager.setLookAndFeel(info.getClassName());
-                        break;
+            loader = (Loader) cl.newInstance();
+            if (batchMode()) {
+                if (fname == null) {
+                    System.err.println("Missing input file");
+                    System.exit(1);
+                }
+                loader.load(fname, MSCDataModel.getInstance(), true);
+            } else {
+                try {
+                    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                        if ("Nimbus".equals(info.getName())) {
+                            UIManager.setLookAndFeel(info.getClassName());
+                            break;
+                        }
                     }
+                    //                UIManager.setLookAndFeel(UIManager
+                    //                        .getSystemLookAndFeelClassName());
+                } catch (UnsupportedLookAndFeelException e) {
+                    // nothing to do, keep default look&feel.
                 }
-                //                UIManager.setLookAndFeel(UIManager
-//                        .getSystemLookAndFeelClassName());
-            } catch (UnsupportedLookAndFeelException e) {
-                // nothing to do, keep default look&feel.
-            }
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    mf = new MainFrame(10, 10, 1024, 600);
-                    mf.setVisible(true);
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        mf = new MainFrame(10, 10, 1024, 600);
+                        mf.setVisible(true);
+                    }
+                });
+                if (fname != null) {
+                    loader.load(fname, MSCDataModel.getInstance(), false);
                 }
-            });
-            if (fname != null) {
-                loader.load(fname, MSCDataModel.getInstance(), false);
             }
-        }
-        if (script != null) {
-            loader.waitIfLoading();
-            final MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
-            final Python p = new Python(mp);
-            final ScriptResult sr = new ScriptResult();
-            final String text = new String(Files.readAllBytes(Paths.get(script)),
-                    StandardCharsets.UTF_8);
-            p.exec(text);
-            if (batchFun != null) {
-                p.eval(batchFun, sr);
+            if (script != null) {
+                loader.waitIfLoading();
+                final MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
+                final Python p = new Python(mp);
+                final ScriptResult sr = new ScriptResult();
+                final String text = new String(Files.readAllBytes(Paths.get(script)),
+                        StandardCharsets.UTF_8);
+                p.exec(text);
+                if (batchFun != null) {
+                    p.eval(batchFun, sr);
+                }
             }
+        } catch(Throwable t) {
+            Report.exception("Exception while executing main program", t);
         }
     }
-
     private static int processOptions(String[] args) {
         int idx = 0;
         final int len = args.length;
@@ -492,7 +495,7 @@ public class Main {
         try {
             new HeatGraphWindow(g);
         } catch (final Exception t) {
-            Report.exception(t);
+            Report.exception("Exception while opening Heat Graph", t);
         }
     }
 

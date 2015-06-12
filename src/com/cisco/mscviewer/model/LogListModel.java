@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
 
+import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
@@ -52,11 +53,21 @@ public class LogListModel extends AbstractListModel<String> {
             fw.write('\n');
             fileSize += len;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            reportInputCopyException(e);
         }
     }
 
+    private void reportInputCopyException(Exception e) {
+        boolean isDefault = Utils.workDirIsDefault();
+        String msg = "Exception while copying input file to working directory.\n" +
+                    "This may be caused by the MSCViewer working directory being full.\n" +
+                    (isDefault ? 
+                            "You're currently using the default working directory\n" :
+                            "Your current working directory is\n") +
+                     "'"+Utils.getWorkDirPath()+"'\n" +
+                     "To use a different directory set the MSCVIEWER_WORKDIR environment variable to the desired path.";
+        Report.exception(msg, e);
+    }
     @Override
     public int getSize() {
         return numLines;
@@ -103,8 +114,7 @@ public class LogListModel extends AbstractListModel<String> {
             raf.read(cache);
             return new String(cache, (int)(p-cachedOffset), lineLen-1);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            reportInputCopyException(e);
         }
         return res;
     }
@@ -134,8 +144,7 @@ public class LogListModel extends AbstractListModel<String> {
                 fw.close();
                 fw = null;
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Report.exception("Exception while resetting model", e);
             }
         }
         offsets = new ArrayList<long[]>();
@@ -155,8 +164,7 @@ public class LogListModel extends AbstractListModel<String> {
             loading = false;
             raf = new RandomAccessFile(f, "r");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            reportInputCopyException(e);
         }
     }
 

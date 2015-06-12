@@ -112,25 +112,20 @@ class PyScriptTree extends JTree {
             });
         } else
             py.init(mainPanel);
-        try {
-            for (final String pkg : py.getPackages()) {
-                final DefaultMutableTreeNode pkgNode = new DefaultMutableTreeNode(pkg);
-                if (py.getFunctions(pkg).length > 0)
-                    root.add(pkgNode);
-                else {
-                    // System.out.println("no functions in package "+pkg);
-                }
-                for (final PythonFunction fn : py.getFunctions(pkg)) {
-                    final DefaultMutableTreeNode fnNode = new DefaultMutableTreeNode(
-                            fn);
-                    pkgNode.add(fnNode);
-                }
+        for (final String pkg : py.getPackages()) {
+            final DefaultMutableTreeNode pkgNode = new DefaultMutableTreeNode(pkg);
+            if (py.getFunctions(pkg).length > 0)
+                root.add(pkgNode);
+            else {
+                // System.out.println("no functions in package "+pkg);
             }
-            Utils.dispatchOnAWTThreadLater(() -> dtm.reload());
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            Report.exception(ex);
+            for (final PythonFunction fn : py.getFunctions(pkg)) {
+                final DefaultMutableTreeNode fnNode = new DefaultMutableTreeNode(
+                        fn);
+                pkgNode.add(fnNode);
+            }
         }
+        Utils.dispatchOnAWTThreadLater(() -> dtm.reload());
     }
 
     private void handlePopupMenu(MouseEvent e) {
@@ -215,7 +210,7 @@ class PyScriptTree extends JTree {
             latestFunction.invoke();
         } catch (final ScriptException e) {
             e.printStackTrace();
-            Report.exception(e);
+            Report.exception("Exception while running function "+latestFunction, e);
         }
     }
 

@@ -154,7 +154,7 @@ public class Python {
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            Report.exception(e);
+            Report.exception("Exception while initializing Python interpreter", e);
         } finally {
             pr.progressDone();
             ProgressReport.cleanup();
@@ -199,9 +199,7 @@ public class Python {
                     // shouldn't happen
                 } catch (final ExecutionException ex) {
                     final Throwable ex1 = ex.getCause();
-                    System.err.println("exception while evaluating expression "
-                            + cmd);
-                    Report.exception(ex1);
+                    Report.exception("Exception while evaluating expression '"+cmd+"'", ex1);
                 } catch (final CancellationException ex) {
                     System.out.println("cancelled by user");
                 }

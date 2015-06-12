@@ -11,19 +11,24 @@
  */
 package com.cisco.mscviewer.util;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
 
 import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.gui.MainFrame;
@@ -32,39 +37,63 @@ import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;
 
 public class Report {
-    public static void exception(Throwable t) {
-        if (Main.batchMode())
-            t.printStackTrace();
-        else {
-            final Font font = new Font("Courier", Font.PLAIN, 12);
-            final JSplitPane jsplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-            final JTextArea jta = new JTextArea();
-            jta.setFont(font);
+    private static JComponent buildTextPane(String content, Font f, boolean descr) {
+        final JTextArea jta = new JTextArea();
+        
+        // workaround for JDK bug. See http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7027598
+        jta.setDropTarget(null);
+        
+        jta.setName(descr ? "TOP" : "BOTTOM");
+        jta.setText(content);
+        jta.setEditable(false);
+        jta.setFont(f);
+        if (descr) {
+            jta.setOpaque(false);
             jta.setLineWrap(true);
             jta.setWrapStyleWord(true);
-            jta.setText(t.toString());
-            jta.setEditable(false);
-            jta.setPreferredSize(new Dimension(400, 300));
-            final JScrollPane jsp = new JScrollPane(jta);
-            jsp.setBorder(new TitledBorder("Error"));
-            jsplit.setTopComponent(jsp);
+            jta.setBorder(BorderFactory.createEmptyBorder(0, 4, 10, 4));
+            jta.setBackground(new Color(0,0,0,0));
+            jta.setMaximumSize(new Dimension(1024, 768));
+            return jta;
+        }
+        final JScrollPane jsp = new JScrollPane(jta);
+        jsp.setPreferredSize(new Dimension(400, 300));
+        jsp.setMaximumSize(new Dimension(1024, 768));
+        jsp.setOpaque(false);
+        return jsp;
+    }
+    
+    public static void exception(String message, Throwable t) {
+        if (Main.batchMode()) {
+            if (message != null)
+                System.err.println(message);
+            t.printStackTrace();
+            System.err.println("Caused by:");
+            t.getCause().printStackTrace();
+        } else {
+            Font font = new Font(Font.SERIF, Font.PLAIN, 20);
+            JComponent top, btm;
+            top = buildTextPane(message, font, true);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            t = t.getCause();
+            if (t != null) {
+                pw.println("Caused by:");
+                t.printStackTrace(pw);
+            }
+            font = new Font("Courier", Font.PLAIN, 12);
+            btm = buildTextPane(sw.toString(), font, false);
+            JPanel container = new JPanel();
+            container.setMaximumSize(new Dimension(1000,1000));
+            container.setLayout(new BorderLayout());
+            container.add(top, BorderLayout.NORTH);
+            container.add(btm, BorderLayout.CENTER);
 
-            final JTextArea jta_1 = new JTextArea();
-            jta_1.setFont(font);
-            jta_1.setLineWrap(true);
-            jta_1.setWrapStyleWord(true);
-            if (t.getCause() != null)
-                jta_1.setText(t.getCause().toString());
-            jta_1.setEditable(false);
-            jta_1.setPreferredSize(new Dimension(50, 300));
-            final JScrollPane jsp_1 = new JScrollPane(jta_1);
-            jsp_1.setBorder(new TitledBorder("Details"));
-            jsplit.setBottomComponent(jsp_1);
-
-            jsplit.addHierarchyListener(new HierarchyListener() {
+            container.addHierarchyListener(new HierarchyListener() {
                 @Override
                 public void hierarchyChanged(HierarchyEvent e) {
-                    final Window window = SwingUtilities.getWindowAncestor(jsp);
+                    final Window window = SwingUtilities.getWindowAncestor(container);
                     if (window instanceof Dialog) {
                         final Dialog dialog = (Dialog) window;
                         if (!dialog.isResizable()) {
@@ -73,9 +102,8 @@ public class Report {
                     }
                 }
             });
-            JOptionPane.showMessageDialog(MainFrame.getInstance(), jsplit,
+            JOptionPane.showMessageDialog(MainFrame.getInstance(), container,
                     "Exception", JOptionPane.ERROR_MESSAGE);
-            // t.printStackTrace();
         }
     }
 
