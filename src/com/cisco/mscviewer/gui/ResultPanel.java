@@ -37,7 +37,8 @@ import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.MSCDataModel;
 
 @SuppressWarnings("serial")
-class ResultPanel extends JPanel implements MouseListener {
+public class ResultPanel extends JPanel implements MouseListener {
+    public static final String NAME = "Script Console";
     private final JEditorPane editor;
 
     public ResultPanel(final MSCDataModel model) {

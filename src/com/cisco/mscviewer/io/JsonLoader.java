@@ -49,6 +49,7 @@ import com.cisco.mscviewer.model.SimpleInterval;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.util.JSonParser;
 import com.cisco.mscviewer.util.ProgressReport;
+import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Resources;
 
 public class JsonLoader implements Loader {
@@ -594,15 +595,11 @@ public class JsonLoader implements Loader {
 
             }
         } catch (final IOException ex) {
-            ex.printStackTrace();
-            throw new IOException(fname + ":" + lineNum
-                    + ":error: at this location", ex);
+            Report.exception("Error while parsing input file "+fname+", line "+lineNum+"\n The file format appears to be incorrect", ex);
         } catch (final NumberFormatException ex) {
-            ex.printStackTrace();
-            throw new IOException(fname + ":" + lineNum
-                    + ":error: at this location", ex);
+            Report.exception("Error while parsing input file "+fname+", line "+lineNum+"\n The file format appears to be incorrect", ex);
         } catch (final Exception ex) {
-            ex.printStackTrace();
+            Report.exception("Error while parsing input file "+fname+", line "+lineNum+"\n The file format appears to be incorrect", ex);
         } finally {
             pr.progressDone();
             fr.close();

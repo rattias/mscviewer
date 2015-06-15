@@ -4,15 +4,19 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayer;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -214,4 +218,22 @@ public class NoteEditor extends JPanel {
     public StyledDocument getDocument() {
         return tp.getStyledDocument();
     }
+
+    public void setTextAndSelect(String string) {
+        tp.setText(string);
+        tp.requestFocusInWindow();
+        // text selection works only if JTextPane is focused, hence
+        // we set it only after the focus request succeeds.
+        tp.addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {}
+            
+            @Override
+            public void focusGained(FocusEvent e) {
+                tp.setSelectionStart(0);
+                tp.setSelectionEnd(tp.getDocument().getLength());        
+                tp.removeFocusListener(this);
+            }
+        });
+    }    
 }

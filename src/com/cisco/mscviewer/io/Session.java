@@ -244,7 +244,7 @@ public class Session {
             root.normalize();
             String path = root.getAttribute(ATTR_MSC_PATH);
             if (model != null && model.getFilePath() != null && !path.equals(model.getFilePath())) {
-                int res = JOptionPane.showConfirmDialog(null, "You're loading a session for model file "+path+", while the loaded model is from file "+model.getFilePath()+". This will load the former model. Do you want to continue?");
+                int res = JOptionPane.showConfirmDialog(null, "You're loading a session for log file "+path+", while the loaded model is from file "+model.getFilePath()+". This will load the former log file. Do you want to continue?");
                 if (res != JOptionPane.YES_OPTION) 
                     return;
                 mf.getViewModel().reset();          

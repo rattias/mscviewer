@@ -8,8 +8,10 @@
  *------------------------------------------------------------------*/
 package com.cisco.mscviewer;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +27,8 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.cisco.mscviewer.graph.Graph;
+import com.cisco.mscviewer.gui.DataPanel;
+import com.cisco.mscviewer.gui.ResultPanel;
 import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.gui.MainPanel;
 import com.cisco.mscviewer.gui.graph.HeatGraphWindow;
@@ -197,7 +201,14 @@ public class Main {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        mf = new MainFrame(10, 10, 1024, 600);
+                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                        int scrWidth = screenSize.width;
+                        int scrHeight = screenSize.height;
+                        int w = scrWidth*3/4;
+                        int h = scrHeight*3/4;
+                        int x = (scrWidth-w)/2;
+                        int y = (scrHeight-h)/2;
+                        mf = new MainFrame(x, y, w, h);
                         mf.setVisible(true);
                     }
                 });
@@ -465,11 +476,11 @@ public class Main {
     }
 
     public static void showDataTab() {
-        MainFrame.getInstance().showTab("data");
+        MainFrame.getInstance().showTab(DataPanel.NAME);
     }
 
     public static void showResultsTab() {
-        MainFrame.getInstance().showTab("results");
+        MainFrame.getInstance().showTab(ResultPanel.NAME);
     }
 
     public static void expandEntityTree() {

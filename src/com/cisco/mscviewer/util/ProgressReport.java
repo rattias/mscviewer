@@ -80,7 +80,7 @@ public class ProgressReport {
     private JProgressBar pb;
     private JLabel msgLabel;
     private int minValue, maxValue;
-    private boolean elementShowing, shouldShow;
+    private boolean shouldShow;
     private ProgressReport parent;
     private int percent;
     private int childrenBaseValue;
@@ -144,16 +144,16 @@ public class ProgressReport {
                 innerPane.add(msgLabel, BorderLayout.CENTER);
                 elements.add(innerPane);
                 if (maxValue < 0)
-                    updateDialog();
+                    updateDialogForProgress();
             }
         }
     }
 
-    private void updateDialog() {
+    private void updateDialogForDone() {
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                if (elements.isEmpty()) {
+                if (singletonDialog.isVisible() && elements.isEmpty()) {
                     singletonDialog.setVisible(false);
                     final MainFrame mf = MainFrame.getInstance();
                     if (mf != null) {
@@ -162,7 +162,19 @@ public class ProgressReport {
                     }
                     return;
                 }
-                if (!elementShowing) {
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread())
+            r.run();
+        else
+            SwingUtilities.invokeLater(r);
+    }
+    
+    private void updateDialogForProgress() {
+        final Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (!singletonDialog.isVisible()) {
                     singletonDialog.setContentPane(new JOptionPane(elements
                             .toArray(new Object[elements.size()]),
                             JOptionPane.PLAIN_MESSAGE,
@@ -182,7 +194,6 @@ public class ProgressReport {
                         gpane.setVisible(true);
                     }
                     singletonDialog.setVisible(true);
-                    elementShowing = true;
                 }
             }
         };
@@ -218,11 +229,13 @@ public class ProgressReport {
         synchronized(singletonDialog) {
             if (pb == null)
                 return;
+            if (pb.getValue() == v)
+                return;
             if (!pb.isIndeterminate())
                 pb.setValue(v);
             if (parent != null)
                 parent.updateForChildren();
-            updateDialog();
+            updateDialogForProgress();
         }
     }
 
@@ -260,7 +273,7 @@ public class ProgressReport {
             parent.childrenBaseValue += totalChildContribute;
             parent.updateForChildren();
         }
-        updateDialog();
+        updateDialogForDone();
     }
 
     public void setMinMaxValue(int min, int max) {

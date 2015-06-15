@@ -154,11 +154,11 @@ public class ExpressionParser {
             final String type = ev.getType();
             engine.put("type", type);
             final String note = ev.getNote();
-            if (note == null)
-                return false;
-            engine.put("note", note);
+            if (note != null)
+                engine.put("note", note);
+            else
+                engine.put("note", "____@@@@invalid node@@@@____");
             final String js = toJS(expr.getFirstToken());
-            System.out.println("note = "+note+", eval "+js);
             final boolean b = (Boolean) engine.eval(js);
             return b;
         } catch (final ScriptException e) {
@@ -465,7 +465,6 @@ public class ExpressionParser {
         final Token l = durcomp(ps);
         if (l != null)
             return l;
-        System.out.println("evterm(): pos = " + ps.getPos());
         final int pos = ps.getPos();
 
         try {
@@ -505,8 +504,6 @@ public class ExpressionParser {
                 if (ps.tok().type != Token.TT.CLOSE_SQUARE) {
                     ps.compl(Token.TT.CLOSE_SQUARE.toString());
                     ps.setPos(pos);
-                    System.out.println("evterm(): missing ], pos = "
-                            + ps.getPos());
                     return null;
                 }
                 tt.l = tt2;

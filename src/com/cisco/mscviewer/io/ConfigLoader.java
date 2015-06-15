@@ -80,10 +80,10 @@ public class ConfigLoader {
                                             null,
                                             "Config  file \""
                                                     + cfgPath
-                                                    + "\" refer to model file \""
+                                                    + "\" refer to log file \""
                                                     + logPath
                                                     + "\", which"
-                                                    + "is different from currently loaded model \""
+                                                    + "is different from currently loaded log file \""
                                                     + min.getFilePath()
                                                     + ". "
                                                     + "Do want to load config and referred log (Yes), load config and apply "
@@ -108,11 +108,11 @@ public class ConfigLoader {
                             final int res = JOptionPane
                                     .showConfirmDialog(
                                             null,
-                                            "Currently loaded model  \""
+                                            "Currently loaded log file  \""
                                                     + logPath
                                                     + "\" has different timestamp "
                                                     + "than the copy on disk. "
-                                                    + "Do you want to: reload model from disk (Yes), "
+                                                    + "Do you want to: reload log file from disk (Yes), "
                                                     + "keep current model and apply config (markers may be out of sync) (No)",
                                             "or Cancel?",
                                             JOptionPane.YES_NO_CANCEL_OPTION);

@@ -25,6 +25,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
@@ -236,7 +237,7 @@ class LogListCellRenderer implements ListCellRenderer<String> {
         if (str != null && (str.contains("@msc_event") || str.contains("@event"))) 
             c = Color.blue;
 
-        r.setNum(index);
+        r.setNum(index+1);
         r.setForeground(c);
         r.setLine(index, str);
         r.setSelected(isSelected);
@@ -282,6 +283,8 @@ public class LogList extends JList<String> implements SelectionListener,
            
             @Override
             public void mousePressed(MouseEvent evt) {
+                if (evt.getButton() != MouseEvent.BUTTON1)
+                    return;
                 LogListRenderer r = cellRenderer.getRenderer();
                 if (r == null)
                     return;
@@ -298,6 +301,8 @@ public class LogList extends JList<String> implements SelectionListener,
             }
             @Override
             public void mouseReleased(MouseEvent evt) {
+                if (evt.getButton() != MouseEvent.BUTTON1)
+                    return;
                 LogListRenderer r = cellRenderer.getRenderer();
                 @SuppressWarnings("unchecked")
                 JList<String> list = (JList<String>) evt.getSource();
@@ -328,6 +333,8 @@ public class LogList extends JList<String> implements SelectionListener,
         });
         addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent evt) {
+                if (! SwingUtilities.isLeftMouseButton(evt))
+                    return;
                 LogListRenderer r = cellRenderer.getRenderer();
                 if (r == null)
                     return;

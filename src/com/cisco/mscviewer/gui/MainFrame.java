@@ -330,6 +330,19 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             }
             jpm.addSeparator();
             Event ev = r.getSelectedEvent();
+            it = new JMenuItem("Add Note");
+            it.setEnabled(ev != null && ev.getNote() == null);
+            it.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    notes.makeVisible();
+                    NoteEditor ne = notes.getEditor();
+                    ne.setTextAndSelect("Modify me in Event Note Tab");
+                    notes.selectionChanged(ev);
+                    mainPanel.repaint();
+                }
+            });
+            jpm.add(it);
             it = new JMenuItem("Remove Note");
             it.setEnabled(ev != null && ev.getNote() != null);
             it.addActionListener(new ActionListener() {
@@ -340,7 +353,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                     mainPanel.repaint();
                 }
             });
-
             jpm.add(it);
 
             if (jpm.getComponentCount() > 0) {
@@ -750,16 +762,16 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
 
         jtabbed = new CustomJTabbedPane();
         jtabbed.setName("bottom-right");
-        jtabbed.add("input", logPanel);
-        jtabbed.add("results", results);
-        jtabbed.add("data", data);
-        jtabbed.add("notes", notes);
+        jtabbed.add("Log File", logPanel);
+        jtabbed.add(ResultPanel.NAME, results);
+        jtabbed.add(DataPanel.NAME, data);
+        jtabbed.add(NotesPanel.NAME, notes);
         rightSplitPane.setBottomComponent(jtabbed);
         rightSplitPane.setDividerLocation((int) (VER_SPLIT * h));
         rightSplitPane.setResizeWeight(1.0);
         final JMenuBar jmb = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
-        JMenuItem mi = new JMenuItem(new AbstractAction("Load model...") {
+        JMenuItem mi = new JMenuItem(new AbstractAction("Load Log File...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadFile();
@@ -770,7 +782,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         fileMenu.add(mi);
 
-        reloadMI = new JMenuItem(new AbstractAction("Reload model") {
+        reloadMI = new JMenuItem(new AbstractAction("Reload Log File") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reloadFile();
@@ -780,7 +792,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
                 ActionEvent.ALT_MASK));
         fileMenu.add(reloadMI);
 
-        recentFilesMenu = new JMenu("Recent model");
+        recentFilesMenu = new JMenu("Recent Log Files");
         updateRecentModelsMenu();
         fileMenu.add(recentFilesMenu);
 

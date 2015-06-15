@@ -157,24 +157,18 @@ class TreeTableModel extends AbstractTreeTableModel {
  */
 @SuppressWarnings("serial")
 public class DataPanel extends JPanel implements SelectionListener {
+    public static final String NAME = "Event Data";
     private JXTreeTable tree;
 
     public DataPanel() {
-        try {
-            final JSonObject j = new JSonObject(
-                    "{\"key\":\"value\", \"foo\":[1, 2], \"bar\":{\"x\":\"vx\", \"y\":true}}");
             setLayout(new BorderLayout());
-            tree = new JXTreeTable(new TreeTableModel(j));
+            tree = new JXTreeTable(new TreeTableModel(null));
             this.add(new JScrollPane(tree), BorderLayout.CENTER);
             tree.setShowGrid(true);
             tree.setColumnMargin(1);
             tree.setRowMargin(1);
             tree.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
             tree.setRootVisible(false);
-        } catch (final JSonException ex) {
-            Logger.getLogger(DataPanel.class.getName()).log(Level.SEVERE, null,
-                    ex);
-        }
     }
 
     public void setModel(JSonValue obj) {
