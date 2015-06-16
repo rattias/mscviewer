@@ -20,27 +20,42 @@ public class ConvertFormat {
     private final static int GRP_SINK = 4;
     private final static int GRP_KEY = 5;
     private final static int GRP_VALUE = 6;
+    private static boolean append = false;
+    
+    private static int parseOptions(String[] args) {
+        int i;
+        for(i=0; i<args.length && args[i].startsWith("-"); i++) {
+            if (args[i].equals("-a"))
+                append = true;
+        }
+        return i;
+    }
 
     public static void main(String args[]) throws IOException {
         int fmt = 0;
 
-        if (args.length != 2) {
-            System.err.println("Syntax: mscupgrade <input file> <output file>");
+        int optEnd = parseOptions(args);
+        if (args.length - optEnd != 2) {
+            System.err.println("Syntax: mscupgrade [options] <input file> <output file>");
+            System.err.println("   Supported options:");
+            System.err.println("   -a:  append converted lines after corresponding original lines instead of replacing them");
             System.exit(1);
         }
 
-        final String fin = args[0];
+        final String fin = args[optEnd];
         final BufferedReader br = new BufferedReader(new FileReader(fin));
         String line = null;
         PrintStream ps;
-        ps = new PrintStream(args[1]);
-        System.out.println("converting file " + args[0] + "...");
+        ps = new PrintStream(args[optEnd+1]);
+        System.out.println("converting file " + args[optEnd] + "...");
         try {
             while ((line = br.readLine()) != null) {
                 if (line.indexOf("@msc") == -1) {
                     ps.println(line);
                     continue;
                 }
+                if (append)
+                    ps.println(line.replace("@msc_event", "@msc-event").replace("@msc_entity", "@msc-entity"));
                 if (fmt == 0) {
                     if (line.indexOf("@msc_event") != -1
                             && pv1.matcher(line).find()) {
