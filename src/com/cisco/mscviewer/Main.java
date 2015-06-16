@@ -210,11 +210,11 @@ public class Main {
                         int y = (scrHeight-h)/2;
                         mf = new MainFrame(x, y, w, h);
                         mf.setVisible(true);
+                        if (fname != null)
+                            mf.loadFile(fname);
                     }
                 });
-                if (fname != null) {
-                    loader.load(fname, MSCDataModel.getInstance(), false);
-                }
+               
             }
             if (script != null) {
                 loader.waitIfLoading();

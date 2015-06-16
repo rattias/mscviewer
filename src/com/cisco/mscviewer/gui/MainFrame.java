@@ -507,7 +507,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         }
     }
 
-    private void loadFile(String path) {
+    public void loadFile(String path) {
         if (!SwingUtilities.isEventDispatchThread())
             throw new Error("loadFile() should be called in EDT");
         final MSCDataModel dm = MSCDataModel.getInstance();
@@ -529,9 +529,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     private void reloadFile() {
         final MSCDataModel dm = MSCDataModel.getInstance();
         try {
-            viewModel.reset();
-            dm.reset();
-            new JsonLoader().load(dm.getFilePath(), dm, false);
+            loadFile(dm.getFilePath());
         } catch (final Exception e1) {
             e1.printStackTrace();
         }
