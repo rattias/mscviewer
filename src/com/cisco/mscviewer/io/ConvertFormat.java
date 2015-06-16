@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** Added comment to test commit close */
 public class ConvertFormat {
     private static Pattern pv1 = Pattern.compile("entity_id\\s*=\\s*\".+\"");
     private static Pattern pv1_el = Pattern
