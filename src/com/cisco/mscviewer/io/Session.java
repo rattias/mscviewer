@@ -106,7 +106,7 @@ public class Session {
             Element entities = dom.createElement(EL_ENTITIES);
             root.appendChild(entities);
             EntityHeader hd = MainFrame.getInstance().getEntityHeader();
-            for(int i=0; i<hd.getComponentCount(); i++) {
+            for(int i=0; i<hd.getEntityCount(); i++) {
                 Element entity = dom.createElement(EL_ENTITY);
                 entities.appendChild(entity);
                 entity.setAttribute(ATTR_ID, hd.getEntity(i).getId());

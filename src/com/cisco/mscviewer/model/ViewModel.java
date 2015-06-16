@@ -13,11 +13,16 @@ package com.cisco.mscviewer.model;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.swing.SwingUtilities;
+
+import com.cisco.mscviewer.gui.EntityHeader;
 import com.cisco.mscviewer.util.Utils;
 
 public class ViewModel implements MSCDataModelListener {
@@ -40,6 +45,7 @@ public class ViewModel implements MSCDataModelListener {
     private final HashMap<Entity, EntityInfo> entSet;
     private final MSCDataModel dm;
     private int[] events;
+    private int rightMargin;
 
     private MSCDataModelEventFilter filter;
 
@@ -165,7 +171,6 @@ public class ViewModel implements MSCDataModelListener {
     }
 
     public void reset() {
-        // sync on dm rather than this monitor to avoid deadlocks
         for (int idx = ent.size() - 1; idx >= 0; idx--) {
             removeEntity(idx);
         }
@@ -371,7 +376,10 @@ public class ViewModel implements MSCDataModelListener {
             return -1;
         synchronized (dm) {
             final EntityInfo ee = entSet.get(en);
-            return ee != null ? ee.c.getWidth() : -1;
+            if (ee != null && ee.c != null)
+                return ee.c.getWidth();
+            else
+                return -1;
         }
     }
 
@@ -392,7 +400,7 @@ public class ViewModel implements MSCDataModelListener {
             for (final EntityInfo ei : ent) {
                 w += ei.c.getWidth();
             }
-            return w;
+            return w+rightMargin;
         }
     }
 
@@ -551,5 +559,12 @@ public class ViewModel implements MSCDataModelListener {
         }
         return -1;
     }
-
+    
+    public void setRighMarginWidth(int m) {
+        rightMargin = m;
+    }
+    
+    public int getRighMarginWidth() {
+        return rightMargin;
+    }
 }

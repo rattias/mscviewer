@@ -16,6 +16,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -26,6 +28,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -41,30 +44,39 @@ import javax.swing.SwingUtilities;
 
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.EntityHeaderModelListener;
+import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
 public class EntityHeader extends JPanel implements EntityHeaderModelListener {
-
+    class RightMargin extends JPanel {
+        public RightMargin() {
+            setOpaque(true);
+            setBackground(Color.lightGray);
+            Dimension d = new Dimension(250, 32);
+            setPreferredSize(d);
+            setSize(d);
+        }        
+        
+    }
+    
     // private MainPanel mainPanel;
-    private final ViewModel ehm;
+    private final ViewModel viewModel;
     // private final Vector<EntityHeaderListener> listeners;
     private Dimension preferredSize;
     private Component dragging = null;
     private int draggingProspectiveIndex = -1;
+    private FontMetrics offscreenFontMetrics;
+    private RightMargin rightMarginPanel;
 
+    public int getEntityCount() {
+        return super.getComponentCount()-1;
+    }
+    
     CustomButton getCBFromIndex(int idx) {
         return (CustomButton) ((Container) getComponent(idx)).getComponent(1);
-    }
-
-    @Override
-    public void entityMoved(ViewModel eh, Entity en, int toIdx) {
-        final JPanel pp = getPanel(en);
-        setComponentZOrder(pp, toIdx);
-        doLayout();
-        repaint();
     }
 
     class ButtonDragger implements MouseListener, MouseMotionListener {
@@ -87,19 +99,6 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         public void mouseMoved(MouseEvent e) {
         }
 
-        @SuppressWarnings("unused")
-        private int getPanelIndex(JPanel pp) {
-            if (!SwingUtilities.isEventDispatchThread()) {
-                throw new Error("should be in event dispatch thread!");
-            }
-            int idx;
-            for (idx = 0; idx < getComponentCount(); idx++) {
-                if (getComponent(idx) == pp) {
-                    return idx;
-                }
-            }
-            return -1;
-        }
 
         @Override
         public void mousePressed(MouseEvent e) {
@@ -148,7 +147,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             // size
             // is used when adding/removing components
             preferredSize = null;
-            ehm.moveEntity(((CustomButton) e.getSource()).getEntity(),
+            viewModel.moveEntity(((CustomButton) e.getSource()).getEntity(),
                     draggingProspectiveIndex);
             draggingProspectiveIndex = -1;
         }
@@ -170,8 +169,8 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             // bounds change to model,
             // but that fires only at mouseReleased, so we also set model
             // coords.
-            ehm.setEntityLocation(getEntity(pp), lx);
-            final int count = getComponentCount();
+            viewModel.setEntityLocation(getEntity(pp), lx);
+            final int count = getEntityCount();
             final int cx = lx + pp.getWidth() / 2;
             int x = (cx < 0) ? pp.getWidth() : 0;
             // first component is the one we're dragging, loop on the others
@@ -185,7 +184,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 final Point pos = curr.getLocation();
                 pos.x = x;
                 // curr.setLocation(pos);
-                ehm.setEntityLocation(getEntity(curr), x);
+                viewModel.setEntityLocation(getEntity(curr), x);
                 x += curr.getWidth();
             }
             if (draggingProspectiveIndex == -1) {
@@ -209,15 +208,15 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             final boolean selected = cb.getModel().isSelected();
             Utils.trace(Utils.EVENTS, "Button for " + en.getName() + " "
                     + selected);
-            ehm.setSelected(en, selected);
+            viewModel.setSelected(en, selected);
             scrollToVisible(cb.getEntity());
             // do following only if CTRL not pressed (need to add that check)
-            for (int i = 0; i < ehm.entityCount(); i++) {
-                final Entity en1 = ehm.get(i);
+            for (int i = 0; i < viewModel.entityCount(); i++) {
+                final Entity en1 = viewModel.get(i);
                 if (en1 != en) {
                     Utils.trace(Utils.EVENTS,
                             "setting model for " + en.getName() + " to false");
-                    ehm.setSelected(en1, false);
+                    viewModel.setSelected(en1, false);
                 }
             }
             // notifyEntitySelectionChanged(cb.getEntity(),
@@ -236,7 +235,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (idx > 0) {
                 final int newx = b.getX() - b.getWidth();
                 final int butw = b.getWidth();
-                ehm.moveEntity(b.getEntity(), idx - 1);
+                viewModel.moveEntity(b.getEntity(), idx - 1);
                 b.requestFocus();
                 b.setSelected(true);
 
@@ -268,7 +267,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             return preferredSize;
         }
         final Dimension r = super.getPreferredSize();
-        if (r.height == 1 && getComponentCount() > 0) {
+        if (r.height == 1 && getEntityCount() > 0) {
             r.height = getComponent(0).getHeight();
         }
         return r;
@@ -282,10 +281,10 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             }
             final CustomButton b = (CustomButton) e.getSource();
             final int idx = getButtonIndex(b);
-            if (idx < getComponentCount() - 1) {
+            if (idx < getEntityCount() - 1) {
                 final int newx = b.getX() + b.getWidth();
                 final int butw = b.getWidth();
-                ehm.moveEntity(b.getEntity(), idx + 1);
+                viewModel.moveEntity(b.getEntity(), idx + 1);
                 b.requestFocus();
                 b.setSelected(true);
                 Container c;
@@ -312,10 +311,10 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
                 throw new Error("should be in event dispatch thread!");
             }
             final CustomButton b = (CustomButton) e.getSource();
-            final int idx = ehm.indexOf(b.getEntity());
-            final Dimension d = ehm.getEntityPreferredSize(idx);
+            final int idx = viewModel.indexOf(b.getEntity());
+            final Dimension d = viewModel.getEntityPreferredSize(idx);
             d.width += 6;
-            ehm.setEntityPreferredSize(idx, d);
+            viewModel.setEntityPreferredSize(idx, d);
         }
     };
 
@@ -335,19 +334,19 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             if (totalW - delta < visibleW)
                 delta = totalW - visibleW;
             final CustomButton b = (CustomButton) e.getSource();
-            final int idx = ehm.indexOf(b.getEntity());
-            final Dimension d = ehm.getEntityPreferredSize(idx);
+            final int idx = viewModel.indexOf(b.getEntity());
+            final Dimension d = viewModel.getEntityPreferredSize(idx);
             d.width -= delta;
-            ehm.setEntityPreferredSize(idx, d);
+            viewModel.setEntityPreferredSize(idx, d);
         }
     };
 
     public EntityHeader(ViewModel ehm) {
-        // this.listeners = new Vector<EntityHeaderListener>();
-        this.ehm = ehm;
+        this.viewModel = ehm;
         ehm.addListener(this);
         setLayout(null);
-        // setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        rightMarginPanel = new RightMargin();
+        add(rightMarginPanel);
     }
 
     @Override
@@ -363,7 +362,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        for (int i = 0; i < getComponentCount(); i++) {
+        for (int i = 0; i < getEntityCount(); i++) {
             if (getComponent(i) == b.getParent()) {
                 return i;
             }
@@ -375,7 +374,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        if (entityIdx >= getComponentCount()) {
+        if (entityIdx >= getEntityCount()) {
             return 0;
         }
         final Component c = getComponent(entityIdx);
@@ -385,7 +384,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
     // public int getEntityWidth() {
     // return (getComponentCount()>0) ? getComponent(0).getWidth() : 0;
     // }
-    public int getEntitiesTotalWidth() {
+    public int getPreferredWidth() {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
@@ -417,7 +416,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        final int cnt = getComponentCount();
+        final int cnt = getEntityCount();
         for (int i = 0; i < cnt; i++) {
             if (getEntity(i) == en) {
                 return (JPanel) getComponent(i);
@@ -430,12 +429,12 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        for (int i = 0; i < getComponentCount(); i++) {
+        for (int i = 0; i < getEntityCount(); i++) {
             if (getCBFromIndex(i).getEntity() == en) {
                 return;
             }
         }
-        add(en, getComponentCount());
+        add(en, getEntityCount());
     }
 
     public Component add(final Entity en, final int idx) {
@@ -496,7 +495,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                ehm.remove(en);
+                viewModel.remove(en);
                 repaint();
             }
         }
@@ -553,7 +552,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         p.add(p1, BorderLayout.EAST);
         p.add(b, BorderLayout.CENTER);
         add(p, idx);
-        ehm.setEntityComponent(idx, p);
+        viewModel.setEntityComponent(idx, p);
         // updateIndexes();
         // mainPanel.getMainFrame().updateTree(en);
         // notifyListenersEntityAdded(en);
@@ -580,14 +579,14 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (dragging != null) {
             return;
         }
-        final int count = getComponentCount();
-        if (count == 0) {
+        int entCount = getEntityCount(); 
+        if (entCount == 0) {
             return;
         }
         int x = 0;
         int preferredTotalW = 0;
         int preferredTotalH = 0;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i <  entCount; i++) {
             final Component c = getComponent(i);
             final Dimension pd = c.getPreferredSize();
             preferredTotalW += pd.width;
@@ -597,15 +596,18 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         int diff = vpd.width - preferredTotalW;
         if (diff <= 0)
             diff = 0;
-        final int part = diff / count;
-        final int last = diff - part * (count - 1);
-        for (int i = 0; i < count; i++) {
+        final int part = diff / entCount;
+        final int last = diff - part * (entCount - 1);
+        for (int i = 0; i < entCount; i++) {
             final Component c = getComponent(i);
             final Dimension d = c.getPreferredSize();
-            final int neww = d.width + ((i < count - 1) ? part : last);
+            final int neww = d.width + ((i < entCount - 1) ? part : last);
             c.setBounds(x, 0, neww, preferredTotalH);
             x += neww;
         }
+        computeRightMargin();
+        rightMarginPanel.setLocation(x, 0);
+        x += rightMarginPanel.getWidth();
         final Dimension newDim = new Dimension(x, preferredTotalH);
         final Dimension oldDim = getSize();
         if (!newDim.equals(oldDim)) {
@@ -613,8 +615,6 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             setMinimumSize(newDim);
             setPreferredSize(newDim);
         }
-        // revalidate();
-        // repaint();
     }
 
     public void flipIconizedState(Entity en) {
@@ -625,7 +625,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        final int cnt = getComponentCount();
+        final int cnt = getEntityCount();
         for (int i = 0; i < cnt; i++) {
             final CustomButton b = getCBFromIndex(i);
             if (b.getEntity() == en) {
@@ -653,13 +653,13 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             throw new Error("should be in event dispatch thread!");
         }
         int cnt = 0;
-        for (int i = 0; i < getComponentCount(); i++) {
+        for (int i = 0; i < getEntityCount(); i++) {
             if (getCBFromIndex(i).isSelected()) {
                 cnt++;
             }
         }
         final int[] idx = new int[cnt];
-        for (int i = 0, j = 0; i < getComponentCount(); i++) {
+        for (int i = 0, j = 0; i < getEntityCount(); i++) {
             if (getCBFromIndex(i).isSelected()) {
                 idx[j] = i;
                 j++;
@@ -668,6 +668,16 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         return idx;
     }
 
+    
+    @Override
+    public void entityMoved(ViewModel eh, Entity en, int toIdx) {
+        final JPanel pp = getPanel(en);
+        setComponentZOrder(pp, toIdx);
+        doLayout();
+        repaint();
+    }
+
+
     @Override
     public void entityAdded(ViewModel eh, Entity en, int idx) {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -675,7 +685,6 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }
         add(en, idx);
         doLayout();
-        // notifyEntityAdded(en, idx);
     }
 
     @Override
@@ -685,7 +694,6 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }
         remove(en);
         doLayout();
-        // notifyEntityRemoved(en, idx);
     }
 
     @Override
@@ -694,7 +702,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             throw new Error("should be in event dispatch thread!");
         }
         Utils.trace(Utils.EVENTS, "CB.entitySelectionChanged()");
-        final int cnt = getComponentCount();
+        final int cnt = getEntityCount();
         for (int i = 0; i < cnt; i++) {
             final CustomButton cb = getCBFromIndex(i);
             final Entity en1 = cb.getEntity();
@@ -724,7 +732,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
             throw new Error("should be in event dispatch thread!");
         }
         int min = Integer.MAX_VALUE;
-        for (int i = 0; i < getComponentCount(); i++) {
+        for (int i = 0; i < getEntityCount(); i++) {
             final int w = getComponent(i).getWidth();
             if (w < min) {
                 min = w;
@@ -737,14 +745,14 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        return (idx < getComponentCount()) ? getComponent(idx).getWidth() : 0;
+        return (idx < getEntityCount()) ? getComponent(idx).getWidth() : 0;
     }
 
     public int getEntityWidth(Entity en) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        for (int i = 0; i < getComponentCount(); i++) {
+        for (int i = 0; i < getEntityCount(); i++) {
             final CustomButton b = getCBFromIndex(i);
             if (b.getEntity() == en) {
                 return getEntityWidth(i);
@@ -757,7 +765,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new Error("should be in event dispatch thread!");
         }
-        final int idx = ehm.indexOf(en);
+        final int idx = viewModel.indexOf(en);
         final int cx = getEntityCenterX(idx);
         final int w = getEntityWidth(idx);
         final int x0 = cx - w / 2;
@@ -790,4 +798,31 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
     public void boundsChanged(ViewModel entityHeaderModel, Entity en, int idx) {
         doLayout();
     }
+
+    private void computeRightMargin() {
+        if (offscreenFontMetrics == null) {
+            BufferedImage bim = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bim.getGraphics();
+            offscreenFontMetrics = g.getFontMetrics();
+        }
+        int rightMargin = 0;
+        int lastEntityIndex = getEntityCount()-1;
+        if (lastEntityIndex >= 0) {
+            Entity en = getEntity(lastEntityIndex);
+            int cnt = viewModel.getEventCount();         
+            for(int i=0; i<cnt; i++) {
+                Event ev = viewModel.getEventAt(i);
+                if (ev.getEntity() != en)
+                    continue;                
+                int w = SwingUtilities.computeStringWidth(offscreenFontMetrics, ev.getLabel());
+                int x = viewModel.getEntityCenterX(lastEntityIndex);
+                int margin = 30 /* should be maxBBwidh from renderer */ + w - viewModel.getEntityWidth(en)/2;
+                if (margin > rightMargin)
+                    rightMargin = margin;
+            }
+        }
+        rightMarginPanel.setSize(rightMargin, rightMarginPanel.getHeight());
+        rightMarginPanel.setPreferredSize(new Dimension(rightMargin, rightMarginPanel.getHeight()));
+        viewModel.setRighMarginWidth(rightMargin);
+    }    
 }

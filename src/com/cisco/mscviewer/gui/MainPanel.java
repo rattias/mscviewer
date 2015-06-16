@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -22,12 +23,14 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import com.cisco.mscviewer.model.Entity;
@@ -74,6 +77,7 @@ public class MainPanel extends JPanel implements Scrollable, KeyListener,
     // private Rectangle selectionRectangle = null;
     private final EntityHeader entityHeader;
     private final ViewModel viewModel;
+    private int rightMargin;
 
     public MainPanel(final MainFrame mf, EntityHeader entityHeader,
             ViewModel viewModel) {
@@ -356,9 +360,10 @@ public class MainPanel extends JPanel implements Scrollable, KeyListener,
         repaint();
     }
 
+    
     @Override
     public Dimension getPreferredSize() {
-        int w = entityHeader.getEntitiesTotalWidth();
+        int w = entityHeader.getPreferredWidth();
         final JViewport vp = getAncestorViewport();
         w = Math.max(w, vp.getWidth());
         final Dimension d = new Dimension(w, r.getHeight());

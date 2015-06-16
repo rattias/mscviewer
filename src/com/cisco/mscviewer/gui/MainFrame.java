@@ -74,6 +74,7 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -507,8 +508,13 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
 
     private void loadFile(String path) {
+        if (!SwingUtilities.isEventDispatchThread())
+            throw new Error("loadFile() should be called in EDT");
         final MSCDataModel dm = MSCDataModel.getInstance();
+        // we want to execute both viewModel and DataModel reset in the context of 
+        //event dispatch thread!
         viewModel.reset();            
+        dm.reset();
         try {
             new JsonLoader().loadAsync(path, dm, false);
             reloadButton.setEnabled(true);
@@ -1147,7 +1153,7 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
     }
 
     int getEntitiesTotalWidth() {
-        return entityHeader.getEntitiesTotalWidth();
+        return entityHeader.getPreferredWidth();
     }
 
     public MainPanel getMainPanel() {

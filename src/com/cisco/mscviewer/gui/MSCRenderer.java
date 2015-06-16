@@ -15,6 +15,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -27,7 +28,9 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
 
@@ -164,17 +167,20 @@ public class MSCRenderer {
             maxIdx = evCount - 1;
 
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, viewModel.getTotalWidth(), getHeight());
+        int viewModelWidth = viewModel.getTotalWidth();
+        g2d.fillRect(0, 0, viewModelWidth, getHeight());
         if (drawBands) {
             g2d.setColor(new Color(248, 248, 248));
             for (int i = minIdx; i <= maxIdx; i++) {
                 if (i % 2 == 1) {
                     final int h = i * eventHeight;
-                    g2d.fillRect(0, h, viewModel.getTotalWidth(),
-                            eventHeight - 1);
+                    g2d.fillRect(0, h, viewModelWidth, eventHeight - 1);
                 }
             }
         }
+        g2d.setColor(Color.lightGray);
+        int rightMargin = viewModel.getRighMarginWidth();
+        g2d.fillRect(viewModelWidth, 0, rightMargin, getHeight());
     }
 
     public String getTimeRepr(long timestamp) {
@@ -291,8 +297,6 @@ public class MSCRenderer {
                 if (entityIndex >= 0) {
                     final int x = viewModel.getEntityCenterX(entityIndex);
                     final int y = i * eventHeight + eventHeight / 2;
-                    // g2d.drawString("ev_"+i, 0, y);
-                    // g2d.drawString(ev.getType(), 0, y);
                     final AffineTransform t = g2d.getTransform();
                     g2d.translate(x, y);
                     final boolean scaled = r.scaleSource();
@@ -335,9 +339,12 @@ public class MSCRenderer {
                         g2d.setColor(Color.RED);
                     else
                         g2d.setColor(Color.BLACK);
-                    if (showLabels)
-                        g2d.drawString(ev.getLabel(), x + maxBBwidth, i
+                    if (showLabels) {
+                        String label = ev.getLabel();
+                        g2d.drawString(label, x + maxBBwidth, i
                                 * eventHeight + ascent);
+                        final int w = g2d.getFontMetrics().stringWidth(label);
+                    }
                 }
             }
             // render notes
@@ -405,142 +412,12 @@ public class MSCRenderer {
         }
     }
 
-    // private void renderTimeProportional(Graphics2D g2d, int viewMinIdx, int
-    // viewMaxIdx) {
-    // if (mainFont == null) {
-    // mainFont = g2d.getFont();
-    // }
-    // AffineTransform tf = new AffineTransform();
-    // tf.scale(1, zoomFactor/100.0);
-    // font = mainFont.deriveFont(tf);
-    // g2d.setFont(font);
-    // int ascent = g2d.getFontMetrics().getAscent();
-    // synchronized(dataModel) {
-    // int evCount = viewModel.getEventCount();
-    // // render interactions first
-    // for(int i=0; i<evCount; i++) {
-    // Event ev = viewModel.getEventAt(i);
-    // int entityIndex = viewModel.indexOf(ev.getEntity());
-    // if (entityIndex < 0 )
-    // continue;
-    // Dimension maxDim = new Dimension(viewModel.getEntityWidth(entityIndex),
-    // eventHeight);
-    // Interaction[] incoming = ev.getIncomingInteractions();
-    // if (incoming != null) {
-    // for(Interaction in: incoming) {
-    // // If we traverse events on a filtered view, then the source might not
-    // // be there. in that case we do need to render the sink.
-    // boolean sourceExists = in.getFromEvent() != null;
-    // int sourceViewIdx =
-    // viewModel.getViewIndexFromModelIndex(in.getFromIndex());
-    // if (sourceExists && (i < viewMinIdx || sourceViewIdx > viewMaxIdx)) {
-    // continue;
-    // }
-    // if ((!sourceExists) && (i<viewMinIdx || i>viewMaxIdx)) {
-    // continue;
-    // }
-    // Rectangle r1 = null, r2;
-    // r2 = getEventBoundingBox(ev, i, maxDim);
-    // if (in.getFromEvent() != null) {
-    // r1 = getEventBoundingBox(in.getFromEvent(), sourceViewIdx, maxDim);
-    // } else
-    // r1 = new Rectangle(-1, 0, 0, 0);
-    // InteractionRenderer ir = in.getIRenderer();
-    // ir.render(r1, r2, g2d, in == selectedInteraction);
-    // }
-    // }
-    // Interaction[] outgoing = ev.getOutgoingInteractions();
-    // if (outgoing != null && i <= viewMaxIdx) {
-    // for(int j=0; j<outgoing.length; j++) {
-    // int sinkIdx =
-    // viewModel.getViewIndexFromModelIndex(outgoing[j].getToIndex());
-    // if (sinkIdx >=0 && sinkIdx < viewMinIdx)
-    // continue;
-    // Rectangle r1, r2 = null;
-    // r1 = getEventBoundingBox(ev, i, maxDim);
-    // Event tev = outgoing[j].getToEvent();
-    // if (tev != null) {
-    // r2 = getEventBoundingBox(tev, sinkIdx, maxDim);
-    // } else {
-    // r2 = new Rectangle(-1, 0, 0, 0);
-    // }
-    // InteractionRenderer ir = outgoing[j].getIRenderer();
-    // ir.render(r1, r2, g2d, outgoing[j] == selectedInteraction);
-    // }
-    // }
-    // }
-    //
-    // // render events after
-    // for(int i=viewMinIdx; i<=viewMaxIdx; i++) {
-    // Event ev = viewModel.getEventAt(i);
-    // Entity en = ev.getEntity();
-    // int entityIndex = viewModel.indexOf(en);
-    // if (entityIndex == -1)
-    // continue;
-    // int entityWidth = viewModel.getEntityWidth(entityIndex);
-    // Dimension maxDim = new Dimension(entityWidth, eventHeight);
-    // EventRenderer r = ev.getRenderer();
-    // if (entityIndex >=0) {
-    // int x = viewModel.getEntityCenterX(entityIndex);
-    // int y = i*eventHeight+eventHeight/2;
-    // AffineTransform t = g2d.getTransform();
-    // g2d.translate(x, y);
-    // boolean scaled = (ev.getOutgoingInteractions() != null &&
-    // r.scaleSource());
-    // AffineTransform t1 = null;
-    // if (scaled) {
-    // t1 = g2d.getTransform();
-    // g2d.scale(.7, .7);
-    // }
-    // r.render(g2d, maxDim, ev == selectedEvent);
-    // if (ev.getNote() != null) {
-    // Rectangle bb = r.getBoundingBox(maxDim, 0, 0, null);
-    // g2d.drawImage(infoIcon.getImage(), -bb.width/2-8, 0, null);
-    // }
-    // if (scaled)
-    // g2d.setTransform(t1);
-    // if (ev == selectedEvent) {
-    // g2d.setColor(Color.red);
-    // g2d.setStroke(selStroke);
-    // g2d.drawRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
-    // g2d.setStroke(basicStroke);
-    // }
-    // Marker m = ev.getMarker();
-    // if (m != null) {
-    // Color c = m.getTransparentColor();
-    // g2d.setColor(c);
-    // g2d.fillRect(-maxBBwidth/2, -eventHeight/2, maxBBwidth, eventHeight);
-    // }
-    // g2d.setTransform(t);
-    // Rectangle bb = new Rectangle();
-    // r.getBoundingBox(maxDim, x, y, bb);
-    // if (showTime) {
-    // String time = ev.getTimestampRepr();
-    // if (time != null) {
-    // g2d.setColor(Color.pink);
-    // int w = g2d.getFontMetrics().stringWidth(time);
-    // g2d.drawString(time, x-maxBBwidth/2-w-4, i*eventHeight+ascent);
-    // }
-    // }
-    // if (ev.getRenderer() instanceof ErrorRenderer)
-    // g2d.setColor(Color.RED);
-    // else
-    // g2d.setColor(Color.BLACK);
-    // int labelStyle = ev.getRenderer().getLabelStyle();
-    // if (labelStyle != Font.PLAIN) {
-    // Font f = g2d.getFont();
-    // g2d.setFont(f.deriveFont(labelStyle));
-    // g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
-    // g2d.setFont(f);
-    // } else {
-    // g2d.drawString(ev.getLabel(), x+maxBBwidth, i*eventHeight+ascent);
-    // }
-    // }
-    // }
-    // }
-    // }
-
-    private void computeMaxBBWidth() {
+    
+//    public int getRightMargin() {
+//        return rightMargin;
+//    }
+//    
+     private void computeMaxBBWidth() {
         final MSCDataModel dataModel = MSCDataModel.getInstance();
         synchronized (dataModel) {
             final int cnt = viewModel.getEventCount();
@@ -600,6 +477,8 @@ public class MSCRenderer {
                 }
             }
         }
+        g2d.setColor(new Color(248,248,248,80));
+        g2d.fillRect(viewModel.getTotalWidth()-viewModel.getRighMarginWidth(), 0, viewModel.getRighMarginWidth(), getHeight());
         g2d.setColor(Color.BLACK);
         final int enCnt = viewModel.entityCount();
         if (export) {
@@ -1415,4 +1294,6 @@ public class MSCRenderer {
     public void setShowNotes(boolean show) {
         showNotes = show;
     }
+    
+  
 }
