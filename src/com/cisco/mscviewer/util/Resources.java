@@ -39,7 +39,7 @@ public class Resources {
                 for (final String s : icons) {
                     final int dotIdx = s.lastIndexOf('.');
                     final String key = dotIdx >= 0 ? s.substring(0, dotIdx) : s;
-
+                    
                     try {
                         final ImageRenderer ir = new ImageRenderer(key,
                                 ImageIO.read(new File(f, s)));

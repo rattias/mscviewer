@@ -1,0 +1,5 @@
+@event { "entity":"food",    "type":"bananas", "label":"bananas"}
+@event { "entity":"food",    "type":"cake",    "label":"cake"}
+@event { "entity":"animals", "type":"bee",     "label":"bee"}
+@event { "entity":"animals", "type":"snail",   "label":"snail"}
+
