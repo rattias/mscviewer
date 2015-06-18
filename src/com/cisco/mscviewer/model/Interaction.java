@@ -248,7 +248,10 @@ public final class Interaction implements Interval {
      */
     @Override
     public int getStart() {
-        return fromIndex >= 0 ? fromIndex : toIndex;
+        if (fromIndex > 0 && toIndex > 0)
+            return Math.min(fromIndex,  toIndex);
+        else 
+            return fromIndex >= 0 ? fromIndex : toIndex;
     }
 
     /**
@@ -258,7 +261,10 @@ public final class Interaction implements Interval {
      */
     @Override
     public int getEnd() {
-        return toIndex >= 0 ? toIndex : fromIndex;
+        if (fromIndex > 0 && toIndex > 0)
+            return Math.max(fromIndex,  toIndex);
+        else 
+            return toIndex >= 0 ? toIndex : fromIndex;
     }
 
     /**

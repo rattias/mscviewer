@@ -567,7 +567,8 @@ public class JsonLoader implements Loader {
                 }
 
                 // sort topologically
-                dm.topoSort();
+                if (! dm.getFilePath().equals(dm.getCausalityLoopFileName()))
+                    dm.topoSort();
                 if (Main.WITH_BLOCKS) {
                     for (int i = 0; i < dm.getEventCount(); i++) {
                         final Event ev = dm.getEventAt(i);

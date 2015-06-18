@@ -257,8 +257,10 @@ public class MSCRenderer {
                 final int sinkModelIdx = in.getToIndex();
                 final int sinkViewIdx = viewModel
                         .getViewIndexFromModelIndex(sinkModelIdx);
+                // if neither source nor sink entity is open in view, skip this interaction
                 if (sourceViewIdx < 0 && sinkViewIdx < 0)
                     continue;
+
                 if (sourceViewIdx >= 0) {
                     final Event source = dataModel.getEventAt(sourceModelIdx);
                     final Entity sourceEn = source.getEntity();

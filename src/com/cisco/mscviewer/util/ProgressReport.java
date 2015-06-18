@@ -89,6 +89,7 @@ public class ProgressReport {
     private String activity;
     @SuppressWarnings("unused")
     private String msg;
+    private float scaleFactor;
     
     public ProgressReport(final String activity, final String msg) {
         this(activity, msg, -1, -1);
@@ -106,11 +107,13 @@ public class ProgressReport {
         this.parent = parent;
         this.percent = percent;
         this.msg = msg;
+        this.scaleFactor = 100.0f/(maxValue-minValue);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.shouldShow = shouldShow;
         if (Main.batchMode())
             return;
+        closeDialog();
         createProgressGUI(activity, msg, minValue, maxValue);
     }
 
@@ -122,6 +125,7 @@ public class ProgressReport {
             children = new ArrayList<ProgressReport>();
             childrenBaseValue = Main.batchMode() ? 0 : getProgress();
         }
+        closeDialog();
         children.add(child);
         return child;
     }
@@ -149,11 +153,11 @@ public class ProgressReport {
         }
     }
 
-    private void updateDialogForDone() {
+    private void closeDialog() {
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                if (singletonDialog.isVisible() && elements.isEmpty()) {
+                if (singletonDialog.isVisible()) {
                     singletonDialog.setVisible(false);
                     final MainFrame mf = MainFrame.getInstance();
                     if (mf != null) {
@@ -194,6 +198,7 @@ public class ProgressReport {
                         gpane.setVisible(true);
                     }
                     singletonDialog.setVisible(true);
+                } else {
                 }
             }
         };
@@ -229,7 +234,9 @@ public class ProgressReport {
         synchronized(singletonDialog) {
             if (pb == null)
                 return;
-            if (pb.getValue() == v)
+            int perc = (int)((v-minValue)*scaleFactor);
+            int oldPerc = (int)((pb.getValue()-minValue)*scaleFactor);
+            if (perc == oldPerc)
                 return;
             if (!pb.isIndeterminate())
                 pb.setValue(v);
@@ -273,7 +280,7 @@ public class ProgressReport {
             parent.childrenBaseValue += totalChildContribute;
             parent.updateForChildren();
         }
-        updateDialogForDone();
+        closeDialog();
     }
 
     public void setMinMaxValue(int min, int max) {

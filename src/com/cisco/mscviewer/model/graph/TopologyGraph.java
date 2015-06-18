@@ -11,8 +11,14 @@
  */
 package com.cisco.mscviewer.model.graph;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -22,6 +28,7 @@ import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
 import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.util.ProgressReport;
+import com.cisco.mscviewer.util.Utils;
 
 public class TopologyGraph {
     private ProgressReport pr;
@@ -102,6 +109,7 @@ public class TopologyGraph {
                 }
                 enToEvIdx.put(en, i);
             }
+            
             subPr.progressDone();
             int i = 0;
             subPr = pr.subReport("Creating graph", "Interactions", 20, 0,
@@ -113,6 +121,7 @@ public class TopologyGraph {
                 final Interaction in = it.next();
                 final int from = in.getFromIndex();
                 final int to = in.getToIndex();
+//                System.out.println("INTER "+from+"->"+to);
                 if (from != -1 && to != -1)
                     addEdge(from, to, false);
             }
@@ -169,7 +178,18 @@ public class TopologyGraph {
     public int[] topoSort() throws TopologyError {
         final int evCount = dm.getEventCount();
         final int[] L = new int[evCount];
-        final TreeSet<Integer> S = new TreeSet<Integer>();
+        final TreeSet<Integer> S = new TreeSet<Integer>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                int n1Idx = ((Integer)o1).intValue();
+                int n2Idx = ((Integer)o2).intValue();
+                long ts1 = dm.getEventAt(n1Idx).getTimestamp();
+                long ts2 = dm.getEventAt(n2Idx).getTimestamp();
+                if (ts1 == ts2)
+                    return Integer.compare(n1Idx, n2Idx);
+                return Long.compare(ts1, ts2);                
+            }
+        });
         // populate S with nodes with no incoming edges
         if (evCount == 0)
             return null;
@@ -177,6 +197,7 @@ public class TopologyGraph {
                 30, 0, evCount, true);
         for (int i = 0; i < evCount; i++) {
             subPr.progress(i); // first 20%
+            Event ev = dm.getEventAt(i);
             if (!hasIncomingEdges(i)) {
                 S.add(i);
             }
@@ -210,22 +231,60 @@ public class TopologyGraph {
         }
         subPr.progressDone();
         if (idx != evCount) {
+            String filePath = Utils.getWorkDirPath()+"/causality_looo.msc";
             final ArrayList<P> al = findLoop();
             if (al != null) {
-                for (final P p : al) {
-                    System.out.println(dm.getEventAt(p.node).getLineIndex() + "->");
-                }
+                PrintWriter pw;
+                try {
+                    pw = new PrintWriter(new FileWriter(new File(dm.getCausalityLoopFileName())));
+                    HashSet<Event> set = new HashSet<Event>();
+                    for (int eidx = al.size()-1; eidx>=0; eidx--) {
+                        P p = al.get(eidx);
+                        Event ev = dm.getEventAt(p.node);
+                        if (set.contains(ev))
+                            continue;
+                        set.add(ev);
+                        pw.print("@event {\"entity\":\""+ev.getEntity().getPath()+"\"");
+                        pw.print(", \"time\":\""+ev.getTimestamp()+"\"");
+                        pw.print(", \"label\":\"["+ev.getLineIndex()+"] "+ev.getLabel()+"\"");
+
+                        Interaction ins[] = ev.getOutgoingInteractions(); 
+                        if (ins.length == 1) {
+                            pw.print(", \"src\":\""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                        } else if (ins.length > 1) {
+                            pw.print(", \"src\":\"{");
+                            for(int i=0; i<ins.length; i++) {
+                                if (i>0)
+                                    pw.print(", ");
+                                pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                            }
+                            pw.print("}\"");                        
+                        }
+
+                        ins = ev.getIncomingInteractions();                  
+                        if (ins.length == 1) {
+                            Event srcEv = ins[0].getFromEvent();
+                            if (srcEv != null) {                                
+                                pw.print(", \"dst\":\""+srcEv.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                            }
+                        } else if (ins.length > 1) {
+                            pw.print(", \"dst\":\"{");
+                            for(int i=0; i<ins.length; i++) {
+                                if (i>0)
+                                    pw.print(", ");
+                                pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                            }
+                            pw.print("}\"");                        
+                        }
+                        pw.println("}");
+                    }
+                    pw.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } 
             }
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Found causality loop:\n");
-            for (final P p : al) {
-                final Event ev = dm.getEventAt(p.node);
-                ev.setMarker(Marker.RED);
-                idx = ev.getLineIndex();
-                sb.append(idx + ":" + dm.getSourceLine(idx-1)+ "\n");
-            }
-            throw new TopologyError("Failed to sort topologically:\n"
-                    + sb.toString());
+            throw new TopologyError("Failed to sort topologically:\n A reduced file containing only the loop events has been saved to "+filePath);
         } else {
         }
 

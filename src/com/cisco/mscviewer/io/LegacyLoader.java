@@ -67,13 +67,14 @@ public class LegacyLoader implements Loader {
         final String msg = "Loading file " + fname + "...";
         final long t0 = System.currentTimeMillis();
         final ProgressReport pr = new ProgressReport("Loading", msg, 0, flen);
+        pr.progress(msg, 0);
         try {
             int x = 0;
             while ((line = fr.readLine()) != null) {
                 readCnt += line.length();
                 x++;
                 if (x % 1024 == 0) {
-                    pr.progress(msg, readCnt);
+                    pr.progress(readCnt);
                 }
 
                 lineNum++;

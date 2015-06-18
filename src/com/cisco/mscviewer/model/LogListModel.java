@@ -1,5 +1,11 @@
 package com.cisco.mscviewer.model;
 
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,6 +14,8 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
@@ -15,7 +23,7 @@ import com.cisco.mscviewer.util.Utils;
 @SuppressWarnings("serial")
 public class LogListModel extends AbstractListModel<String> {
     private final static File dir = new File(Utils.getWorkDirPath());
-    private final static int BLOCK_SIZE = 1024;
+    private final static int BLOCK_SIZE = 64*1024;
     private RandomAccessFile raf;
     private BufferedWriter fw;
     ArrayList<long[]> offsets;
@@ -25,13 +33,37 @@ public class LogListModel extends AbstractListModel<String> {
     private byte[] cache;
     private boolean loading;
     private File f;
-
+    private FontMetrics offscreenFontMetrics;
+    private Graphics offscreenG;
+    private int lineHeight = 0;
+    private int lineWidth = 0;
+    private int charWidth = 0;
+    private int maxLineLen;
+    
     public LogListModel() {
         reset();
         long[] el = new long[BLOCK_SIZE];
         offsets.add(el);
     }
 
+//    private void adjustLineBounds(int len) {
+//        if (offscreenFontMetrics == null) {
+//            BufferedImage bim = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
+//            offscreenG = bim.getGraphics();
+//            final Font f = (Font) UIManager.getDefaults().get("List.font");
+//            offscreenG.setFont(f);
+//            offscreenFontMetrics = offscreenG.getFontMetrics();
+//            charWidth = offscreenFontMetrics.charWidth('A')
+//        }
+//        Rectangle2D r = offscreenFontMetrics.getStringBounds(str, offscreenG);        
+//        lineWidth = Math.max(lineWidth, (int)r.getWidth());
+//        lineHeight = offscreenFontMetrics.getHeight();
+//    }   
+    
+    public Dimension getMaxLineSize() {
+        return new Dimension(lineWidth, lineHeight);
+    }
+    
     public void add(String line) {
         if (! loading)
             throw new Error("Invalid add when mode is not loading");
@@ -48,14 +80,18 @@ public class LogListModel extends AbstractListModel<String> {
                 last = offsets.get(offsets.size()-1);
             last[numLines % BLOCK_SIZE] = fileSize;
             numLines++;
-            int len = line.length()+1;
+            int len = line.length();
             fw.write(line);
             fw.write('\n');
-            fileSize += len;
+            fileSize += len+1;
+            if (len > maxLineLen)
+                maxLineLen = len;
+          
         } catch (IOException e) {
             reportInputCopyException(e);
         }
     }
+    
 
     private void reportInputCopyException(Exception e) {
         boolean isDefault = Utils.workDirIsDefault();
@@ -76,6 +112,8 @@ public class LogListModel extends AbstractListModel<String> {
 
     @Override
     public String getElementAt(int index) {
+        if (index >= numLines || raf == null)
+            return null;
         if (loading)
             return "";
         String res = null;
@@ -150,8 +188,10 @@ public class LogListModel extends AbstractListModel<String> {
         offsets = new ArrayList<long[]>();
         numLines = 0;
         fileSize = 0;
+        maxLineLen = 0;
         cachedOffset = Long.MIN_VALUE;
-        cache = new byte[8192];
+        cache = new byte[64*1024];
+        lineWidth = 0;
         loading = true;
     }
 
@@ -168,5 +208,7 @@ public class LogListModel extends AbstractListModel<String> {
         }
     }
 
-
+    public int getMaxLineLen() {
+        return maxLineLen;
+    }
 }

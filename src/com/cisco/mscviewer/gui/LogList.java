@@ -20,12 +20,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
@@ -71,7 +73,8 @@ class LogListRenderer extends JPanel {
     }
 
     private void initFontInfo(Graphics g) {
-        f = getFont();
+        f = (Font) UIManager.getDefaults().get("List.font");
+        g.setFont(f);        
         fm = g.getFontMetrics(f);
         final Rectangle2D r = fm.getStringBounds("" + dm.getSourceLineCount(), g);
         numWidth = (int) r.getWidth() + 5;
@@ -260,6 +263,9 @@ public class LogList extends JList<String> implements SelectionListener,
  
     public LogList(MSCDataModel m, ViewModel _ehm) {
         super(m.getLogListModel());
+        // real height will be set in updateFixedSize once the model is loaded
+        setFixedCellHeight(0);
+        setFixedCellWidth(0);
         dm = m;
         ehm = _ehm;
         dm.addListener(this);
@@ -402,6 +408,15 @@ public class LogList extends JList<String> implements SelectionListener,
         if (cellRenderer != null)
             cellRenderer.invalidate();
         LogListModel lm = (LogListModel)getModel();
+        int maxLineLen =  lm.getMaxLineLen();
+        BufferedImage bim = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
+        Graphics offscreenG = bim.getGraphics();
+        final Font f = (Font) UIManager.getDefaults().get("List.font");
+        offscreenG.setFont(f);
+        FontMetrics offscreenFontMetrics = offscreenG.getFontMetrics();
+        int charWidth = offscreenFontMetrics.charWidth('A');
+        setFixedCellHeight(offscreenFontMetrics.getHeight());
+        setFixedCellWidth(charWidth*maxLineLen);
         lm.fireContentsChanged();
     }
 
@@ -409,4 +424,10 @@ public class LogList extends JList<String> implements SelectionListener,
     public void eventsChanged(MSCDataModel mscDataModel) {
         // ((LogListModel)getModel()).fireContentsChanged();
     }
+    
+    public void updateFixedSize() {
+        LogListModel lm = (LogListModel)getModel();
+        
+    }
+    
 }

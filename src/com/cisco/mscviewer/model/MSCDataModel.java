@@ -881,5 +881,9 @@ public final class MSCDataModel {
         return llm;
     }
 
+    public String  getCausalityLoopFileName() {
+        return Utils.getWorkDirPath()+"/causality.loop";
+    }
+
 
 }

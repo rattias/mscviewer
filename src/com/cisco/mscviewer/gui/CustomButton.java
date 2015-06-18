@@ -20,10 +20,14 @@ class CustomButton extends JToggleButton {
     private final Entity en;
 
     public CustomButton(Entity en) {
-        super(en.getDescription() == null ? en.getName() : "<HTML>"
-                + en.getPath() + "<BR> <i><center>" + en.getDescription()
-                + "</center></i></HTML>");
-        // , MainFrame.createImageIcon("close.jpg", "close")
+        String p = en.getPath();
+        int idx = p.lastIndexOf('/');
+        if (idx >= 0) {
+            String parent = p.substring(0, idx+1);
+            String name = p.substring(idx+1);
+            setText("<HTML>"+parent+ "<BR><center>"+name+"</center></BR></HTML");
+        } else
+            setText("<HTML>"+p+"</HTML>");
         this.en = en;
     }
 
