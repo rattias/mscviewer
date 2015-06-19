@@ -96,6 +96,8 @@ class LogListRenderer extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        if (text == null)
+            return;
         if (f == null)
             initFontInfo(g);
         g.setColor(numBackground);

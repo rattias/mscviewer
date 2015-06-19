@@ -31,7 +31,7 @@ $ISSUES
 """
 
 
-def filter(issues, type, milestone):
+def filter(issues, type):
     res = []
     for issue in issues:
         labels = issue['labels']
@@ -41,9 +41,7 @@ def filter(issues, type, milestone):
                 valid = True
                 break
         if valid:
-            ms = issue['milestone']
-            if ms != None and ms['title'] == milestone:
-                res.append(issue)
+            res.append(issue)
     return res
 
 def get_milestones():
@@ -53,8 +51,10 @@ def get_milestones():
     return milestones
 
 
-def get_issues():
-    response = urllib2.urlopen(BASE + "/issues?state=closed")
+def get_issues(ms_number):
+    url = BASE + "/issues?state=closed&milestone="+str(ms_number)+"&per_page=100"
+    #print "URL: "+url
+    response = urllib2.urlopen(url)
     data = response.read();
     issues = json.loads(data)
     return issues
@@ -70,22 +70,23 @@ def issue_to_html(issues):
 if __name__ == "__main__":
     VERSION = sys.argv[1]
     milestones = get_milestones()
-    issues = get_issues()
     html = ""
     for m in sorted(milestones, key= lambda ms: ms['created_at'], reverse=True):
         release = m['title']
+        ms_number = m['number']
         match = re.match('V([0-9]+)\\.([0-9]+)\\.([0-9])+(.*)', release)
         if match:
+            issues = get_issues(ms_number)
             html += "<h3>"+release+"</h3>\n"
             html += "<ul style='list-style: none;'>"
             html += "<li><h4>Enhancements</h4></li>\n"
             html += "<ul>\n"
-            enh = filter(issues, 'enhancement', release)
+            enh = filter(issues, 'enhancement')
             html += issue_to_html(enh)
             html += "</ul>\n"
             html += "<li><h4>Fixed Bugs</h4></li>\n"
             html += "<ul>\n"
-            bugs = filter(issues, 'bug', release)
+            bugs = filter(issues, 'bug')
             html += issue_to_html(bugs)
             html += "</ul></ul>\n"
     
