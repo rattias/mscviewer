@@ -1,7 +1,8 @@
 import re
 
-from mscviewer import *
-from mscviewer_flows import *
+import msc.model as model
+from msc.flowdef import *
+import msc.gui as gui
 
 def is_fsa_birth(fev, ev, vars, arg):
     """
@@ -50,14 +51,14 @@ def role_assignment_flow():
             
     return f
 
-@msc_fun
+@gui.msc_fun 
 def role_assignment_flow_verifier(human_friendly=True):
     """
     Function to verify PM role assignment flow
     """
     f = role_assignment_flow()
     
-    for n in entities(root_only=True):
+    for n in model.entities(root_only=True):
         vars = {'node':n.getPath()}
         f.setvars(vars)
         idx = 0
@@ -66,14 +67,14 @@ def role_assignment_flow_verifier(human_friendly=True):
             try:
                 idx = f.match(start_event_idx=idx)
                 m = f.get_model()
-                flow_mark(m,marker.GREEN)
+                flow_mark(m, model.marker.GREEN)
                 results_add_flow(f, valid=True, human_friendly=True)
             except FlowError, err:
                 m = f.get_model()
                 if len(m) == 0:
                     #nothing matched, we are done
                     break
-                flow_mark(m,marker.RED)
+                flow_mark(m, model.marker.RED)
                 results_add_flow(f, valid=False, msg=str(err), human_friendly=True)
 
                 # we had partial match, but idx was never returned.
@@ -81,7 +82,7 @@ def role_assignment_flow_verifier(human_friendly=True):
                 # index that matched + 1
                 idx = f.get_min_model_index()+1
                  
-        results_report('<hr>')
+        utils.results_report('<hr>')
             
             
             

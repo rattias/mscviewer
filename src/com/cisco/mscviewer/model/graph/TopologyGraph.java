@@ -31,7 +31,6 @@ import com.cisco.mscviewer.util.ProgressReport;
 import com.cisco.mscviewer.util.Utils;
 
 public class TopologyGraph {
-    private ProgressReport pr;
 
     class P {
         int node;
@@ -63,6 +62,7 @@ public class TopologyGraph {
     I[][] toNode;
 
     private final MSCDataModel dm;
+    private ProgressReport pr = null;
 
     /**
      * creates a graph where:
@@ -91,7 +91,6 @@ public class TopologyGraph {
         fromNode = new I[evCount][];
         toNode = new I[evCount][];
         final HashMap<Entity, Integer> enToEvIdx = new HashMap<Entity, Integer>();
-        pr = null;
         ProgressReport subPr = null;
         try {
             pr = new ProgressReport("Topological Sorting", "", 0, 100);
@@ -126,12 +125,14 @@ public class TopologyGraph {
                     addEdge(from, to, false);
             }
             subPr.progressDone();
-        } finally {
+        }catch(Exception ex) {
+            // in case of exception close progress
             if (subPr != null)
                 subPr.progressDone();
             if (pr != null)
                 pr.progressDone();
-        }
+            throw ex;
+        }            
     }
 
     private ArrayList<P> findLoop() {
@@ -176,132 +177,142 @@ public class TopologyGraph {
     }
 
     public int[] topoSort() throws TopologyError {
-        final int evCount = dm.getEventCount();
-        final int[] L = new int[evCount];
-        final TreeSet<Integer> S = new TreeSet<Integer>(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                int n1Idx = ((Integer)o1).intValue();
-                int n2Idx = ((Integer)o2).intValue();
-                long ts1 = dm.getEventAt(n1Idx).getTimestamp();
-                long ts2 = dm.getEventAt(n2Idx).getTimestamp();
-                if (ts1 == ts2)
-                    return Integer.compare(n1Idx, n2Idx);
-                return Long.compare(ts1, ts2);                
+        ProgressReport subPr = null;
+        try {
+            final int evCount = dm.getEventCount();
+            final int[] L = new int[evCount];
+            final TreeSet<Integer> S = new TreeSet<Integer>(new Comparator<Integer>() {
+                @Override
+                public int compare(Integer o1, Integer o2) {
+                    int n1Idx = ((Integer)o1).intValue();
+                    int n2Idx = ((Integer)o2).intValue();
+                    long ts1 = dm.getEventAt(n1Idx).getTimestamp();
+                    long ts2 = dm.getEventAt(n2Idx).getTimestamp();
+                    if (ts1 == ts2)
+                        return Integer.compare(n1Idx, n2Idx);
+                    return Long.compare(ts1, ts2);                
+                }
+            });
+            // populate S with nodes with no incoming edges
+            if (evCount == 0)
+                return null;
+            subPr = pr.subReport("Sorting Topology...", "phase one",
+                    30, 0, evCount, true);
+            for (int i = 0; i < evCount; i++) {
+                subPr.progress(i); // first 20%
+                Event ev = dm.getEventAt(i);
+                if (!hasIncomingEdges(i)) {
+                    S.add(i);
+                }
+    
             }
-        });
-        // populate S with nodes with no incoming edges
-        if (evCount == 0)
-            return null;
-        ProgressReport subPr = pr.subReport("Sorting Topology...", "phase one",
-                30, 0, evCount, true);
-        for (int i = 0; i < evCount; i++) {
-            subPr.progress(i); // first 20%
-            Event ev = dm.getEventAt(i);
-            if (!hasIncomingEdges(i)) {
-                S.add(i);
-            }
-
-        }
-        subPr.progressDone();
-        subPr = pr.subReport("Sorting Topology...", "phase two", 30, 0,
-                evCount, true);
-        int idx = 0;
-        while (!S.isEmpty()) {
-            final Integer n = S.pollFirst();
-            L[idx++] = n;
-            subPr.progress(idx);
-            if (toNode[n] != null) {
-                for (final I m : toNode[n]) {
-                    if (m.v < 0) {
-                        continue;
-                    }
-                    final int v = m.v;
-                    removeEdge(n, v);
-                    if (!hasIncomingEdges(v)) {
-                        // we want to insert in order, so that when traversing
-                        // we loosely
-                        // consider original order. Traverse list backwards from
-                        // end because
-                        // elements are more likely to be towards the end.
-                        S.add(v);
+            subPr.progressDone();
+            subPr = pr.subReport("Sorting Topology...", "phase two", 30, 0,
+                    evCount, true);
+            int idx = 0;
+            while (!S.isEmpty()) {
+                final Integer n = S.pollFirst();
+                L[idx++] = n;
+                subPr.progress(idx);
+                if (toNode[n] != null) {
+                    for (final I m : toNode[n]) {
+                        if (m.v < 0) {
+                            continue;
+                        }
+                        final int v = m.v;
+                        removeEdge(n, v);
+                        if (!hasIncomingEdges(v)) {
+                            // we want to insert in order, so that when traversing
+                            // we loosely
+                            // consider original order. Traverse list backwards from
+                            // end because
+                            // elements are more likely to be towards the end.
+                            S.add(v);
+                        }
                     }
                 }
             }
-        }
-        subPr.progressDone();
-        if (idx != evCount) {
-            String filePath = Utils.getWorkDirPath()+"/causality_looo.msc";
-            final ArrayList<P> al = findLoop();
-            if (al != null) {
-                PrintWriter pw;
-                try {
-                    pw = new PrintWriter(new FileWriter(new File(dm.getCausalityLoopFileName())));
-                    HashSet<Event> set = new HashSet<Event>();
-                    for (int eidx = al.size()-1; eidx>=0; eidx--) {
-                        P p = al.get(eidx);
-                        Event ev = dm.getEventAt(p.node);
-                        if (set.contains(ev))
-                            continue;
-                        set.add(ev);
-                        pw.print("@event {\"entity\":\""+ev.getEntity().getPath()+"\"");
-                        pw.print(", \"time\":\""+ev.getTimestamp()+"\"");
-                        pw.print(", \"label\":\"["+ev.getLineIndex()+"] "+ev.getLabel()+"\"");
-
-                        Interaction ins[] = ev.getOutgoingInteractions(); 
-                        if (ins.length == 1) {
-                            pw.print(", \"src\":\""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
-                        } else if (ins.length > 1) {
-                            pw.print(", \"src\":\"{");
-                            for(int i=0; i<ins.length; i++) {
-                                if (i>0)
-                                    pw.print(", ");
-                                pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+            subPr.progressDone();
+            if (idx != evCount) {
+                String filePath = Utils.getWorkDirPath()+"/causality_looo.msc";
+                final ArrayList<P> al = findLoop();
+                if (al != null) {
+                    PrintWriter pw;
+                    try {
+                        pw = new PrintWriter(new FileWriter(new File(dm.getCausalityLoopFileName())));
+                        HashSet<Event> set = new HashSet<Event>();
+                        for (int eidx = al.size()-1; eidx>=0; eidx--) {
+                            P p = al.get(eidx);
+                            Event ev = dm.getEventAt(p.node);
+                            if (set.contains(ev))
+                                continue;
+                            set.add(ev);
+                            pw.print("@event {\"entity\":\""+ev.getEntity().getPath()+"\"");
+                            pw.print(", \"time\":\""+ev.getTimestamp()+"\"");
+                            pw.print(", \"label\":\"["+ev.getLineIndex()+"] "+ev.getLabel()+"\"");
+    
+                            Interaction ins[] = ev.getOutgoingInteractions(); 
+                            if (ins.length == 1) {
+                                pw.print(", \"src\":\""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                            } else if (ins.length > 1) {
+                                pw.print(", \"src\":\"{");
+                                for(int i=0; i<ins.length; i++) {
+                                    if (i>0)
+                                        pw.print(", ");
+                                    pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                                }
+                                pw.print("}\"");                        
                             }
-                            pw.print("}\"");                        
+    
+                            ins = ev.getIncomingInteractions();                  
+                            if (ins.length == 1) {
+                                Event srcEv = ins[0].getFromEvent();
+                                if (srcEv != null) {                                
+                                    pw.print(", \"dst\":\""+srcEv.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                                }
+                            } else if (ins.length > 1) {
+                                pw.print(", \"dst\":\"{");
+                                for(int i=0; i<ins.length; i++) {
+                                    if (i>0)
+                                        pw.print(", ");
+                                    pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
+                                }
+                                pw.print("}\"");                        
+                            }
+                            pw.println("}");
                         }
-
-                        ins = ev.getIncomingInteractions();                  
-                        if (ins.length == 1) {
-                            Event srcEv = ins[0].getFromEvent();
-                            if (srcEv != null) {                                
-                                pw.print(", \"dst\":\""+srcEv.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
-                            }
-                        } else if (ins.length > 1) {
-                            pw.print(", \"dst\":\"{");
-                            for(int i=0; i<ins.length; i++) {
-                                if (i>0)
-                                    pw.print(", ");
-                                pw.print(""+ev.getEntity().getPath()+"/"+ins[0].getToIndex()+"\"");
-                            }
-                            pw.print("}\"");                        
-                        }
-                        pw.println("}");
-                    }
-                    pw.close();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } 
+                        pw.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } 
+                }
+                throw new TopologyError("Failed to sort topologically:\n A reduced file containing only the loop events has been saved to "+filePath);
+            } else {
             }
-            throw new TopologyError("Failed to sort topologically:\n A reduced file containing only the loop events has been saved to "+filePath);
-        } else {
+    
+            // outer:
+            // for (int i = 0; i < evCount; i++) {
+            // for (int k=0; k<idx; k++) {
+            // if (L[k] == i) {
+            // System.out.println("SORTED: " + nodeToString(i));
+            // break outer;
+            // }
+            // }
+            // System.out.println("UNSORTED: " + nodeToString(i));
+            // }
+            // throw new TopologyError("Topology Error.");
+    
+            pr.progressDone();
+            pr = null;
+            return L;
+        } finally {
+            if (subPr != null)
+                subPr.progressDone();
+            if (pr != null)
+                pr.progressDone();
+            pr = null;
         }
-
-        // outer:
-        // for (int i = 0; i < evCount; i++) {
-        // for (int k=0; k<idx; k++) {
-        // if (L[k] == i) {
-        // System.out.println("SORTED: " + nodeToString(i));
-        // break outer;
-        // }
-        // }
-        // System.out.println("UNSORTED: " + nodeToString(i));
-        // }
-        // throw new TopologyError("Topology Error.");
-
-        pr.progressDone();
-        return L;
     }
 
     private void addEdge(int fromIdx, int toIdx, boolean cause) {

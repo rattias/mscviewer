@@ -8,8 +8,10 @@
 
 from string import Template
 from types import TupleType 
+import msc.model as model
 import msc.gui as gui
 import msc.utils as utils
+import com.cisco.mscviewer.model.MSCDataModel as MSCDataModel
 import sys 
 import re
 #import logging WATCH OUT! this import changes name of thread to MainThread for some reason
@@ -139,11 +141,11 @@ class flow_base:
         if with_model and not self.traversed:
             return ""
         if self.description != None and self.model != None:
-            fdesc = entity_path(event_entity(self.model))+", "+self.description
+            fdesc = model.entity_path(model.event_entity(self.model))+", "+self.description
         elif self.description != None:
             fdesc = self.description+"("+str(self)+")"
         elif self.model != None:
-            fdesc = self.model.getEntity().getPath()+", "+self.str_label()
+            fdesc = model.entity_path(model.event_entity(self.model))+", "+self.str_label()
         else:   
             fdesc = self.str_resolved()
         if html:
@@ -726,7 +728,7 @@ def msc_model_2_str(m):
 
 
 def results_add_flow(f, valid=True, human_friendly=False, msg=None):
-    if gui.is_batch_mode():
+    if utils.is_batch_mode():
       m = f.get_model()
       if valid:
         print "INFO: valid flow starting at line", m[0].getLineIndex()
@@ -740,5 +742,5 @@ def results_add_flow(f, valid=True, human_friendly=False, msg=None):
       else:
          prefix='<span style="color:#FF0000;">INVALID FLOW:</span><br>'
       str = f.pretty_str(level=0, prefix=prefix, html=True, with_model=True, human_friendly=human_friendly)
-      results_report(str)
+      utils.results_report(str)
     

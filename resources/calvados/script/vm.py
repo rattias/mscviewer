@@ -1,7 +1,8 @@
 from string import Template
 import re
+from msc.gui import *
 from msc.model import *
-from msc.flows import *
+from msc.flowdef import *
 
 def fconn_to(client_entity,server_entity):
     return fev(client_entity, "<"+server_entity+"_init>", predicate=is_sink, descr="connecting to "+server_entity)
@@ -139,8 +140,8 @@ def find_vm_flows(human_friendly=True):
                 # index that matched + 1
                 idx = f.get_min_model_index() + 1
         
-        results_report('<hr>')
-        results_show()
+        utils.results_report('<hr>')
+        gui.results_show()
     
    
 if __name__ == "__main__":

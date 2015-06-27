@@ -71,6 +71,7 @@ public class LegacyLoader implements Loader {
         try {
             int x = 0;
             while ((line = fr.readLine()) != null) {
+                dm.addSourceLine(readCnt);
                 readCnt += line.length();
                 x++;
                 if (x % 1024 == 0) {
@@ -336,7 +337,6 @@ public class LegacyLoader implements Loader {
                         }
                     }
                 }
-                dm.addSourceLine(line);
             }
             pr.progress(flen);
             for (final Interaction in : pending.values()) {

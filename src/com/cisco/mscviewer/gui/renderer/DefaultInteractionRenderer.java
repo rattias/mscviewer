@@ -18,6 +18,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.Arc2D;
 
+import com.cisco.mscviewer.gui.MainFrame;
 import com.cisco.mscviewer.gui.Marker;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.JSonObject;
@@ -36,7 +37,7 @@ public class DefaultInteractionRenderer extends InteractionRenderer {
     private boolean straight;
     private boolean drawTip = true;
     private boolean dashed = false;
-    Color color = Color.blue;
+    Color color;
     BasicStroke basic, basic2, dashedStroke, thickStroke;
 
     @Override
@@ -172,7 +173,7 @@ public class DefaultInteractionRenderer extends InteractionRenderer {
             g2d.setColor(EventRenderer.SELECTION_COLOR);
             drawArrow(g2d, s.x1, s.y1, s.x2, s.y2, self);
         }
-        g2d.setColor(color);
+        g2d.setColor(color != null ? color : MainFrame.getInstance().getPrefs().getDefaultInteractionColor());
         if (fev == null || tev == null) {
             g2d.setStroke(dashedStroke);
             drawArrow(g2d, s.x1, s.y1, s.x2, s.y2, self);

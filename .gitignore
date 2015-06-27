@@ -14,7 +14,6 @@ doc/manual/images/*
 .sonar/
 .srclist
 doc/manual/generated/
-doc/manual/mscviewer.pdf
 doc/manual/tocnotoc.tex
 sonar-project.properties
 

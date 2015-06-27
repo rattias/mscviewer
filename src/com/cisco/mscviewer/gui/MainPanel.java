@@ -41,28 +41,28 @@ import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.MSCDataModelListener;
 import com.cisco.mscviewer.model.ViewModel;
 
-@SuppressWarnings("serial")
-class TimeHeader extends JPanel {
-    private final MainPanel mp;
-
-    public TimeHeader(MainPanel mp) {
-        this.mp = mp;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        final MSCRenderer r = mp.getMSCRenderer();
-        final Dimension d = getSize();
-        if (d.height == 0)
-            return;
-
-        if (r != null) {
-            final JViewport jvp = (JViewport) getParent();
-            final Rectangle rec = jvp.getViewRect();
-            r.renderTimeHeader((Graphics2D) g, false, rec.y, rec.height);
-        }
-    }
-}
+//@SuppressWarnings("serial")
+//class TimeHeader extends JPanel {
+//    private final MainPanel mp;
+//
+//    public TimeHeader(MainPanel mp) {
+//        this.mp = mp;
+//    }
+//
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        final MSCRenderer r = mp.getMSCRenderer();
+//        final Dimension d = getSize();
+//        if (d.height == 0)
+//            return;
+//
+//        if (r != null) {
+//            final JViewport jvp = (JViewport) getParent();
+//            final Rectangle rec = jvp.getViewRect();
+//            r.renderTimeHeader((Graphics2D) g, false, rec.y, rec.height);
+//        }
+//    }
+//}
 
 /**
  *

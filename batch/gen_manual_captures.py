@@ -30,10 +30,12 @@ open("consumer")
 capture_gui("MainFrame", "doc/manual/images/gui-ex2-open.png");
 
 ### GUI-EX3-CYCLE.PNG ###
+set_property("model.sort-topologically", False)
 load("examples/lst3.msc");
 open("producer")
 open("consumer")
 capture_gui("MainFrame", "doc/manual/images/gui-ex3-cycle.png");
+set_property("model.sort-topologically", True)
 
 ### GUI-EX4-TIME.PNG ###
 load("examples/lst4.msc");

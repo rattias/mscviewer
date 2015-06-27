@@ -93,7 +93,11 @@ public class HighlighterColorPicker extends ColorPicker {
     }
     
     public HighlighterColorPicker(int sz) {
-        super(new HighlighterButton(sz), new Color[][]{colors}, 0, 0);
+        this(null, sz);
+    }
+    
+    public HighlighterColorPicker(String label, int sz) {
+        super(label, new HighlighterButton(sz), new Color[][]{colors}, 0, 0);
         addColorSelectionListener((HighlighterButton)getButton());
         getButton().setToolTipText("Highlighter tool");
     }

@@ -14,9 +14,11 @@ package com.cisco.mscviewer.util;
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Composite;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.ScrollPane;
 import java.awt.event.FocusAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
@@ -71,50 +73,48 @@ class GPane extends JComponent {
  * @author rattias
  */
 public class ProgressReport {
-
-    private static final JDialog singletonDialog = new JDialog(MainFrame.getInstance(),
-            "Progress Status", false);
-    private static final GPane gpane = new GPane();
-    private JPanel innerPane;
-    private static ArrayList<Object> elements = new ArrayList<Object>();
-    private JProgressBar pb;
+    private static ArrayList<JDialog> dialogs = new ArrayList<JDialog>();
+    private static final GPane gpane = new GPane();    private JPanel innerPane;
     private JLabel msgLabel;
-    private int minValue, maxValue;
     private boolean shouldShow;
     private ProgressReport parent;
     private int percent;
-    private int childrenBaseValue;
+    private long childrenBaseValue;
     private ArrayList<ProgressReport> children;
     @SuppressWarnings("unused")
     private String activity;
     @SuppressWarnings("unused")
     private String msg;
     private float scaleFactor;
+    private long minValue;
+    private long maxValue;
+    private JProgressBar progressBar;
+    private boolean done = false;
+    private int oldPerc = 0;
     
     public ProgressReport(final String activity, final String msg) {
         this(activity, msg, -1, -1);
     }
 
     public ProgressReport(final String activity, final String msg,
-            final int minValue, final int maxValue) {
+            final long minValue, final long maxValue) {
         this(activity, msg, null, -1, minValue, maxValue, true);
     }
 
     private ProgressReport(final String activity, final String msg,
-            ProgressReport parent, int percent, final int minValue,
-            final int maxValue, boolean shouldShow) {
+            ProgressReport parent, int percent, final long minValue,
+            final long maxValue, boolean shouldShow) {
         this.activity = activity;
         this.parent = parent;
         this.percent = percent;
         this.msg = msg;
-        this.scaleFactor = 100.0f/(maxValue-minValue);
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.scaleFactor = 100.0f/(maxValue-minValue);
         this.shouldShow = shouldShow;
         if (Main.batchMode())
             return;
-        closeDialog();
-        createProgressGUI(activity, msg, minValue, maxValue);
+        updateDialogForNewProgressReport();
     }
 
     public ProgressReport subReport(String activity, String msg, int percent,
@@ -125,180 +125,197 @@ public class ProgressReport {
             children = new ArrayList<ProgressReport>();
             childrenBaseValue = Main.batchMode() ? 0 : getProgress();
         }
-        closeDialog();
         children.add(child);
         return child;
     }
 
-    private void createProgressGUI(String activity, String msg, int minValue,
-            int maxValue) {
-        synchronized (singletonDialog) {
-            msgLabel = new JLabel("<html>" + Utils.stringToHTML(msg)
-                    + "</html>");
-            pb = new JProgressBar(minValue, maxValue);
-            if (shouldShow) {
-                if (maxValue < 0) {
-                    pb.setIndeterminate(true);
-                }
-
-                innerPane = new JPanel();
-                innerPane.setBorder(new TitledBorder(activity));
-                innerPane.setLayout(new BorderLayout());
-                innerPane.add(pb, BorderLayout.SOUTH);
-                innerPane.add(msgLabel, BorderLayout.CENTER);
-                elements.add(innerPane);
-                if (maxValue < 0)
-                    updateDialogForProgress();
-            }
+    
+    private JPanel createPanel (String msg) {
+        msgLabel = new JLabel("<html>" + Utils.stringToHTML(msg)
+                + "</html>");
+        progressBar = new JProgressBar(0, 100);
+        if (maxValue < 0) {
+            progressBar.setIndeterminate(true);
         }
-    }
 
-    private void closeDialog() {
+        innerPane = new JPanel();
+        innerPane.setBorder(new TitledBorder(activity));
+        innerPane.setLayout(new BorderLayout());
+        innerPane.add(progressBar, BorderLayout.SOUTH);
+        innerPane.add(msgLabel, BorderLayout.CENTER);
+        return innerPane;
+    }
+    
+    /**
+     * create, close or updates the dialog when a new ProgressReport is created
+     * or one is marked as completed.
+     */
+    private void updateDialogForDone() {
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                if (singletonDialog.isVisible()) {
-                    singletonDialog.setVisible(false);
-                    final MainFrame mf = MainFrame.getInstance();
-                    if (mf != null) {
-                        mf.setGlassPane(gpane);
-                        gpane.setVisible(false);
+                if (parent == null) {
+                    // we're destroying the dialog here
+                    JDialog dialog = (JDialog)SwingUtilities.getWindowAncestor(progressBar);
+                    synchronized(dialogs) {
+                        dialogs.remove(dialog);
+                        dialog.setVisible(false);
+                        final MainFrame mf = MainFrame.getInstance();
+                        if (mf != null && dialogs.isEmpty()) {
+                            mf.setGlassPane(gpane);
+                            gpane.setVisible(false);
+                        }
+                        dialog = null;
+                        return;
                     }
-                    return;
+                } else {
+                    JDialog dialog = (JDialog)SwingUtilities.getWindowAncestor(parent.progressBar);
+                    //we're removing the subprogress here
+                    JOptionPane p = (JOptionPane)dialog.getContentPane();
+                    if (progressBar == null) 
+                        throw new Error("WHAT?");
+                    p.remove(progressBar.getParent());
+                    dialog.pack();
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread())
-            r.run();
-        else
-            SwingUtilities.invokeLater(r);
+        Utils.dispatchOnAWTThreadNow(r);
     }
     
-    private void updateDialogForProgress() {
+    private void updateDialogForNewProgressReport() {
         final Runnable r = new Runnable() {
             @Override
             public void run() {
-                if (!singletonDialog.isVisible()) {
-                    singletonDialog.setContentPane(new JOptionPane(elements
-                            .toArray(new Object[elements.size()]),
-                            JOptionPane.PLAIN_MESSAGE,
-                            JOptionPane.DEFAULT_OPTION, null,
-                            new String[] { "Cancel" }));
-                    singletonDialog.pack();
+                if (parent == null) {
+                    // this is the main Progress. 
+                    JPanel panel = createPanel(msg);
+                    // we're creating the dialog here
+                    JDialog dialog = new JDialog(MainFrame.getInstance(), "Progress Status", false);
+                    synchronized(dialogs) {
+                        dialogs.add(dialog);
+                    }
+                    dialog.setContentPane(
+                            new JOptionPane(
+                                    new Object[]{panel},
+                                    JOptionPane.PLAIN_MESSAGE,
+                                    JOptionPane.DEFAULT_OPTION, null,
+                                    new String[] { "Cancel" }
+                                    )
+                            );
+                    dialog.pack();
                     final JFrame f = MainFrame.getInstance();
                     if (f != null) {
                         final Rectangle r = f.getBounds();
-                        r.x = r.x + (r.width - singletonDialog.getWidth()) / 2;
-                        r.y = r.y + (r.height - singletonDialog.getHeight()) / 2;
-                        singletonDialog.setLocation(r.x, r.y);
+                        r.x = r.x + (r.width - dialog.getWidth()) / 2;
+                        r.y = r.y + (r.height - dialog.getHeight()) / 2;
+                        dialog.setLocation(r.x, r.y);
                     }
                     final MainFrame mf = MainFrame.getInstance();
                     if (mf != null) {
                         mf.setGlassPane(gpane);
                         gpane.setVisible(true);
                     }
-                    singletonDialog.setVisible(true);
+                    dialog.setVisible(true);
                 } else {
+                    // this is a sub-progress 
+                    JDialog dialog = (JDialog)SwingUtilities.getWindowAncestor(parent.progressBar);
+
+                    // we're adding the subprogress here
+                    JPanel panel = createPanel(msg);
+                    JOptionPane opt = (JOptionPane)dialog.getContentPane();
+                    opt.add(panel, opt.getComponentCount()-1);
+                    dialog.pack();
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread())
-            r.run();
-        else
-            SwingUtilities.invokeLater(r);
+        Utils.dispatchOnAWTThreadNow(r);      
     }
 
     public void progress(String msg, int v) {
         if (Main.batchMode())
             return;
-        if (children != null && children.size() > 0)
-            throw new UnsupportedOperationException(
-                    "updating progress for a ProgressReport when children are present is not allowed.");
-        msgLabel.setText("<html>" + Utils.stringToHTML(msg) + "</html>");
-        progressInternal(v);
+        progress(v);
+        SwingUtilities.invokeLater( () -> msgLabel.setText("<html>" + Utils.stringToHTML(msg) + "</html>"));        
     }
 
-    public void progress(int v) {
+    public void progress(long v) {
         if (Main.batchMode())
             return;
-        // System.out.println("progress("+activity+"): "+v);
         if (children != null && children.size() > 0)
             throw new UnsupportedOperationException(
                     "updating progress for a ProgressReport when children are present is not allowed.");
         progressInternal(v);
     }
 
-    private void progressInternal(int v) {
+
+    private void progressInternal(long v) {
         if (Main.batchMode())
             return;
-        synchronized(singletonDialog) {
-            if (pb == null)
-                return;
-            int perc = (int)((v-minValue)*scaleFactor);
-            int oldPerc = (int)((pb.getValue()-minValue)*scaleFactor);
-            if (perc == oldPerc)
-                return;
-            if (!pb.isIndeterminate())
-                pb.setValue(v);
-            if (parent != null)
-                parent.updateForChildren();
-            updateDialogForProgress();
-        }
+        if (progressBar == null)
+            return;
+        int perc = (int)((v-minValue)*scaleFactor);
+        if (perc == oldPerc)
+            return;
+        // we use a field variable for oldPerc rather than
+        // getting the progressBar value because the latter is 
+        // updated by EDT through invokeLater(), hence it could
+        // stay old for quite a bit if the EDT is not scheduled.
+        oldPerc = perc;
+        if (parent != null)
+            parent.updateForChildren();
+        SwingUtilities.invokeLater(() -> progressBar.setValue(perc));
     }
 
     public int getProgress() {
-        synchronized(singletonDialog) {
-            if (pb != null)
-                return pb.getValue();
-            else
-                return 0;
-        }
+        if (progressBar != null)
+            return progressBar.getValue();
+        else
+            return 0;
     }
 
     private void updateForChildren() {
-        int totValue = childrenBaseValue;
+        long totValue = childrenBaseValue;
         for (final ProgressReport p : children) {
-            final int childPercent = (p.getProgress() - p.minValue) * 100
-                    / (p.maxValue - p.minValue);
-            final int totalChildContribute = (maxValue - minValue) * p.percent / 100;
+            final int childPercent = p.getProgress();
+            final long totalChildContribute = (maxValue - minValue) * p.percent / 100;
             totValue += totalChildContribute * childPercent / 100;
         }
         progressInternal(totValue);
     }
 
-    synchronized public void progressDone() {
+    public void progressDone() {
+        if (done == true)
+            return;
         if (children != null) {
             for (final ProgressReport pr : children) {
                 pr.progressDone();
             }
         }
-        elements.remove(innerPane);
         if (parent != null) {
             parent.children.remove(this);
-            final int totalChildContribute = (parent.maxValue - parent.minValue)
-                    * percent / 100;
+            final long totalChildContribute = (parent.maxValue - parent.minValue) * percent / 100;
             parent.childrenBaseValue += totalChildContribute;
             parent.updateForChildren();
         }
-        closeDialog();
+        updateDialogForDone();
     }
 
-    public void setMinMaxValue(int min, int max) {
-        minValue = min;
-        maxValue = max;
-        pb.setMinimum(min);
-        pb.setMaximum(max);
-    }
+//    public void setMinMaxValue(int min, int max) {
+//        minValue = min;
+//        maxValue = max;
+//        pb.setMinimum(min);
+//        pb.setMaximum(max);
+//    }
 
-    @Override
-    public String toString() {
-        return "value=" + pb.getValue() + ", minValue=" + minValue
-                + ", maxValue=" + maxValue + ", percent=" + percent
-                + "parent percent="
-                + ((parent != null) ? parent.percent : "???");
-    }
+//    @Override
+//    public String toString() {
+//        return "value=" + pb.getValue() + ", minValue=" + minValue
+//                + ", maxValue=" + maxValue + ", percent=" + percent
+//                + "parent percent="
+//                + ((parent != null) ? parent.percent : "???");
+//    }
 
-    public static void main(String args[]) throws InterruptedException {
+    public static void main1(String args[]) throws InterruptedException {
         // TEST 1 -------------------------
         System.out.println("ProgressReport main");
         ProgressReport pr = new ProgressReport(
@@ -352,13 +369,16 @@ public class ProgressReport {
     }
 
     public static void cleanup() {
-        singletonDialog.setVisible(false);
+        synchronized(dialogs) {
+            for(JDialog dialog: dialogs) {         
+                dialog.setVisible(false);
+            }
+        }
         final MainFrame mf = MainFrame.getInstance();
         if (mf != null) {
             mf.setGlassPane(gpane);
             gpane.setVisible(false);
         }
-
     }
 }
 

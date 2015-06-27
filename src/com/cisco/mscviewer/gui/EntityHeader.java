@@ -51,6 +51,10 @@ import com.cisco.mscviewer.util.Utils;
 
 @SuppressWarnings("serial")
 public class EntityHeader extends JPanel implements EntityHeaderModelListener {
+    public static final int SHOW_FULL_PATH = 1;
+    public static final int SHOW_ID = 2;
+    public static final int SHOW_DESCR= 4;
+
     class RightMargin extends JPanel {
         public RightMargin() {
             setOpaque(true);
@@ -61,7 +65,9 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }        
         
     }
-    
+
+
+
     // private MainPanel mainPanel;
     private final ViewModel viewModel;
     // private final Vector<EntityHeaderListener> listeners;
@@ -70,6 +76,8 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
     private int draggingProspectiveIndex = -1;
     private FontMetrics offscreenFontMetrics;
     private RightMargin rightMarginPanel;
+    private int flags;
+
 
     public int getEntityCount() {
         return super.getComponentCount()-1;
@@ -824,5 +832,23 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         rightMarginPanel.setSize(rightMargin, rightMarginPanel.getHeight());
         rightMarginPanel.setPreferredSize(new Dimension(rightMargin, rightMarginPanel.getHeight()));
         viewModel.setRighMarginWidth(rightMargin);
+    }
+
+    public int getFlags() {
+        return flags;
     }    
+
+//    public void setFlags(int f) {
+//        flags = f;
+//        for (int i = 0; i < getEntityCount(); i++) {
+//            getCBFromIndex(i).updateText(f);
+//        }
+//    }    
+
+  public void updateLabels() {
+  for (int i = 0; i < getEntityCount(); i++) {
+      getCBFromIndex(i).updateText();
+  }
+}    
+
 }

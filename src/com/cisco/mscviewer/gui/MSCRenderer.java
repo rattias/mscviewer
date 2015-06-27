@@ -48,9 +48,10 @@ import com.cisco.mscviewer.model.OutputUnit;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.tree.Interval;
 import com.cisco.mscviewer.tree.IntervalTree;
+import com.cisco.mscviewer.util.PersistentPrefs;
 import com.cisco.mscviewer.util.StyledDocumentUtils;
 
-public class MSCRenderer {
+public class MSCRenderer  {
     public final static int EVENT_HEIGHT = 20;
     private int eventHeight = EVENT_HEIGHT;
     // private EntityHeaderModel headerModel;
@@ -61,13 +62,8 @@ public class MSCRenderer {
     private boolean showBlocks = true;
     private boolean showLabels = true;
     private boolean showNotes = true;
-    private OutputUnit absTimeUnit = OutputUnit.H_M_S_MS;
-    private InputUnit deltaTimeUnit = InputUnit.NS;
     // private InputUnit timestampUnit = InputUnit.NS;
     private final boolean drawBands = true;
-    private boolean showUnits = true;
-    private boolean showDate = false;
-    private boolean showLeadingZeroes;
     private boolean compactView = true;
     private final Vector<SelectionListener> selListeners = new Vector<SelectionListener>();
     private int maxBBwidth = 0;
@@ -130,7 +126,7 @@ public class MSCRenderer {
     private void drawLifeLines(Graphics2D g2d, boolean export, int minIdx,
             int maxIdx) {
         final int hdEntityCount = viewModel.entityCount();
-        g2d.setColor(Color.lightGray);
+        g2d.setColor(MainFrame.getInstance().getPrefs().getLifelineColor());
         for (int i = 0; i < hdEntityCount; i++) {
             final int x = viewModel.getEntityCenterX(i);
             int y0, y1;
@@ -158,33 +154,35 @@ public class MSCRenderer {
         }
     }
 
-    public void renderTimeHeader(Graphics2D g2d, boolean renderHeader,
-            int viewY, int viewHeight) {
-        final int evCount = viewModel.getEventCount();
-        final int minIdx = viewY / eventHeight;
-        int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
-        if (maxIdx > evCount - 1)
-            maxIdx = evCount - 1;
-
-        g2d.setColor(Color.WHITE);
-        int viewModelWidth = viewModel.getTotalWidth();
-        g2d.fillRect(0, 0, viewModelWidth, getHeight());
-        if (drawBands) {
-            g2d.setColor(new Color(248, 248, 248));
-            for (int i = minIdx; i <= maxIdx; i++) {
-                if (i % 2 == 1) {
-                    final int h = i * eventHeight;
-                    g2d.fillRect(0, h, viewModelWidth, eventHeight - 1);
-                }
-            }
-        }
-        g2d.setColor(Color.lightGray);
-        int rightMargin = viewModel.getRighMarginWidth();
-        g2d.fillRect(viewModelWidth, 0, rightMargin, getHeight());
-    }
-
+//    public void renderTimeHeader(Graphics2D g2d, boolean renderHeader,
+//            int viewY, int viewHeight) {
+//        final int evCount = viewModel.getEventCount();
+//        final int minIdx = viewY / eventHeight;
+//        int maxIdx = (viewY + viewHeight - 1) / eventHeight + 1;
+//        if (maxIdx > evCount - 1)
+//            maxIdx = evCount - 1;
+//
+//        g2d.setColor(Color.WHITE);
+//        int viewModelWidth = viewModel.getTotalWidth();
+//        g2d.fillRect(0, 0, viewModelWidth, getHeight());
+//        if (drawBands) {
+//            g2d.setColor(new Color(248, 248, 248));
+//            for (int i = minIdx; i <= maxIdx; i++) {
+//                if (i % 2 == 1) {
+//                    final int h = i * eventHeight;
+//                    g2d.fillRect(0, h, viewModelWidth, eventHeight - 1);
+//                }
+//            }
+//        }
+//        g2d.setColor(Color.red);
+//        int rightMargin = viewModel.getRighMarginWidth();
+//        g2d.fillRect(viewModelWidth, 0, rightMargin, getHeight());
+//    }
+//
     public String getTimeRepr(long timestamp) {
-        return absTimeUnit.format(timestamp);
+        PersistentPrefs p = MainFrame.getInstance().getPrefs();  
+        OutputUnit ou = p.getTimeOutputUnit();
+        return ou.format(timestamp);
     }
 
     public void updateForTimeUnitChanges() {
@@ -208,6 +206,7 @@ public class MSCRenderer {
         g2d.setFont(font);
         final int ascent = g2d.getFontMetrics().getAscent();
         final MSCDataModel dataModel = MSCDataModel.getInstance();
+        PersistentPrefs prefs = MainFrame.getInstance().getPrefs();
         synchronized (dataModel) {
             // render blocks first
             final Dimension max = new Dimension(64, eventHeight);
@@ -330,7 +329,7 @@ public class MSCRenderer {
                     if (showTime) {
                         final String time = ev.getTimestampRepr();
                         if (time != null) {
-                            g2d.setColor(Color.pink);
+                            g2d.setColor(prefs.getEventTimestampColor());
                             final int w = g2d.getFontMetrics().stringWidth(time);
                             g2d.drawString(time,
                                     x - maxBBwidth / 2 - w - 4, i * eventHeight
@@ -340,7 +339,7 @@ public class MSCRenderer {
                     if (ev.getRenderer() instanceof ErrorRenderer)
                         g2d.setColor(Color.RED);
                     else
-                        g2d.setColor(Color.BLACK);
+                        g2d.setColor(prefs.getEventLabelColor());
                     if (showLabels) {
                         String label = ev.getLabel();
                         g2d.drawString(label, x + maxBBwidth, i
@@ -450,6 +449,7 @@ public class MSCRenderer {
             computeMaxBBWidth();
             this.filter = f;
         }
+        PersistentPrefs prefs = MainFrame.getInstance().getPrefs();
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -467,10 +467,10 @@ public class MSCRenderer {
         final int fontHeight = g2d.getFontMetrics().getHeight();
         if (export)
             height += fontHeight + 4;
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(prefs.getEvenEventBackgroundColor());
         g2d.fillRect(0, 0, viewModel.getTotalWidth() + 10, height);
         if ((!export) && drawBands) {
-            g2d.setColor(new Color(248, 248, 248));
+            g2d.setColor(prefs.getOddEventBackgroundColor());
             for (int i = minIdx; i <= maxIdx; i++) {
                 if (i % 2 == 1) {
                     final int h = i * eventHeight;
@@ -794,29 +794,6 @@ public class MSCRenderer {
         return 1;
     }
 
-    public void setAbsTimeUnit(OutputUnit u) {
-        absTimeUnit = u;
-    }
-
-    public OutputUnit getAbsTimeUnit() {
-        return absTimeUnit;
-    }
-
-    public void setDeltaTimeUnit(InputUnit u) {
-        deltaTimeUnit = u;
-    }
-
-    public InputUnit getDeltaTimeUnit() {
-        return deltaTimeUnit;
-    }
-
-    // public void setTimestampUnit(InputUnit inputUnit) {
-    // timestampUnit = inputUnit;
-    // }
-
-    // public InputUnit getTimestampUnit() {
-    // return timestampUnit;
-    // }
 
     public void cursorBegin(boolean ctrl) {
         if (selectedInteraction != null) {
@@ -1201,36 +1178,12 @@ public class MSCRenderer {
         }
     }
 
-    public void setShowUnits(boolean showUnits) {
-        this.showUnits = showUnits;
-    }
-
-    public boolean getShowUnits() {
-        return showUnits;
-    }
-
-    public void setShowDate(boolean sd) {
-        showDate = sd;
-    }
-
-    public boolean getShowDate() {
-        return showDate;
-    }
-
     public void setShowTime(boolean sd) {
         showTime = sd;
     }
 
     public boolean sShowTime() {
         return showTime;
-    }
-
-    public void setShowLeadingZeroes(boolean showLeadingZeroes) {
-        this.showLeadingZeroes = showLeadingZeroes;
-    }
-
-    public boolean getShowLeadingZeroes() {
-        return showLeadingZeroes;
     }
 
     public String getSelectedStatusString() {
@@ -1296,6 +1249,5 @@ public class MSCRenderer {
     public void setShowNotes(boolean show) {
         showNotes = show;
     }
-    
-  
+
 }

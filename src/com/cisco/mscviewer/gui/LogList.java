@@ -32,10 +32,12 @@ import javax.swing.UIManager;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
-import com.cisco.mscviewer.model.LogListModel;
+import com.cisco.mscviewer.model.IndexableLineFile;
 import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.MSCDataModelListener;
 import com.cisco.mscviewer.model.ViewModel;
+import com.cisco.mscviewer.util.PersistentPrefs;
+import com.cisco.mscviewer.util.Utils;
 
 /**
  * @author Roberto Attias
@@ -51,8 +53,6 @@ class LogListRenderer extends JPanel {
     private final MSCDataModel dm;
     private int numWidth;
     private boolean isSelected;
-    private final Color numBackground = new Color(0xE0E0FF);
-    private final Color selBackground = new Color(0xD0D0FF);
     private int copyBeginIndex;
     private int copyBeginOffset;
     private int copyEndIndex;
@@ -96,13 +96,14 @@ class LogListRenderer extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        PersistentPrefs prefs = MainFrame.getInstance().getPrefs();
         if (text == null)
             return;
         if (f == null)
             initFontInfo(g);
-        g.setColor(numBackground);
+        g.setColor(prefs.getLogFileLineNumberBackgroundColor());
         g.fillRect(0, 0, numWidth, getHeight());
-        g.setColor(Color.black);
+        g.setColor(prefs.getLogFileLineNumberForegroundColor());
         g.drawString("" + line, 0, fm.getAscent());
         int bi, bo, ei, eo;
         int[] v = getCopyInfo();
@@ -112,9 +113,9 @@ class LogListRenderer extends JPanel {
         eo = v[3];
         if (currLineIdx<bi || currLineIdx>ei) {
             if (isSelected) {
-                g.setColor(selBackground);
+                g.setColor(prefs.getLogFileSelectedBackgroundColor());
             } else
-                g.setColor(Color.white);
+                g.setColor(prefs.getLogFileBackgroundColor());
             g.fillRect(numWidth, 0, getWidth(), getHeight());
             g.setColor(getForeground());
             g.drawString(text, numWidth, fm.getAscent());
@@ -139,9 +140,9 @@ class LogListRenderer extends JPanel {
             }            
             // draw left part
             if (isSelected) {
-                g.setColor(selBackground);
+                g.setColor(prefs.getLogFileSelectedBackgroundColor());
             } else
-                g.setColor(Color.white);
+                g.setColor(prefs.getLogFileBackgroundColor());
             int x = numWidth;
             int w = fm.stringWidth(left);
             g.fillRect(x, 0, w, getHeight());
@@ -151,19 +152,19 @@ class LogListRenderer extends JPanel {
             // draw center part
             x += w;
             w = fm.stringWidth(center);
-            g.setColor(Color.green);
+            g.setColor(prefs.getLogFileCopyBackgroundColor());
             g.fillRect(x, 0, w, getHeight());
-            g.setColor(getForeground());
+            g.setColor(prefs.getLogFileForegroundColor());
             g.drawString(center, x, fm.getAscent());                
 
             // draw right part
             x += w;
             w = fm.stringWidth(right);
             if (isSelected) {
-                g.setColor(selBackground);
+                g.setColor(prefs.getLogFileSelectedBackgroundColor());
             } else
-                g.setColor(Color.white);
-            g.fillRect(x, 0, w, getHeight());
+                g.setColor(prefs.getLogFileBackgroundColor());
+            g.fillRect(x, 0, getWidth()-x, getHeight());
             g.setColor(getForeground());
             g.drawString(right, x, fm.getAscent());                
         }
@@ -266,8 +267,7 @@ public class LogList extends JList<String> implements SelectionListener,
     public LogList(MSCDataModel m, ViewModel _ehm) {
         super(m.getLogListModel());
         // real height will be set in updateFixedSize once the model is loaded
-        setFixedCellHeight(0);
-        setFixedCellWidth(0);
+        updateFixedSize();
         dm = m;
         ehm = _ehm;
         dm.addListener(this);
@@ -282,8 +282,16 @@ public class LogList extends JList<String> implements SelectionListener,
                 if (evt.getClickCount() == 2) {
                     final int index = list.locationToIndex(evt.getPoint());
                     final Event ev = dm.getEventByLineIndex(index + 1);
-                    if (ev != null)
+                    if (ev != null) {
                         ehm.add(ev.getEntity());
+                        // make sure once the entity show up the selected event is visible
+                        Runnable r = () -> {
+                            MainPanel mp = MainFrame.getInstance().getMainPanel(); 
+                            mp.getMSCRenderer().setSelectedEvent(ev);
+                            mp.makeEventWithIndexVisible(index+1);
+                        };
+                        Utils.dispatchOnAWTThreadLater(r);
+                    }
                 } else if (evt.getClickCount() == 3) { // Triple-click
                     // unused for now
                 }
@@ -323,6 +331,8 @@ public class LogList extends JList<String> implements SelectionListener,
                 int bo = ci[1];
                 int ei = ci[2];
                 int eo = ci[3];
+                if (bi < 0 || ei < 0 || bo < 0 || eo < 0)
+                    return;
                 if (bi == ei)
                     sb.append(list.getModel().getElementAt(bi).substring(bo, eo));
                 else {
@@ -402,23 +412,16 @@ public class LogList extends JList<String> implements SelectionListener,
     @Override
     public void eventAdded(MSCDataModel mscDataModel, Event ev) {
         // ((LogListModel)getModel()).fireContentsChanged();
-        repaint();
+//        repaint();
     }
 
+ 
     @Override
     public void modelChanged(MSCDataModel mscDataModel) {
         if (cellRenderer != null)
             cellRenderer.invalidate();
-        LogListModel lm = (LogListModel)getModel();
-        int maxLineLen =  lm.getMaxLineLen();
-        BufferedImage bim = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
-        Graphics offscreenG = bim.getGraphics();
-        final Font f = (Font) UIManager.getDefaults().get("List.font");
-        offscreenG.setFont(f);
-        FontMetrics offscreenFontMetrics = offscreenG.getFontMetrics();
-        int charWidth = offscreenFontMetrics.charWidth('A');
-        setFixedCellHeight(offscreenFontMetrics.getHeight());
-        setFixedCellWidth(charWidth*maxLineLen);
+        IndexableLineFile lm = (IndexableLineFile)getModel();
+        updateFixedSize();
         lm.fireContentsChanged();
     }
 
@@ -428,8 +431,16 @@ public class LogList extends JList<String> implements SelectionListener,
     }
     
     public void updateFixedSize() {
-        LogListModel lm = (LogListModel)getModel();
-        
+        BufferedImage bim = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
+        Graphics offscreenG = bim.getGraphics();
+        final Font f = (Font) UIManager.getDefaults().get("List.font");
+        offscreenG.setFont(f);
+        FontMetrics offscreenFontMetrics = offscreenG.getFontMetrics();
+        int charWidth = offscreenFontMetrics.charWidth('A');
+        setFixedCellHeight(offscreenFontMetrics.getHeight());
+        IndexableLineFile lm = (IndexableLineFile)getModel();
+        int maxLineLen =  lm.getMaxLineLen();
+        setFixedCellWidth(charWidth*maxLineLen);
     }
     
 }

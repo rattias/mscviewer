@@ -44,4 +44,12 @@ public enum InputUnit {
             return -1;
         }
     }
+    
+    public static InputUnit byName(String name) {
+        for(InputUnit iu: values()) {
+            if (iu.str.equals(name))
+                return iu;
+        }
+        return null;
+    }
 }

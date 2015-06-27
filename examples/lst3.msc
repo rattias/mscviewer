@@ -1,5 +1,5 @@
 @event { "entity":"producer", "label":"start"}
-@event { "entity":"producer", "label":"back-in-time", "src":"2"}
+@event { "entity":"producer", "label":"back-in-time", "dst":"2"}
 @event { "entity":"producer", "label":"produce", "src":"1"}
 @event { "entity":"consumer", "label":"consume", "dst":"1"}
-@event { "entity":"consumer", "label":"back-in-time", "dst":"2"}
+@event { "entity":"consumer", "label":"back-in-time", "src":"2"}

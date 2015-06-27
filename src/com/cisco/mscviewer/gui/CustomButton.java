@@ -10,6 +10,7 @@ package com.cisco.mscviewer.gui;
 import javax.swing.JToggleButton;
 
 import com.cisco.mscviewer.model.Entity;
+import com.cisco.mscviewer.util.PersistentPrefs;
 
 /**
  * @author Roberto Attias
@@ -17,6 +18,7 @@ import com.cisco.mscviewer.model.Entity;
  */
 @SuppressWarnings("serial")
 class CustomButton extends JToggleButton {
+
     private final Entity en;
 
     public CustomButton(Entity en) {
@@ -25,12 +27,32 @@ class CustomButton extends JToggleButton {
         if (idx >= 0) {
             String parent = p.substring(0, idx+1);
             String name = p.substring(idx+1);
-            setText("<HTML>"+parent+ "<BR><center>"+name+"</center></BR></HTML");
+            setText("<HTML>"+parent+ "<BR><center>"+name+((en.getDescription() != null) ? "("+en.getDescription()+")" : "") + "</center></BR></HTML");
         } else
             setText("<HTML>"+p+"</HTML>");
         this.en = en;
     }
 
+    public void updateText() {
+        System.out.println("Updating text");
+        PersistentPrefs p = MainFrame.getInstance().getPrefs();
+        StringBuilder sb = new StringBuilder("<HTML>");
+        String s = p.getShowEntityAsID() ? en.getId() : en.getPath();
+        int idx = s.lastIndexOf('/');
+        String name = s.substring(idx+1);
+        if (p.getShowEntityFullPath() && idx >= 0) {
+            String parent = s.substring(0, idx+1);
+            sb.append(parent+"<BR>");
+        }
+        sb.append(name);
+        if (p.getShowEntityDescription()) {
+            String descr = en.getDescription() != null? en.getDescription() : "";
+            sb.append("<BR>"+descr);
+        }    
+        setText(sb.toString());
+    }
+    
+        
     public Entity getEntity() {
         return en;
     }

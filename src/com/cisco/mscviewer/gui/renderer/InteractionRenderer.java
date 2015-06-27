@@ -30,14 +30,20 @@ abstract public class InteractionRenderer {
         final String k = width + "-" + dashed;
         BasicStroke b = bs.get(k);
         if (b == null) {
-            if (dashed)
-                b = new BasicStroke(width, BasicStroke.CAP_BUTT,
-                        BasicStroke.JOIN_BEVEL, 1.0f, new float[] { 3.0f, 3.0f,
-                                3.0f, 3.0f }, 0.0f);
-            else
-                b = new BasicStroke(width);
-            bs.put(k, b);
+            b = createStroke(k, width, dashed);
         }
+        return b;
+    }
+
+    private final static BasicStroke createStroke(String k, int width, boolean dashed) {
+        BasicStroke b;
+        if (dashed)
+            b = new BasicStroke(width, BasicStroke.CAP_BUTT,
+                    BasicStroke.JOIN_BEVEL, 1.0f, new float[] { 3.0f, 3.0f,
+                            3.0f, 3.0f }, 0.0f);
+        else
+            b = new BasicStroke(width);
+        bs.put(k, b);
         return b;
     }
 

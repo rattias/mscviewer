@@ -162,6 +162,10 @@ public class JSonObject implements JSonValue {
         return o;
     }
 
+    public JSonValue getValue(String key) {
+        return map.get(key);
+    }
+
     public String[] getKeys() {
         final Set<String> s = map.keySet();
         return s.toArray(new String[s.size()]);

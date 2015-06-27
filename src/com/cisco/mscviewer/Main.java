@@ -70,6 +70,7 @@ abstract class Opt {
 public class Main {
     public static final String VERSION = "2.1.0";
     public static final boolean WITH_BLOCKS = true;
+    private static boolean topologicalSorting = true;
     
     private static Loader loader;
     private static MainFrame mf;
@@ -148,7 +149,14 @@ public class Main {
                             appendToPyPath(dir);
                     }
                 }
-            } };
+            },
+            new Opt('t', "no-topological-sorting", true, "disables topological sorting") {
+                @Override
+                void found(String arg) {
+                    Main.topologicalSorting  = false;
+                }
+            }            
+    };
     private static String plugins;
 
     private static void printHelp() {
@@ -508,6 +516,14 @@ public class Main {
         } catch (final Exception t) {
             Report.exception("Exception while opening Heat Graph", t);
         }
+    }
+    
+    public static boolean shouldSortTopologically() {
+        return topologicalSorting;
+    }
+    
+    public static void setTopologicalSorting(boolean v) {
+        topologicalSorting = v;
     }
 
 }

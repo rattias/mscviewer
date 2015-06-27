@@ -39,6 +39,7 @@ import com.cisco.mscviewer.gui.renderer.EventRenderer;
 import com.cisco.mscviewer.gui.renderer.InteractionRenderer;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.IndexableLineFile;
 import com.cisco.mscviewer.model.Interaction;
 import com.cisco.mscviewer.model.JSonArrayValue;
 import com.cisco.mscviewer.model.JSonObject;
@@ -67,6 +68,7 @@ public class JsonLoader implements Loader {
     private static final String MSC_KEY_INTER_ID = "id";
     private static final String MSC_KEY_ENT_ID = "id";
     private static final String MSC_KEY_ENT_NAME = "name";
+    private static final String MSC_KEY_ENT_DESCRIPTION = "description";
     @SuppressWarnings("unused")
     private static final String MSC_KEY_INTER_TYPE = "type";
     private static final String MSC_KEY_BLOCK = "block";
@@ -238,26 +240,27 @@ public class JsonLoader implements Loader {
         final HashMap<String, Interval> pendingBlocks = new HashMap<String, Interval>();
         final HashMap<String, String> alias = new HashMap<String, String>();
         final File file = new File(fname);
-        final int flen = (int) file.length();
+        final long flen = file.length();
         dm.reset();
         dm.setOpenPath(new File(fname).getParent());
         dm.setFilePath(fname);
         dm.setLoading(true);
-        final BufferedReader fr = new BufferedReader(new FileReader(file));
+        final CustomBufferedReader fr = new CustomBufferedReader(new FileReader(file), 32768);
         String line;
         int lineNum = 0;
         // readCnt and writeCnt can differ because we may read different type of line separators,
         // but we always do println, which will use the system (platform dependent) line separator.
-        int readCnt = 0;
         final ProgressReport pr = new ProgressReport("Loading file", fname, 0,
                 flen - 1);
         try {
+            IndexableLineFile llm = dm.getLogListModel();
+            llm.setFile(fname);
             int x = 0;
             while ((line = fr.readLine()) != null) {
-                readCnt += line.length();
+                dm.addSourceLine(fr.lineStartPosition());
                 x++;
                 if (x % 1024 == 0) {
-                    pr.progress(readCnt);
+                    pr.progress(fr.position());
                 }
                 lineNum++;
                 int start = line.indexOf(MSC_EVENT);
@@ -403,7 +406,7 @@ public class JsonLoader implements Loader {
                         Interaction inter = null;
                         final ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
                         final ArrayList<String> sourcePairingId = new ArrayList<String>();
-                        final JSonValue sourceValue = jo.getValueByPath(MSC_KEY_SRC);
+                        final JSonValue sourceValue = jo.getValue(MSC_KEY_SRC);
                         if (sourceValue instanceof JSonStringValue) {
                             // this event is source for an interaction with
                             // default
@@ -468,7 +471,7 @@ public class JsonLoader implements Loader {
                         final ArrayList<JSonObject> interAttrs = new ArrayList<JSonObject>();
                         final ArrayList<String> sinkPairingId = new ArrayList<String>();
                         // next line will throw exception if no such field
-                        final JSonValue sinkValue = jo.getValueByPath(MSC_KEY_DST);
+                        final JSonValue sinkValue = jo.getValue(MSC_KEY_DST);
                         if (sinkValue instanceof JSonStringValue) {
                             // this event is sink for an interaction with
                             // default
@@ -553,11 +556,13 @@ public class JsonLoader implements Loader {
                         } else {
                             en.setName(name);
                         }
+                        Object o = jo.get(MSC_KEY_ENT_DESCRIPTION);
+                        if (o != null)
+                            en.setDescription(o.toString());
                     }
                 }
-                dm.addSourceLine(line);
             }
-            if (dm != null) {
+             if (dm != null) {
                 // add all remaining pending
                 for (final Interaction inter : pendingSourced.values()) {
                     dm.addInteraction(inter);
@@ -567,14 +572,17 @@ public class JsonLoader implements Loader {
                 }
 
                 // sort topologically
-                if (! dm.getFilePath().equals(dm.getCausalityLoopFileName()))
+                if (Main.shouldSortTopologically() && ! dm.getFilePath().equals(dm.getCausalityLoopFileName()))
                     dm.topoSort();
                 if (Main.WITH_BLOCKS) {
+                    ProgressReport subPr = pr.subReport("computing blocks", "Computing Blocks", 10, 0, dm.getEventCount(), true);
                     for (int i = 0; i < dm.getEventCount(); i++) {
                         final Event ev = dm.getEventAt(i);
                         final Entity en = ev.getEntity();
                         final String entityPath = en.getPath();
                         final String blkPath = entityPath + "/block";
+                        if (i % 1024 == 0)
+                            subPr.progress(i);
                         SimpleInterval blk = (SimpleInterval) pendingBlocks
                                 .get(blkPath);
                         if (ev.getIncomingInteractions().length > 0
@@ -592,6 +600,7 @@ public class JsonLoader implements Loader {
                     for (final Interval inter : pendingBlocks.values()) {
                         dm.addBlock(inter);
                     }
+                    subPr.progressDone();
                 }
 
             }

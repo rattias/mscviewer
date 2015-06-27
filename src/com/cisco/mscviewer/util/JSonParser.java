@@ -35,6 +35,12 @@ class MutableInteger {
  * @author rattias
  */
 public class JSonParser {
+    private final static void skipSpaces(String str, MutableInteger pos) {
+        while (Character.isSpaceChar(str.charAt(pos.v))) {
+            pos.v++;
+        }        
+    }
+    
     private static void expect(String str, String file, int lineNum,
             MutableInteger pos, char ch) throws JSonException {
         try {
@@ -141,13 +147,13 @@ public class JSonParser {
         final JSonArrayValue jal = new JSonArrayValue();
         final ArrayList<JSonValue> al = jal.value();
         expect(str, file, lineNum, pos, '[');
-        try {
-            // test empty array case first
-            expect(str, file, lineNum, pos, ']');
+        // could use expect() here, but would cause a lot of exceptions to be instantiated and thrown during parsing. 
+        skipSpaces(str, pos);
+        if (str.charAt(pos.v) == ']') {
+            pos.v++;
             return jal;
-        } catch (final JSonException ex) {
-            // ok, array is not empty
         }
+        // array is not empty
         while (true) {
             try {
                 final JSonValue value = parseValue(str, file, lineNum, pos);
@@ -267,10 +273,11 @@ public class JSonParser {
             o = new JSonObject();
 
         expect(str, file, lineNum, pos, '{');
-        try {
-            expect(str, file, lineNum, pos, '}');
+        // could use expect() here, but would cause a lot of exceptions to be instantiated and thrown during parsing. 
+        skipSpaces(str, pos);
+        if (str.charAt(pos.v) == '}') {
+            pos.v++;
             return o;
-        } catch (final JSonException ex) {
         }
         while (true) {
             final String key = parseString(str, file, lineNum, pos).toString();
@@ -283,5 +290,4 @@ public class JSonParser {
             }
         }
     }
-
 }

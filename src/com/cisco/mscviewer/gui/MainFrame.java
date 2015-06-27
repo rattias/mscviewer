@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -90,19 +91,22 @@ import com.cisco.mscviewer.io.PNGSaver;
 import com.cisco.mscviewer.io.Session;
 import com.cisco.mscviewer.model.Entity;
 import com.cisco.mscviewer.model.Event;
+import com.cisco.mscviewer.model.InputUnit;
 import com.cisco.mscviewer.model.Interaction;
 import com.cisco.mscviewer.model.JSonObject;
 import com.cisco.mscviewer.model.MSCDataModel;
+import com.cisco.mscviewer.model.OutputUnit;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.script.PythonFunction;
 import com.cisco.mscviewer.util.PNGSnapshotTarget;
 import com.cisco.mscviewer.util.PersistentPrefs;
+import com.cisco.mscviewer.util.PersistentPrefsListener;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
 import com.sun.javafx.geom.RoundRectangle2D;
 
 @SuppressWarnings("serial")
-public class MainFrame extends JFrame implements PNGSnapshotTarget {
+public class MainFrame extends JFrame implements PNGSnapshotTarget, PersistentPrefsListener {
     private final static double VER_SPLIT = 0.6;
 
     private static MainFrame mf;
@@ -137,7 +141,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
 
     private JButton clearHighlightsButton;
     private JMenuItem clearHighlightsMI;
-
+    private PersistentPrefs prefs;
+    
     class MouseHandler implements MouseListener, MouseMotionListener {
 
         private void popupMenu(final MouseEvent me) {
@@ -587,28 +592,12 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
 
     private void openPreferences() {
         final MSCRenderer r = mainPanel.getMSCRenderer();
-        final PrefsDialog d = new PrefsDialog(MainFrame.this, r.getTimeScaleFactor(),
-                r.getAbsTimeUnit(), r.getDeltaTimeUnit());
-        // d.setInputUnit(r.getTimestampUnit());
-        d.setAbsoluteOutputUnit(r.getAbsTimeUnit());
-        d.setDeltaOutputUnit(r.getDeltaTimeUnit());
-        d.setShowUnits(r.getShowUnits());
-        d.setShowDate(r.getShowDate());
-        d.setShowLeadingZeroes(r.getShowLeadingZeroes());
-        d.setCompactView(r.getCompactView());
+        PrefsDialog d = new PrefsDialog(this, prefs);
+        Point p = this.getLocation();
+        p.x = p.x + (getWidth()-d.getWidth())/2;
+        p.y = p.y + (getHeight()-d.getHeight())/2;
+        d.setLocation(p);
         d.setVisible(true);
-        if (d.approved()) {
-            // r.setTimestampUnit(d.getInputUnit());
-            r.setAbsTimeUnit(d.getAbsoluteOutputUnit());
-            r.setDeltaTimeUnit(d.getDeltaOutputUnit());
-            r.setShowUnits(d.getShowUnits());
-            r.setShowDate(d.getShowDate());
-            r.setShowLeadingZeroes(d.getShowLeadingZeroes());
-            r.updateForTimeUnitChanges();
-            r.setCompactView(d.getCompactView());
-            mainPanel.updateView();
-        }
-
     }
 
     public MainFrame(int x, int y, int w, int h) {
@@ -617,7 +606,8 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         setBounds(x, y, w, h);
         progName = "MSCViewer v" + Main.VERSION;
         updateTitle();
-
+        prefs = new PersistentPrefs();
+        prefs.addListener(this);
         final List<Image> icons = new ArrayList<Image>();
         icons.add(Resources.getImageIcon("64x64/mscviewer.png", "mscviewer")
                 .getImage());
@@ -877,15 +867,14 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         fileMenu.add(mi);
 
         final JMenu editMenu = new JMenu("Edit");
-        mi = new JMenuItem(new AbstractAction("Find...") {
+        mi = new JMenuItem(new AbstractAction("Preferences...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final FindDialog fd = new FindDialog(MainFrame.this);
-                fd.setVisible(true);
+                openPreferences();
             }
         });
-        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
-                ActionEvent.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
+                ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
         editMenu.add(mi);
 
         clearHighlightsMI = new JMenuItem(new AbstractAction("Clear Highlights") {
@@ -899,15 +888,6 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
         editMenu.add(clearHighlightsMI);
 
         final JMenu viewMenu = new JMenu("View");
-        mi = new JMenuItem(new AbstractAction("Preferences...") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openPreferences();
-            }
-        });
-        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
-                ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK));
-        viewMenu.add(mi);
 
         viewMenu.add(new JMenuItem(new AbstractAction("Filters...") {
             @Override
@@ -1331,5 +1311,16 @@ public class MainFrame extends JFrame implements PNGSnapshotTarget {
             mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0+i, ActionEvent.ALT_MASK|ActionEvent.SHIFT_MASK));
             recentSessionMenu.add(mi);
         }
+    }
+    
+    public PersistentPrefs getPrefs() {
+        return prefs;
+    }
+
+    @Override
+    public void prefsChanged(PersistentPrefs p) {
+        entityHeader.updateLabels();
+        mainPanel.getMSCRenderer().updateForTimeUnitChanges();
+        repaint();
     }
 }

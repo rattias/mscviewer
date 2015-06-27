@@ -90,9 +90,16 @@ public class TextColorPicker extends ColorPicker {
             {new Color(0xffffff), Color.blue,   Color.blue.darker(),    Color.blue.darker().darker(),   Color.blue.darker().darker().darker()}
     };                
 
-
     public TextColorPicker(int type) {
-        super(new Letter(type, "A", 16), colors, type == TYPE_FOREGROUND ? 0 : 7, 0);
+        this(null, type);
+    }
+
+    public TextColorPicker(String label, int type) {
+        this(label, type, "A");
+    }
+
+    public TextColorPicker(String label, int type, String text) {
+        super(label, new Letter(type, text, 16), colors, type == TYPE_FOREGROUND ? 0 : 7, 0);
     }
     
     public static void main(String args[]) {

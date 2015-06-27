@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -18,8 +19,11 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
 import com.cisco.mscviewer.gui.StyledButton;
@@ -38,8 +42,15 @@ public class ColorPicker extends JPanel {
     private Point getPopupLocation(Component owner, Component popup) {
         Point p = owner.getLocation();
         p.y += owner.getHeight();
-        JFrame f = (JFrame)SwingUtilities.getRoot(this);
-        JComponent gp = (JComponent)f.getGlassPane();
+        this.getTopLevelAncestor();
+        Window window= (Window)SwingUtilities.getRoot(this);
+        JComponent gp;
+        if (window instanceof JFrame)
+            gp = (JComponent)((JFrame)window).getGlassPane();
+        else if (window instanceof JDialog)
+            gp = (JComponent)((JDialog)window).getGlassPane();
+        else
+            throw new Error("Unexpected root component of type "+window.getClass().getName());
         p = SwingUtilities.convertPoint(owner.getParent(), p, gp);
         if (p.x+popup.getWidth() > gp.getWidth())
             p.x = gp.getWidth() - popup.getWidth();
@@ -54,14 +65,21 @@ public class ColorPicker extends JPanel {
         menuButton.setEnabled(v);
     }
     
-    public ColorPicker(AbstractButton colorButton, Color colors[][], int selectedColorRow, int selectedColorColumn) {
+    public ColorPicker(String label, AbstractButton colorButton, Color colors[][], int selectedColorRow, int selectedColorColumn) {
         if (selectedColorRow >= colors.length || selectedColorRow  < 0 ||
                 selectedColorColumn >= colors[selectedColorRow].length || selectedColorColumn < 0)
             throw new Error("Invalid selected color position ("+selectedColorRow+", "+selectedColorColumn+")");
-            
-        setOpaque(false);
-        setLayout(new BorderLayout());
-        setMaximumSize(new Dimension(48,1000));
+        JPanel inner;
+        if (label != null) {
+            setLayout(new BorderLayout());
+            add(new JLabel(label), BorderLayout.CENTER);
+            inner = new JPanel();
+            add(inner, BorderLayout.WEST);
+        } else
+            inner = this;
+        inner.setOpaque(false);
+        inner.setLayout(new BorderLayout());
+        inner.setMaximumSize(new Dimension(48,1000));
         colorButton.setFocusable(false);
         if (colorButton instanceof AbstractButton) {
             AbstractButton ab = (AbstractButton )colorButton;
@@ -99,8 +117,8 @@ public class ColorPicker extends JPanel {
             }
         });
         menuButton.setPreferredSize(new Dimension(16,2));
-        this.add(setColorButton, BorderLayout.CENTER);
-        this.add(menuButton, BorderLayout.EAST);
+        inner.add(setColorButton, BorderLayout.CENTER);
+        inner.add(menuButton, BorderLayout.EAST);
         menuButton.addActionListener((ev) -> {
             JPanel colorPanel = new JPanel();
             colorPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -217,10 +235,15 @@ public class ColorPicker extends JPanel {
         for(ColorSelectionListener l: listeners)
             l.colorSelected(selected);
     }
-    
+
+    public void setSelectedColor(Color c) {
+        selected = c;
+    }
+
     public Color getSelectedColor() {
         return selected;
     }
+    
     
     public JComponent getButton() {
         return setColorButton;
@@ -230,4 +253,5 @@ public class ColorPicker extends JPanel {
         setColorButton.getModel().setRollover(b);
         menuButton.getModel().setRollover(b);
     }
+    
 }

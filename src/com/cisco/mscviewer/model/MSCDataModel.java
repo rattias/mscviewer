@@ -11,6 +11,7 @@
  */
 package com.cisco.mscviewer.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,6 +52,7 @@ class KeyEvent extends Event {
  * @author rattias
  */
 public final class MSCDataModel {
+    private final static boolean DEBUG = false;
     private static MSCDataModel singleton;
     private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<String, Entity>();
     private final ArrayList<Entity> rootEntities;
@@ -64,7 +66,8 @@ public final class MSCDataModel {
     private boolean notificationEnabled;
     private String openPath;
     private final ArrayList<Graph> graphs = new ArrayList<Graph>();
-    private LogListModel llm = new LogListModel();
+    private IndexableLineFile llm = new IndexableLineFile();
+;
 
     /**
      * Instantiate a data model
@@ -91,7 +94,8 @@ public final class MSCDataModel {
         blocks = new IntervalTree("blocks");
         notifyModelChanged();
 //        data.clear();
-        llm.reset();
+        if (llm != null)
+            llm.reset();
     }
 
     /**
@@ -461,10 +465,14 @@ public final class MSCDataModel {
      * 
      * @param line
      */
-    public void addSourceLine(String line) {
-        llm.add(line);
-    }
+//    public void addSourceLine(String line) {
+//        llm.add(line);
+//    }
 
+    public void addSourceLine(long offset) {
+        llm.addLine(offset);
+    }
+    
     public int getSourceLineCount() {
         return llm.getSize();
     }
@@ -795,21 +803,18 @@ public final class MSCDataModel {
 
                 // assing event array last
                 events = newevs;
-
-                try {
-                    interactions.verifyIntegrity();
-                } catch (final TreeIntegrityException ex) {
-                    ex.printStackTrace();
-                }
                 notifyModelChanged();
             } catch (final TopologyError e) {
                 Report.exception("Exception while performing topological sorting:", e);
             }
-            try {
-                interactions.verifyIntegrity();
-            } catch (final TreeIntegrityException er) {
-                System.err.println(er.getMessage());
-                System.err.println(er.getTreePath());
+            if (DEBUG) {
+                try {
+                    interactions.verifyIntegrity();
+                } catch (final TreeIntegrityException er) {
+                    Report.exception("Tree Integrity Violated", er);
+                    System.err.println(er.getMessage());
+                    System.err.println(er.getTreePath());
+                }
             }
         }
     }
@@ -877,7 +882,7 @@ public final class MSCDataModel {
         return singleton;
     }
 
-    public LogListModel getLogListModel() {
+    public IndexableLineFile getLogListModel() {
         return llm;
     }
 

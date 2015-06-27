@@ -35,6 +35,10 @@ class marker(object):
     RED = Marker.RED
     YELLOW = Marker.YELLOW
 
+def set_property(prop, value):
+    if prop == "model.sort-topologically":
+        Main.setTopologicalSorting(value)
+        
 ################ MODEL BROWSING FUNCTIONS ###############
 
 #------ ENTITY-SPECIFIC FUNCTIONS --------------
