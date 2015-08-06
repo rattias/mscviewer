@@ -41,10 +41,12 @@ public class StyledToggleButton extends JToggleButton {
         });
     }
     
+    @Override
     public boolean isContentAreaFilled() {
         return false;
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
         if (getModel().isRollover()) {

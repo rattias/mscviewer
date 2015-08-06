@@ -1,0 +1,3 @@
+@event { "entity":"foo", "label":"event_a"}
+@event { "entity":"foo", "label":"event_b"}
+@event { "entity":"bar", "label":"event_x"}

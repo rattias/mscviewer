@@ -257,7 +257,7 @@ class EntityTreeModel implements TreeModel, MSCDataModelListener {
 
 @SuppressWarnings("serial")
 public class EntityTree extends JTree implements EntityHeaderModelListener {
-    private final ViewModel eh;
+    transient private final ViewModel eh;
 
     @Override
     public void entityMoved(ViewModel eh, Entity en, int toIdx) {

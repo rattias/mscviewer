@@ -1,4 +1,5 @@
 from msc.flowdef import *
+from msc.model import *
 from msc.gui import msc_fun
 import sys
 	            
@@ -19,6 +20,10 @@ def find_flow():
             if idx >= 0:
                 print "found match!"
                 found = True
+                m = f.get_model_map()
+                for fl in m:
+                    ev = m[fl]
+                    print str(fl), ':', event_line(ev)
         except FlowError, err:
             if not found:
                 print "No match found (", str(err), ")"

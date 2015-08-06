@@ -164,6 +164,7 @@ public class CustomBufferedReader extends Reader {
      *         end of the stream has been reached
      * @exception  IOException  If an I/O error occurs
      */
+    @Override
     public int read() throws IOException {
         synchronized (lock) {
             ensureOpen();
@@ -263,6 +264,7 @@ public class CustomBufferedReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
+    @Override
     public int read(char cbuf[], int off, int len) throws IOException {
         synchronized (lock) {
             ensureOpen();
@@ -390,6 +392,7 @@ public class CustomBufferedReader extends Reader {
      * @exception  IllegalArgumentException  If <code>n</code> is negative.
      * @exception  IOException  If an I/O error occurs
      */
+    @Override
     public long skip(long n) throws IOException {
         if (n < 0L) {
             throw new IllegalArgumentException("skip value is negative");
@@ -430,6 +433,7 @@ public class CustomBufferedReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
+    @Override
     public boolean ready() throws IOException {
         synchronized (lock) {
             ensureOpen();
@@ -458,6 +462,7 @@ public class CustomBufferedReader extends Reader {
     /**
      * Tells whether this stream supports the mark() operation, which it does.
      */
+    @Override
     public boolean markSupported() {
         return true;
     }
@@ -478,6 +483,7 @@ public class CustomBufferedReader extends Reader {
      * @exception  IllegalArgumentException  If {@code readAheadLimit < 0}
      * @exception  IOException  If an I/O error occurs
      */
+    @Override
     public void mark(int readAheadLimit) throws IOException {
         if (readAheadLimit < 0) {
             throw new IllegalArgumentException("Read-ahead limit < 0");
@@ -496,6 +502,7 @@ public class CustomBufferedReader extends Reader {
      * @exception  IOException  If the stream has never been marked,
      *                          or if the mark has been invalidated
      */
+    @Override
     public void reset() throws IOException {
         synchronized (lock) {
             ensureOpen();
@@ -508,6 +515,7 @@ public class CustomBufferedReader extends Reader {
         }
     }
 
+    @Override
     public void close() throws IOException {
         synchronized (lock) {
             if (in == null)

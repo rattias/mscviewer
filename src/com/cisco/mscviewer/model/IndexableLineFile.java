@@ -1,27 +1,15 @@
 package com.cisco.mscviewer.model;
 
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Utils;
@@ -30,17 +18,12 @@ import com.cisco.mscviewer.util.Utils;
 public class IndexableLineFile extends AbstractListModel<String> {
     private final static File dir = new File(Utils.getWorkDirPath());
     private final static int BLOCK_SIZE = 64*1024;
-    private BufferedWriter fw;
     ArrayList<long[]> offsets;
     private int numLines;
     private long fileSize;
     private boolean loading;
-    private File f;
-    private FontMetrics offscreenFontMetrics;
-    private Graphics offscreenG;
     private int lineHeight = 0;
     private int lineWidth = 0;
-    private int charWidth = 0;
     private int maxLineLen;
     private FileChannel fileChannel;
     private MappedByteBuffer[] byteBuffer;
@@ -105,7 +88,6 @@ public class IndexableLineFile extends AbstractListModel<String> {
         
         if (index >= numLines)
             return null;
-        String res = null;
         int idx = index / BLOCK_SIZE;
         int off = index % BLOCK_SIZE;
         long p = offsets.get(idx)[off];

@@ -33,7 +33,7 @@ import com.cisco.mscviewer.util.Utils;
 class EntityListModel extends AbstractListModel<Entity> {
     private final String root = "Entities";
     private Vector<Entity> data;
-    private final ViewModel eh;
+    transient private final ViewModel eh;
     private boolean sorted;
 
     public EntityListModel(ViewModel eh) {

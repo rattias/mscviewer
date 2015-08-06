@@ -14,6 +14,9 @@ package com.cisco.mscviewer.tree;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import com.cisco.mscviewer.util.MSCViewerError;
 
 /**
  * This class implements an Interval Tree (actually, an Augmented Tree). The
@@ -93,20 +96,20 @@ public class AVLTreeNode {
         return l;
     }
 
-    protected void verify(AVLTreeNode root, HashSet<Object> set, String msg,
+    protected void verify(AVLTreeNode root, Set<Object> set, String msg,
             int min, int max) {
         if (data.getValue() < min || data.getValue() > max) {
             final List<String> al = new ArrayList<String>();
             root.pathsToValue(data.getValue(), "", al);
             System.err.println("Exception: current tree: ");
-            throw new Error(msg + ":" + al.get(0) + ": " + data.getValue()
+            throw new MSCViewerError(msg + ":" + al.get(0) + ": " + data.getValue()
                     + " should be in range (" + min + "," + max + ")");
         }
         if (set.contains(this))
-            throw new Error("Circular Link: " + msg);
+            throw new MSCViewerError("Circular Link: " + msg);
         set.add(this);
         if (set.contains(data))
-            throw new Error("Duplicated value: " + msg);
+            throw new MSCViewerError("Duplicated value: " + msg);
         set.add(data);
         if (left != null) {
             left.verify(root, set, msg, min, data.getValue());

@@ -102,7 +102,7 @@ build:
 
 
 
-manual-pdf: jar
+manual-pdf-gen: jar
 	@rm -rf .log ; mkdir -p .log
 	@mkdir -p doc/manual/generated; 
 	@echo "*** Building PDF manual..."
@@ -118,9 +118,13 @@ manual-pdf: jar
 	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.graph >doc/manual/generated/python-api-graph.tex   
 	@echo "    - Generating flow API documentation..."
 	@java -jar third-parties/$(JYTHON_JAR) bin/api2tex.py msc.flowdef >doc/manual/generated/python-api-flowdef.tex   
+
+manual-pdf-build: 
 	@echo "    - compiling documentation..."       
 	@cd doc/manual ; echo "\tableofcontents" >tocnotoc.tex; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-1.log; pdflatex $(TEXFLAGS) mscviewer.tex &> ../../.log/manual-pdf-2.log
 	@cd doc/manual ; rm -f *.4* *.aux *.css *.dvi *.idv *.idx *.lg *.log *.out *.tmp *.xref *.toc
+
+manual-pdf: manual-pdf-gen manual-pdf-build
 
 manual-html:
 	@rm -rf .log ; mkdir -p .log

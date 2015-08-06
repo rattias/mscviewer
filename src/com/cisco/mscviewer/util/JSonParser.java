@@ -12,6 +12,7 @@
 package com.cisco.mscviewer.util;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.cisco.mscviewer.io.JSonException;
 import com.cisco.mscviewer.model.JSonArrayValue;
@@ -145,7 +146,7 @@ public class JSonParser {
     private static JSonArrayValue parseArray(String str, String file,
             int lineNum, MutableInteger pos) throws JSonException {
         final JSonArrayValue jal = new JSonArrayValue();
-        final ArrayList<JSonValue> al = jal.value();
+        final List<JSonValue> al = jal.value();
         expect(str, file, lineNum, pos, '[');
         // could use expect() here, but would cause a lot of exceptions to be instantiated and thrown during parsing. 
         skipSpaces(str, pos);

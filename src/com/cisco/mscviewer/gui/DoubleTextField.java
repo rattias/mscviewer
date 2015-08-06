@@ -14,12 +14,16 @@ package com.cisco.mscviewer.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+
+import com.cisco.mscviewer.Main;
 
 @SuppressWarnings("serial")
 class DoubleTextField extends JTextField {
@@ -65,6 +69,8 @@ class DoubleTextField extends JTextField {
                     return false;
             return true;
         } catch (final NullPointerException ex) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO,"isValid", ex);                        
             return true;
         }
     }

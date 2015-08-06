@@ -68,8 +68,11 @@ public class Report {
             if (message != null)
                 System.err.println(message);
             t.printStackTrace();
-            System.err.println("Caused by:");
-            t.getCause().printStackTrace();
+            Throwable cause = t.getCause();
+            if (cause != null) {
+                System.err.println("Caused by:");
+                cause.printStackTrace();
+            }
         } else {
             Font font = new Font(Font.SERIF, Font.PLAIN, 20);
             JComponent top, btm;

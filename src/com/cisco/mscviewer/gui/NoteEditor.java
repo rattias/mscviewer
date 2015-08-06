@@ -34,8 +34,8 @@ import com.cisco.mscviewer.gui.colorpicker.TextColorPicker;
 
 @SuppressWarnings("serial")
 public class NoteEditor extends JPanel {
-    public static Color DEFAULT_FOREGROUND = Color.black;
-    public static Color DEFAULT_BACKGROUND = Color.white;
+    public static final Color DEFAULT_FOREGROUND = Color.black;
+    public static final Color DEFAULT_BACKGROUND = Color.white;
     
     private JTextPane tp;
     private StyledToggleButton bold;
@@ -54,6 +54,7 @@ public class NoteEditor extends JPanel {
         f.setVisible(true);
     }
     
+    @Override
     public void setEnabled(boolean v) {
         super.setEnabled(v);
         tp.setEnabled(v);

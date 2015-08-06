@@ -9,6 +9,7 @@ package com.cisco.mscviewer.gui;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,7 +99,7 @@ class TreeTableModel extends AbstractTreeTableModel {
             final JSonValue v = ((JSonObject) o.value).get(k);
             res = new TreeTableNodeModel(k, v);
         } else if (o.value instanceof JSonArrayValue) {
-            final ArrayList<JSonValue> arr = ((JSonArrayValue) o.value).value();
+            final List<JSonValue> arr = ((JSonArrayValue) o.value).value();
             final String k = "[" + index + "]";
             final JSonValue v = arr.get(index);
             res = new TreeTableNodeModel(k, v);
@@ -158,7 +159,7 @@ class TreeTableModel extends AbstractTreeTableModel {
 @SuppressWarnings("serial")
 public class DataPanel extends JPanel implements SelectionListener {
     public static final String NAME = "Event Data";
-    private JXTreeTable tree;
+    transient private JXTreeTable tree;
 
     public DataPanel() {
             setLayout(new BorderLayout());

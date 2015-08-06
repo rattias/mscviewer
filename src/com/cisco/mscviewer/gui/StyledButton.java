@@ -38,6 +38,7 @@ public class StyledButton extends JButton {
 
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
         if (getModel().isRollover()) {

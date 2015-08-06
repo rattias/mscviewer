@@ -9,7 +9,6 @@
 
 package com.cisco.mscviewer.expression;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -19,6 +18,8 @@ import javax.script.ScriptException;
 
 import com.cisco.mscviewer.model.Event;
 import com.cisco.mscviewer.model.Interaction;
+import com.cisco.mscviewer.util.MSCViewerError;
+import com.cisco.mscviewer.util.Report;
 
 /**
  * Parser for the expression grammar accepted by search fields. THe grammar is 
@@ -50,19 +51,19 @@ public class ExpressionParser {
         final List<ScriptEngineFactory> factories = mgr.getEngineFactories();
         for (final ScriptEngineFactory factory : factories) {
             final String langName = factory.getLanguageName();
-            // String langVersion = factory.getLanguageVersion();
-            if (langName.equals("ECMAScript")) {
+
+            if ("ECMAScript".equals(langName)) {
                 engine = factory.getScriptEngine();
                 break;
             }
         }
         if (engine == null) {
-            throw new Error("Unable to retrieve JavaScript engine.");
+            throw new MSCViewerError("Unable to retrieve JavaScript engine.");
         }
     }
 
-    final static int LEFT = 0;
-    final static int RIGHT = 1;
+    static final int LEFT = 0;
+    static final int RIGHT = 1;
 
     /*
      * start ::= 'event' [type=event] 'where' orexp | 'interaction' [type=int]
@@ -74,7 +75,7 @@ public class ExpressionParser {
      * '<' | '>' | '<=' | '>=') LONG ('ns' | 'us' | 'ms' | 's')
      */
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         final ParserState ps = new ParserState(args[0]);
         final ParsedExpression expr = new ExpressionParser().parse(ps);
         if (expr != null) {
@@ -83,7 +84,7 @@ public class ExpressionParser {
             System.out.println(toJS(expr.getFirstToken()));
         }
         if (args[0].endsWith("" + Token.COMPL_CHAR)) {
-            final ArrayList<String> compl = ps.getCompletions();
+            final List<String> compl = ps.getCompletions();
             System.out.println("completions:");
             for (final String tt : compl) {
                 System.out.println("    " + tt);
@@ -162,7 +163,7 @@ public class ExpressionParser {
             final boolean b = (Boolean) engine.eval(js);
             return b;
         } catch (final ScriptException e) {
-            e.printStackTrace();
+            Report.exception("Exception while running script", e);
         }
         return false;
     }
@@ -188,7 +189,7 @@ public class ExpressionParser {
             final boolean b = (Boolean) engine.eval(js);
             return b;
         } catch (final ScriptException e) {
-            e.printStackTrace();
+            Report.exception("Exception while running script", e);
         }
         return false;
     }

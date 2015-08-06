@@ -22,6 +22,7 @@
 \usepackage{wrapfig}
 \usepackage{tcolorbox}
 \usepackage{lipsum}
+\usepackage{dirtree}
 \include{generated/titlepage}
 
 \newcommand{\prog}{MSCViewer} 
@@ -381,14 +382,18 @@ an error upon loading the file and skips the sorting. This case is captured in
 \end{figure}
 
 \section{Timestamps}
-It is possible to associate timestamps to each event throught the \texttt{time}
-key. The value can assume different formats, as shown in \texttt{lst4.msc},
-visible in fig.~\ref{fig:gui-lst4}. \prog{} internally converts the units
-indicated in the input files into nanoseconds. By default timestamps are shown
-to the left of events in a \texttt{hh:mm:ss} format. The format can be changed
-through the \texttt{view/Preferences...} menu item.
+Timestamps can be associated to events throught the \texttt{time}
+key. The value can assume different formats, as shown in \texttt{lst4.msc}:
 
-%\lstinputlisting[language=Java]{../../examples/lst4.msc}
+\lstinputlisting[language=Java]{../../examples/lst4.msc}
+.
+Regardless of the unit specified in input, \prog{} converts internally the
+timestamp into nanoseconds, and visualizes them in a format that can be chosen
+by the user. The default format is \texttt{hh:mm:ss,ms}, but it can be 
+changed through the the \texttt{Edit/Preferences...} menu item. Fig~\ref{fig:gui-lst4}
+shows timestamps visualized near events.
+
+
 \begin{figure}[ht!]
   \centering
   \includegraphics[width=0.5\textwidth,natwidth=1024,natheight=600]{images/gui-ex4-time.png}
@@ -416,7 +421,7 @@ the third event results in the screen as shown in fig.~\ref{fig:gui-lst5}:
 \end{figure}
 
 \section{Orphaned Interactions}
-When collecting traces from a system it is possible that either the even
+When collecting traces from a system it is possible that either the event
 representing a cause or the one representing an effect for an interaction goes
 missing. This can be caused by multiple reasons, such as the fact that a trace
 has wrapped around (typically traces don't grow indefinitely, but rather wrap
@@ -776,38 +781,44 @@ it to be removed from the diagram. The following legend shows the various repres
 \end{center}
 
 
-\section{The Sequence Diagram area}
-The sequence diagram area is situated on the top-right part of the GUI. Entities can be opened in this area by
-double-clicking on them in the Entity Tree. Open entities can be rearranged by dragging them from their 
-header.
+\section{The Sequence Diagram}
+The Sequence Diagram ais situated on the top-right part of the GUI. Entities can be opened in this area by
+various user actions:
+\begin{itemize}
+\item double-clicking a node in the \textit{Entity Tree}, or pressing enter open the selected entity
+\item double-clicking on a line in the \textit{Log File View}
+\item programmatically, by Python scripts.
+\end{itemize} 
 
-\section{The Source View}
-The source View is a tab in the bottom-right part of the GUI. This view shows the original log file that was 
+Open entities can be rearranged by dragging their \texttt{Header}, the rectangle containing the entity
+name.
+
+Width for an entity column can be increased or reduced by selecting the header and pressing repreatedly the
+\keystroke{+} or \keystroke{-} keys.
+
+\section{The Log File View}
+The Log File View is a tab in the bottom-right part of the GUI. This view shows the original log file that was 
 parsed to create the sequence diagram model. Lines that contributed event information are highlighted in blue, 
 while other lines are shown in black. Clicking on an event line selects the correspoding event, provided that the
 owning entity was open in the sequence diagram area. Selecting an event in the sequence diagram causes the 
 corresponding line in the Source View to be selected. Double-clicking on an event line in the Source View
 causes the corresponding entity to be opened in the sequence diagram and the event selected.
 
-\section{The Data View}
+Clicking and dragging in the Log View causes text to be selected. When the mouse button is released the 
+currently selected test is copied in the system clipboard.
+
+\section{The Event Data View}
 Events may have associated structured data. The data associated to the selected event is shown in the Data View,
 which is located inside a tab in the bottomr-right part of the GUI. 
 
 \section{The Notes View}
-In order to facilitate a debugging session the user can associate notes to events. An note associated with an
+In order to facilitate a debugging session the user can associate notes to events. A note associated with an
 event is shown as a small yellow square on the event. Selecting the event and right-mouse-clicking the user can
 checkmark the "Note Sticker" menu item to make the note visible as a sticker in the sequence diagram.
 To create a note, the user selects the event and edit the note in the Notes View, which is situated in a tab
 in the bottom-right part of the GUI.
 
  
-is a tab in the bottom-right part of the GUI. This view shows the original log file that was 
-parsed to create the sequence diagram model. Lines that contributed event information are highlighted in blue, 
-while other lines are shown in black. Clicking on an event line selects the correspoding event, provided that the
-owning entity was open in the sequence diagram area. Selecting an event in the sequence diagram causes the 
-corresponding line in the Source View to be selected. Double-clicking on an event line in the Source View
-causes the corresponding entity to be opened in the sequence diagram and the event selected.
-
 \section{The Tool Bar}
 The toolbar contains the following buttons:
 
@@ -886,10 +897,91 @@ The toolbar contains the following buttons:
 	& \begin{minipage}[t]{0.8\columnwidth}
 		Shows/hides event labels
 		\end{minipage}\\ \\
+    \tblimg{../../src/com/cisco/mscviewer/resources/icons/32x32/note.png}
+    & \begin{minipage}[t]{0.8\columnwidth}
+        Shows/hides notes associated to events
+        \end{minipage}\\ \\
 	\end{longtable}  
 \end{center}
 
-\chapter{Pyhton API}
+\chapter{Customizing \prog}
+\section{Preferences}
+a number of parameters affecting the GUI can be modified in the \texttt{Preferences}
+dialog accessible via the \texttt{Edit/Preferences...} menu item. These include:
+\begin{itemize}
+\item how to interpret event timestamps where units were not specified
+\item the visualized format for timestamps in the sequence diagram
+\item the format for entities headers in the sequence diagram
+\item colors of various GUI elements   
+\end{itemize}
+When any of the parameters is modified the change is immediately visible in the GUI. If
+the dialog is closed by pressing the \texttt{Ok} button, then those changes become permanent.
+Pressing the \texttt{Cancel} button or closing the dialog via the OS-specific window-close button
+results in the original parameters being restored. 
+
+The original parameters can also be restored without closing the dialog by pressing the \texttt{Reset}
+button.
+ 
+\section{Sessions}
+While \texttt{Preferences} control program parameters irrespective of the loaded log files, some set 
+of parameters can be associated to specific Log files loaded in the tool. These set of parameters, 
+referrred to as \textit{Sessions}, are saved in XML files which can be reloaded later or even
+transfer across different machines. Session information includes:
+\begin{itemize}
+\item Entities open in the sequence diagram
+\item currently selected event or interaction
+\item Notes associated to events
+\item markers associated to events
+\end{itemize}
+
+\section{Passing Resource Sets to \prog{}}
+At the time of execution \prog{} can be passed one or more directories, each one specifying a set of resources.
+Resource directories are passed using the \texttt{-r} option. Directory paths should be separated using 
+the OS-specific path separator character (\texttt{:} on Linux/OS-X and \texttt{;} on Windows). 
+Each directory can contain one or both the following sub-directories:
+\begin{itemize}
+\item \texttt{renderer}: this directory can contain images in \texttt{.png} format. These images
+are loaded by \prog and become available as renderer for events whose type matches the file names (without the extension).
+\item \texttt{script}: this directory can contains Python scripts. These scripts are parsed by \prog and 
+specially decorated functions become available for execution in the GUI. For more information 
+on Python scripts see chapter~\ref{sec:python-api}. 
+\end{itemize}
+
+Consider the following example on Linux:
+\begin{lstlisting}
+mscviewer -r food;animals test.msc
+\end{lstlisting}
+
+\noindent where \texttt{test.msc} contains
+
+\begin{lstlisting}
+@event { "entity":"food",    "type":"bananas", "label":"bananas"}
+@event { "entity":"food",    "type":"cake",    "label":"cake"}
+@event { "entity":"animals", "type":"bee",     "label":"bee"}
+@event { "entity":"animals", "type":"snail",   "label":"snail"}
+\end{lstlisting}
+
+\noindent and the current directory has the following directory structure:
+
+\dirtree{% comment here is required as first char to be found must be a dot
+.1 \texttt{.} . %
+.2 animals/. % space after dot is required!
+.3 renderer/. %
+.4 bee.png. %
+.4 snail.png. %
+.2 food/. %
+.3 renderer/. %
+.4 bananas.png. %
+.4 cake.png. %
+}
+
+This loads a sequence diagram where icons for various events are picked up from the \texttt{renderer}
+subdirectories.
+
+This example is present in the \texttt{examples/custom-icons} directory of the distribution, together with 
+a \texttt{run.sh} script that runs it regardless of the OS in use.
+
+\chapter{Python Integration}
 One of the most powerful aspects of \prog{} is the integration with a Python interpreter
 which allows to access programmatically both model as wel as GUI.
 
@@ -898,11 +990,127 @@ consist in writing validation scripts that can browse model data and report whet
 particular computational flow is present or not, it respects certain timing constraints, etc. 
 Because the script is written once and then applied to traces produced by running the 
 system multiple times, this scales the effort of an activity that otherwise would have to be
-performed by one or more human beings. 
+performed by one or more human beings. A tutorial on how to create flow validation scripts
+using the APIs described in this chapter is provided in chapter~\ref{chp:flowdef} 
 
 Python scripts can also be used to drive the GUI. For example, the screen captures in this 
 manual are all generated automatically a build time by a Python script which loads a model,
 open some entities in the sequence diagram, captures screenshots and saves them.
+
+The interaction between the user Python script and the tool is done through APIs 
+collected in a few Python files the script can import, and described in details 
+in \ref{sec:python-api}.
+
+\section{\textit{Hello World} of Python Integration}
+
+Let's start with the smallest possible \textit{Hello World} program in Python (\texttt{examples/hello.py}):
+
+\lstinputlisting{../../examples/hello.py}
+
+This can be executed by \prog{} as follows:
+
+\begin{verbatim}
+$ mscviewer -b examples/hello.py examples/lst1.msc 
+ Hello World
+\end{verbatim}
+
+Here we're invoking \prog{} in batch mode, passing the \texttt{hello.py} script and
+a log file. The log file is not even used in this case, and the script is simply
+passed to the embedded Python interpreter which runs it, producing the output on
+the console. Not particularly exciting.
+
+Let's examine next how we can interact with the model created from the log file, as
+demonstrated by \texttt{examples/info.py}:
+
+\lstinputlisting{../../examples/info.py}
+
+\begin{verbatim}
+$ bin/mscviewer -b examples/info.py examples/lst1.msc
+ entity= producer label= start
+ entity= producer label= produce
+ entity= consumer label= consume
+\end{verbatim}
+
+This example uses the Python API to interact with the model created from the log file, 
+printing out for each event the entity path and the label. The extensive set of APIs 
+provided to interact with the model as well as the GUI is documented in section
+\ref{sec:python-api}.
+
+In addition to executing a single Python program in batch mode, it is possible
+to define any number of Python functions that can be explicitly invoked by the
+user within the GUI. To demonstrate this, let's consider the \texttt{examples/hello1/hello.py}
+file:
+
+\lstinputlisting{../../examples/hello1/hello.py}
+ 
+In order for functions to be visible by the gui we need to place the Python file declaring them
+into a package, which we can achieve by creating an empty \texttt{\_\_init\_\_.py} file in the 
+directory containing the file. For this reason, the \texttt{examples/hello1} directory has
+the following structure:
+
+\hfill \break
+\dirtree{% comment here is required as first char to be found must be a dot
+.1 \texttt{hello1}. %
+.2 \texttt{\_\_init\_\_.py}. % space after dot is required!
+.2 \texttt{hello.py}. % space after dot is required!
+}
+\hfill \break
+
+We can now run \prog{} as follows:
+
+\begin{verbatim}
+mscviewer -p examples/hello1 examples/lst1.msc
+\end{verbatim}
+
+Once the GUI comes up, click on the \texttt{scripts} tab. The tool will parse the Python
+modules available in the path, and the visualized tree should contain a \texttt{hello1}
+node representing the package. Expanding such node should reveal a leaf node representing
+the \texttt{hello\_world()} function. Notice that in order for a function to show up in the
+GUI tree the function has to be decorated by the \texttt{@msc\_fun} decorator. This 
+allow to have various utility functions in the file that do not show up as first class
+citizens in the GUI.
+
+In order to execute the function, just double-click on its node in the tree. In this 
+particular case the function takes no arguments, so it will be immediately executed producing
+the expected \texttt{Hello World} output on the console. 
+
+Let's now consider \texttt{examples/hello2/hello.py}:
+
+\lstinputlisting{../../examples/hello2/hello.py}
+
+This example provides three functions that will be listed in the GUI:
+\begin{itemize}
+\item \texttt{hello\_something()} expects an argument of type string and prints the concatenation of \texttt{'Hello '}
+followed by such string. The first time we double-click on this node a dialog will open allowing us to 
+provide a value for the argument. We can type \texttt{'World'} (including the apices) and press \texttt{OK}. 
+This time the output will not be produced on the console, but rather in the \texttt{Script Console} tab in the 
+bottom-right are of the GUI. Double-clicking on the same node again will not open the dialog again, as \prog{}
+remembers the previosly passed value and uses it again.  In order to open the dialog again and change the 
+value keep the \keystroke{SHIFT} key pressed while double-clicking on the node. 
+\item \texttt{hello\_world()} calls the previous function passing the value of \texttt{'World'} for the argument.
+\item \texttt{hello\_world\_or\_not()} has a keyword parameter. Keyword parameters have a default
+value, hence double-clicking on the node executes the function with such default value for the
+parameter. Again, to change such value keep the \keystroke{SHIFT} key pressed while double-clicking.
+\end{itemize}
+
+It should be noted that this particular example follows a common pattern which allows a script
+to be executed in batch mode, or to provide functions to be called in interactive mode. The pattern
+consists in the presence of an \texttt{if \_\_name\_\_ == '\_\_main\_\_'} statement which 
+is executed when in batch mode, calling a function with default values. Also, the pattern
+makes use of the \texttt{msc\_print} function to produce output: this function will direct
+its output to the GUI \texttt{Script Console} view when in interactive mode, while 
+falling back to printing on the console when in batch mode. We can run the 
+script in batch mode with
+
+\begin{verbatim}
+mscviewer -b examples/hello2/hello.py examples/lst1.msc
+\end{verbatim}
+
+
+\
+
+\section{Pyhton API}
+\label{sec:python-api}
 
 The interaction between the user Python script and the tool is done through APIs 
 collected in a few Python files the script can import. The Python language doesn't 
@@ -921,41 +1129,101 @@ The API is currently divided in the following modules:
 \item \texttt{msc.graph} -- provides API to access the graphing capabilities (experimental). 
 \item \texttt{msc.flowdef} -- provides API to implement compact definition of expected flows and apply them
                               to the current model
-\end{itemize}                              
-\section{Model API}
+\end{itemize}     
+                         
+\subsection{Model API}
 
 \input{generated/python-api-model.tex}
 
-\section{GUI API}
+\subsection{GUI API}
 \input{generated/python-api-gui.tex}
 
-\section{Flows API}
+\subsection{Flows API}
+\label{sec:flow-api}
 \input{generated/python-api-flowdef.tex}
 
-\section{Graph API}
+\subsection{Graph API}
 \input{generated/python-api-graph.tex}
 
-\chapter{Customizing \prog}
-\section{Icons}
-\section{Python Scripts}
 
-\chapter{Flow Definition}
-\section{Introduction}
+\section{Flow Definition}
+\label{chp:flowdef}
+
 \prog{} provides a powerful infrastructure supporting automated flow validation.
 This means that a developer can write once a concise Python script describing an expected flow,
 and apply such definition to models built from traces generated a runtime by a system. This
 is the basis for flow-level verification automation, which is crucial to scale at least the first
 level of triaging for a system.
 
-\section{Your First Flow Definition}
-The following is a simple flow-definition script:
+\subsection{Your First Flow Definition}
+File \texttt{examples/flw1.py} contains a simple flow definition script. Let's look at it in detail:
 \lstinputlisting{../../examples/flw1.py}
 
-\appendix
-\section{Useful Links}
-\begin{tabular}{l l p{9.0cm}}
+\noindent Lines 1, 2 import some packages required for flow definition. These are defined in Python files
+contained in the \texttt{resources/default} directory of the \prog{} install directory.
 
-\end{tabular}
+Lines 5-7 define a function returning a flow definition. The flow definition is specified as a sequence (\texttt{fseq})
+of two events (\texttt{fev}). The two parameters for each \texttt{fev()} element are respectively the entity id and
+the label of the events. A model containing an ordered sequence of two events on an entity named \textit{foo}, the 
+first one with label \texttt{event\_a} and the second with label \texttt{event\_b} does contain the flow specified
+by function \texttt{get\_flow()}. Function \texttt{get\_flow()} returns the defined flow as an object. 
+
+Function
+\texttt{find\_flow()} at line 12 calls such function to retrieve the flow definition and repeatedly calls function
+\texttt{match()} on it. the \texttt{match()} function attempts to match the flow definition to the model
+currently loaded in \prog{}, starting with the model event with the index specified as the \texttt{start\_event\_idx}
+parameter. In case of match, the function returns the index of the last event in the model matching one of the elements
+in the flow definition, plus one. If the entire flow definition is not found in the model, then the function throws a
+FlowError. If passed a starting event index corresponding to the total number of events the function returns -1. 
+
+
+The \texttt{examples/flw1-match.msc} is an example of a log file containing the specified flow:
+\lstinputlisting{../../examples/flw1-match.msc}
+
+However, note that the \texttt{examples/flw1-match.msc} file also contains the specified flow:
+
+\lstinputlisting{../../examples/flw1-match2.msc}
+
+This is the case because \texttt{fseq} requires events to be in the specified order, but
+not to be contiguous in the file, or even within the entity. 
+
+We can test the scripts by running \prog{} in batch mode:
+
+\begin{verbatim}
+$ mscviewer -b examples/flw1.py examples/flw1-match.msc 
+ Found match!
+$ mscviewer -b examples/flw1.py examples/flw2-match.msc 
+ Found match!
+$ bin/mscviewer -b examples/flw1.py examples/flw1-nomatch.msc
+ No match found ( element (foo, event_a) not found in model. )
+$\end{verbatim}
+
+\subsection{Model Elements for a Flow}
+
+In addition to knowing that a certain flow is present in a model, you may want to discover which 
+\texttt{fev} elements match which mdodel events. This can be achieved using the \texttt{get\_model\_map()}
+function, as illustrated by the \texttt{examples/flw2.py} example:
+
+\lstinputlisting{../../examples/flw2.py}
+
+The \texttt{get\_model\_map()} function returns a map where each \texttt{fev} in the flow definition is a key,
+and the event matching it is the value associated to the key. Various pieces of information 
+can be stracted from the event using the \texttt{event\_} API defined in the \texttt{msc.model} module.
+In this example, we print the line number where the event is defined in the input file:
+
+\begin{verbatim}
+$ bin/mscviewer -b examples/flw2.py examples/flw1-match.msc
+ found match!
+ fev(foo, event_b) : 2
+ fev(foo, event_a) : 1
+$ bin/mscviewer -b examples/flw2.py examples/flw1-match2.msc
+ found match!
+ fev(foo, event_b) : 4
+ fev(foo, event_a) : 1
+\end{verbatim}
+
+\appendix
+
  
 \printindex
 

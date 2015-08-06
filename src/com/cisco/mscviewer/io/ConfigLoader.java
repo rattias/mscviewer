@@ -14,6 +14,8 @@ package com.cisco.mscviewer.io;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,6 +26,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.cisco.mscviewer.Main;
 import com.cisco.mscviewer.model.MSCDataModel;
 
 @SuppressWarnings("serial")
@@ -69,7 +72,8 @@ public class ConfigLoader {
                     try {
                         t = Config.getTimeSinceEpoch(dateString);
                     } catch (final ParseException e) {
-                        e.printStackTrace();
+                        Logger logger = Logger.getLogger(Main.class.getName());
+                        logger.log(Level.INFO,"startElement() failed:", e);                        
                     }
                     final File f = new File(logPath);
                     final long lastModified = f.lastModified();
@@ -192,6 +196,8 @@ public class ConfigLoader {
         try {
             saxParser.parse(fname, handler);
         } catch (final UserAbortException e) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO,"Load operation aborted by user", e);                        
         } catch (final SAXException e) {
             throw new IOException(e);
         }

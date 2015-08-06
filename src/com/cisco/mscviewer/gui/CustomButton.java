@@ -19,7 +19,7 @@ import com.cisco.mscviewer.util.PersistentPrefs;
 @SuppressWarnings("serial")
 class CustomButton extends JToggleButton {
 
-    private final Entity en;
+    transient private final Entity en;
 
     public CustomButton(Entity en) {
         String p = en.getPath();

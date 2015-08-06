@@ -7,9 +7,9 @@ def is_batch_mode():
     """$descr{Returns True if the tool was started in batch mode, False otherwise}"""
     return Main.batchMode()
 
-def results_report(msg):
-    """$descr{reports a result. In GUI mode the result
-    is reported in the Result View. In batvch mode the 
+def msc_print(msg):
+    """$descr{produces output. In GUI mode the output
+    is reported in the Result View. In batch mode the 
     result is printed on the console}
     """
     if Main.batchMode():

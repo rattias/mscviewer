@@ -14,6 +14,10 @@ package com.cisco.mscviewer.tree;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.cisco.mscviewer.util.MSCViewerError;
 
 /**
  *
@@ -21,11 +25,9 @@ import java.util.HashSet;
  */
 public class AVLTree  {
     protected AVLTreeNode root;
-    @SuppressWarnings("unused")
-    private final String name;
 
     public AVLTree(String name) {
-        this.name = name;
+       
     }
 
     public AVLTreeNode getRoot() {
@@ -62,7 +64,7 @@ public class AVLTree  {
         AVLTreeNode zchild;
         AVLTreeNode yparent = curr;
         Object res;
-        final ArrayList<Object> path = new ArrayList<Object>();
+        final List<Object> path = new ArrayList<Object>();
         while (curr != null && value != curr.data.getValue()) {
             path.add(curr);
             prev = curr;
@@ -115,7 +117,7 @@ public class AVLTree  {
                 ((AVLTreeNode) path.get(idx)).balance();
             return res;
         } else
-            throw new Error("Internal error: node " + value + " not found");
+            throw new MSCViewerError("Internal error: node " + value + " not found");
     }
 
     public Value find(int r) {
@@ -144,7 +146,7 @@ public class AVLTree  {
     public String[] pathsToValue(int v) {
         if (root == null)
             return new String[0];
-        final ArrayList<String> al = new ArrayList<String>();
+        final List<String> al = new ArrayList<String>();
         root.pathsToValue(v, "", al);
         return al.toArray(new String[al.size()]);
     }
@@ -160,7 +162,7 @@ public class AVLTree  {
     protected void verify(String msg) {
         if (root == null)
             return;
-        final HashSet<Object> hs = new HashSet<Object>();
+        final Set<Object> hs = new HashSet<Object>();
         root.verify(root, hs, msg, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
@@ -186,9 +188,6 @@ public class AVLTree  {
         final int height = root.getHeight();
         final String[] vals = new String[(1 << height) - 1];
         getLevels(vals, root, 0);
-        // for (String val : vals) {
-        // System.out.print("" + val + "-");
-        // }
         final int w = root.getMaxWidth() + 2;
         final int totalw = w * (1 << (height - 1));
         for (int level = 0; level < height; level++) {
@@ -210,34 +209,6 @@ public class AVLTree  {
     /**
      * Rebuilds the tree from scratch using the data currently in the nodes.
      */
-    // public AVLTree rebuild() {
-    // class V implements Visitor {
-    // private AVLTree srcTree, dstTree;
-    //
-    // public V(AVLTree srcTree, AVLTree dstTree) {
-    // this.srcTree = srcTree;
-    // this.dstTree = dstTree;
-    // }
-    // @Override
-    // public boolean visit(AVLTreeNode tn) {
-    // dstTree.add(tn.getData());
-    // tn.left = null;
-    // tn.right = null;
-    // return false;
-    // }
-    // }
-    // try {
-    // AVLTree dst;
-    // dst = (AVLTree)this.clone();
-    // dst.root = null;
-    // if (root != null)
-    // root.postorder(new V(this, dst));
-    // return dst;
-    // } catch (CloneNotSupportedException ex) {
-    // throw new Error("not clonable!");
-    // }
-    // }
-
     public boolean preorder(Visitor v) {
         if (root == null)
             return true;

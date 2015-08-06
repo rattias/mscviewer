@@ -5,8 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.cisco.mscviewer.Main;
 
 abstract class Info {
     ArrayList<String> kv = new ArrayList<String>();   
@@ -99,8 +103,8 @@ public class ConvertFormat {
             int rate = (int)(lineCount/elapsed);
             System.out.println("conversion completed. "+lineCount+" lines processed  in "+elapsed+"s ("+rate+" lines/s)");
         } catch (final Exception ex) {
-            System.err.println("exception while processing line " + line);
-            ex.printStackTrace();
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO,"exception while processing line " + line, ex);
         } finally {
             if (ps != System.out)
                 ps.close();

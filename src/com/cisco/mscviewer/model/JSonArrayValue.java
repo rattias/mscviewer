@@ -1,20 +1,21 @@
 package com.cisco.mscviewer.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class JSonArrayValue implements JSonValue {
-    private final ArrayList<JSonValue> value;
+    private final List<JSonValue> value;
 
     @SuppressWarnings("unchecked")
     public JSonArrayValue(ArrayList<JSonValue> al) {
-        value = (ArrayList<JSonValue>) al.clone();
+        value = (List<JSonValue>) al.clone();
     }
 
     public JSonArrayValue() {
         value = new ArrayList<JSonValue>();
     }
 
-    public ArrayList<JSonValue> value() {
+    public List<JSonValue> value() {
         return value;
     }
 

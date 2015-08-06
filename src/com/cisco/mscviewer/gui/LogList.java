@@ -350,6 +350,7 @@ public class LogList extends JList<String> implements SelectionListener,
             }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
             public void mouseDragged(MouseEvent evt) {
                 if (! SwingUtilities.isLeftMouseButton(evt))
                     return;

@@ -97,6 +97,16 @@ class flow_base:
             el.get_model(arr, dbg=dbg)
         return tuple(arr)
     
+    def get_model_map(self, map=None):
+        if map == None:
+            map = {}
+        if not self.traversed:
+            return map
+        for el in self.children:
+            el.get_model_map(map)
+        return map
+           
+           
     def get_root(self):
         el = self
         while el.parent != None:
@@ -276,7 +286,15 @@ class fev(flow_base):
         if (not self.traversed) or self.model == None:
             return None
         arr.append(self.model)
-        return tuple(arr)
+        return map
+
+    def get_model_map(self, map={}):
+        """$descr{returns a tuple of model element that have annotated this flow (see flow_match())}"""
+        if (not self.traversed) or self.model == None:
+            return None
+        map[self] = self.model
+        return map
+
         
     def str_entity(self):
         return str(self.entity.template)

@@ -69,7 +69,7 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
 
 
     // private MainPanel mainPanel;
-    private final ViewModel viewModel;
+    private final transient ViewModel viewModel;
     // private final Vector<EntityHeaderListener> listeners;
     private Dimension preferredSize;
     private Component dragging = null;
@@ -203,9 +203,9 @@ public class EntityHeader extends JPanel implements EntityHeaderModelListener {
         }
     }
 
-    ButtonDragger bd = new ButtonDragger();
+    transient ButtonDragger bd = new ButtonDragger();
 
-    ActionListener selectListener = new ActionListener() {
+    transient ActionListener selectListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             if (!SwingUtilities.isEventDispatchThread()) {

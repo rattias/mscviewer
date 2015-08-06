@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 import javax.swing.SwingUtilities;
@@ -41,6 +43,7 @@ import com.cisco.mscviewer.model.MSCDataModel;
 import com.cisco.mscviewer.model.ViewModel;
 import com.cisco.mscviewer.script.Python;
 import com.cisco.mscviewer.script.ScriptResult;
+import com.cisco.mscviewer.util.MSCViewerError;
 import com.cisco.mscviewer.util.Report;
 import com.cisco.mscviewer.util.Resources;
 import com.cisco.mscviewer.util.Utils;
@@ -68,28 +71,19 @@ abstract class Opt {
  * @since Jun 2012
  */
 public class Main {
+    public static final String PYPATH = "pypath";
     public static final String VERSION = "2.1.0";
     public static final boolean WITH_BLOCKS = true;
     private static boolean topologicalSorting = true;
     
     private static Loader loader;
-    private static MainFrame mf;
-    @SuppressWarnings("unused")
-    private static boolean extra;
+   @SuppressWarnings("unused")
     private static String script;
     private static String loaderClass = "JsonLoader";
-    // public static String loaderClass = "LegacyLoader";
     static boolean batchMode = false;
     private static String batchFun = null;
-
-    private static final void appendToPyPath(String s) {
-        String v = System.getProperty("pypath");
-        if (v != null && v.length() > 0)
-            v += File.pathSeparator + s;
-        else
-            v = s;
-        System.setProperty("pypath", v);
-    }
+    private static String plugins;
+    private static HeatGraphWindow graph;
 
     private static final Opt[] opts = new Opt[] {
             new Opt('h', "help", true, "shows this help") {
@@ -113,16 +107,10 @@ public class Main {
                     }
                 }
             },
-            new Opt('p', "pypath", true, "specify a Python module search path") {
+            new Opt('p', PYPATH, true, "specify a Python module search path") {
                 @Override
                 void found(String arg) {
                     appendToPyPath(arg);
-                }
-            },
-            new Opt('x', "extra", false, "enable some extra features") {
-                @Override
-                void found(String arg) {
-                    Main.extra = true;
                 }
             },
             new Opt('s', "script", true,
@@ -157,7 +145,18 @@ public class Main {
                 }
             }            
     };
-    private static String plugins;
+
+    private Main() {}
+    
+    private static final void appendToPyPath(String s) {
+        String v = System.getProperty(PYPATH);
+        if (v != null && v.length() > 0)
+            v += File.pathSeparator + s;
+        else
+            v = s;
+        System.setProperty(PYPATH, v);
+        System.out.println("PYPATH="+v);
+    }
 
     private static void printHelp() {
         System.out.println("mscviewer options [file]");
@@ -169,13 +168,27 @@ public class Main {
 
     }
 
-    public static void main(String args[]) throws IOException,
-    ClassNotFoundException, SecurityException, NoSuchMethodException,
-    IllegalArgumentException, IllegalAccessException,
+    private static void setLookAndFeel() {
+        try {
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (UnsupportedLookAndFeelException|IllegalAccessException|InstantiationException|ClassNotFoundException e) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO,"Requested L&F was not supported. defaulting.", e);                        
+        } 
+    }
+    
+    public static void main(String[] args) throws IOException,
+    ClassNotFoundException, NoSuchMethodException,
+    IllegalAccessException,
     InstantiationException, ScriptException, InterruptedException,
     InvocationTargetException {
         try {
-            System.setProperty("pypath", Utils.getInstallDir()
+            System.setProperty(PYPATH, Utils.getInstallDir()
                     + "/resources/default/script");
 
             setupUIDefaults();
@@ -194,18 +207,7 @@ public class Main {
                 }
                 loader.load(fname, MSCDataModel.getInstance(), true);
             } else {
-                try {
-                    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                        if ("Nimbus".equals(info.getName())) {
-                            UIManager.setLookAndFeel(info.getClassName());
-                            break;
-                        }
-                    }
-                    //                UIManager.setLookAndFeel(UIManager
-                    //                        .getSystemLookAndFeelClassName());
-                } catch (UnsupportedLookAndFeelException e) {
-                    // nothing to do, keep default look&feel.
-                }
+                setLookAndFeel();
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
@@ -216,7 +218,7 @@ public class Main {
                         int h = scrHeight*3/4;
                         int x = (scrWidth-w)/2;
                         int y = (scrHeight-h)/2;
-                        mf = new MainFrame(x, y, w, h);
+                        MainFrame mf = new MainFrame(x, y, w, h);
                         mf.setVisible(true);
                         if (fname != null)
                             mf.loadFile(fname);
@@ -226,7 +228,7 @@ public class Main {
             }
             if (script != null) {
                 loader.waitIfLoading();
-                final MainPanel mp = (mf != null) ? mf.getMainPanel() : null;
+                final MainPanel mp = (MainFrame.getInstance() != null) ? MainFrame.getInstance().getMainPanel() : null;
                 final Python p = new Python(mp);
                 final ScriptResult sr = new ScriptResult();
                 final String text = new String(Files.readAllBytes(Paths.get(script)),
@@ -236,10 +238,13 @@ public class Main {
                     p.eval(batchFun, sr);
                 }
             }
-        } catch(Throwable t) {
+        } catch(Exception t) {
             Report.exception("Exception while executing main program", t);
         }
+        if (batchMode())
+            System.exit(0);
     }
+
     private static int processOptions(String[] args) {
         int idx = 0;
         final int len = args.length;
@@ -312,14 +317,6 @@ public class Main {
         UIManager.put("ToolBar.font", f);
         UIManager.put("ToolTip.font", f);
 
-        // ImageIcon icon = Resources.getImageIcon("entity.gif", "Entity");
-        // if (icon != null) {
-        // UIManager.put("Tree.leafIcon", icon);
-        // UIManager.put("Tree.openIcon", icon);
-        // UIManager.put("Tree.closedIcon", icon);
-        // } else {
-        // throw new Error("Couldn't find file entity.gif");
-        // }
     }
 
     public static boolean batchMode() {
@@ -360,7 +357,7 @@ public class Main {
                     for (final Iterator<Entity> it = MSCDataModel.getInstance()
                             .getEntityIterator(false); it.hasNext();)
                         ents.append(it.next().getId() + ", ");
-                    throw new Error(
+                    throw new MSCViewerError(
                             "Entity '"
                                     + id
                                     + "' not present in model. Available entities are: "
@@ -409,10 +406,6 @@ public class Main {
         });
     }
 
-    // public static Loader getLoader() {
-    // return loader;
-    // }
-
     public static void load(String path) throws IOException,
             InvocationTargetException, InterruptedException {
         final Loader l = new JsonLoader();
@@ -428,13 +421,6 @@ public class Main {
         l.waitIfLoading();
     }
 
-    // public static void start(String[] args) throws IOException,
-    // SecurityException, IllegalArgumentException, ClassNotFoundException,
-    // NoSuchMethodException, IllegalAccessException, InstantiationException,
-    // ScriptException, InterruptedException, InvocationTargetException {
-    // main(args);
-    // }
-
     public static void clearModel() {
         final MainFrame mf = MainFrame.getInstance();
         mf.getViewModel().reset();
@@ -445,11 +431,6 @@ public class Main {
         final MainFrame mf = MainFrame.getInstance();
         mf.setExtendedState(mf.getExtendedState() | Frame.MAXIMIZED_BOTH);
     }
-
-    // public static MSCDataModel getDataModel() {
-    // MainFrame mf = MainFrame.getInstance();
-    // return mf.getDataModel();
-    // }
 
     public static void quit() {
         System.exit(0);
@@ -512,10 +493,14 @@ public class Main {
 
     public static void show(Graph g) {
         try {
-            new HeatGraphWindow(g);
+            graph = new HeatGraphWindow(g);
         } catch (final Exception t) {
             Report.exception("Exception while opening Heat Graph", t);
         }
+    }
+    
+    public static HeatGraphWindow getGraph() {
+        return graph;
     }
     
     public static boolean shouldSortTopologically() {

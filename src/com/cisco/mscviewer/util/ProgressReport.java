@@ -151,6 +151,8 @@ public class ProgressReport {
      * or one is marked as completed.
      */
     private void updateDialogForDone() {
+        if (Main.batchMode())
+            return;
         final Runnable r = new Runnable() {
             @Override
             public void run() {

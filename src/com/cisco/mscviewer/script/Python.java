@@ -54,7 +54,7 @@ public class Python {
 
     private void traverse(String pathEl, String fpath, int level,
             ArrayList<String> dirs) {
-        final String fullpath = pathEl + "/" + fpath;
+        final String fullpath = fpath.equals("") ? pathEl : pathEl + "/" + fpath;
         final File f = new File(fullpath);
         if (f.isDirectory()) {
             dirs.add(f.getAbsolutePath());
@@ -111,9 +111,10 @@ public class Python {
 
             interpreter.exec("import sys");
             interpreter.exec("import inspect");
-            // interpreter.exec("import mscviewer");
             interpreter.exec("def list_msc_functions(pkg):\n"
+                   // + "    print 'PKG=', pkg\n"
                     + "    ret = []\n" + "    for fn_name in dir(pkg):\n"
+                  //  + "        print 'FUNC = ', fn_name\n"
                     + "        fn = getattr(pkg, fn_name)\n"
                     + "        if hasattr(fn, \"is_msc_fun\"):\n"
                     + "            ret.append(fn_name)\n" + "    return ret;");

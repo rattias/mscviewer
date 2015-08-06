@@ -27,6 +27,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.cisco.mscviewer.Main;
+
 /**
  *
  * @author rattias
@@ -53,6 +55,9 @@ public class DirSetWatcher extends Thread {
                         StandardWatchEventKinds.ENTRY_DELETE);
             }
         } catch (final IOException ex) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO,"", ex);                        
+
         }
     }
 
@@ -130,6 +135,8 @@ public class DirSetWatcher extends Thread {
             try {
                 ws.close();
             } catch (final IOException ex) {
+                Logger logger = Logger.getLogger(Main.class.getName());
+                logger.log(Level.INFO,"", ex);                        
             }
         }
         System.out.println("thread " + Thread.currentThread().getName()

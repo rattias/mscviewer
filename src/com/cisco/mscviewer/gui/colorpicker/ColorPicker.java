@@ -32,7 +32,7 @@ import com.cisco.mscviewer.gui.StyledButton;
 
 @SuppressWarnings("serial")
 public class ColorPicker extends JPanel {
-    public final int W = 30;
+    private static final int W = 30;
     private AbstractButton setColorButton;
     private JButton menuButton;
     private Color selected = null;
@@ -59,13 +59,14 @@ public class ColorPicker extends JPanel {
         return p;
     }
     
+    @Override
     public void setEnabled(boolean v) {
         super.setEnabled(v);
         setColorButton.setEnabled(v);
         menuButton.setEnabled(v);
     }
     
-    public ColorPicker(String label, AbstractButton colorButton, Color colors[][], int selectedColorRow, int selectedColorColumn) {
+    public ColorPicker(String label, AbstractButton colorButton, Color[][] colors, int selectedColorRow, int selectedColorColumn) {
         if (selectedColorRow >= colors.length || selectedColorRow  < 0 ||
                 selectedColorColumn >= colors[selectedColorRow].length || selectedColorColumn < 0)
             throw new Error("Invalid selected color position ("+selectedColorRow+", "+selectedColorColumn+")");
@@ -81,16 +82,15 @@ public class ColorPicker extends JPanel {
         inner.setLayout(new BorderLayout());
         inner.setMaximumSize(new Dimension(48,1000));
         colorButton.setFocusable(false);
-        if (colorButton instanceof AbstractButton) {
-            AbstractButton ab = (AbstractButton )colorButton;
-            ab.setBorderPainted(false);
-            ab.setContentAreaFilled(false);
-            ab.setRolloverEnabled(false);
-        }
+        colorButton.setBorderPainted(false);
+        colorButton.setContentAreaFilled(false);
+        colorButton.setRolloverEnabled(false);
         colorButton.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseEntered(MouseEvent ev) {
                 ColorPicker.this.mouseEntered(true);
             }
+            @Override
             public void mouseExited(MouseEvent ev) { 
                 ColorPicker.this.mouseEntered(false);
             }
@@ -100,6 +100,7 @@ public class ColorPicker extends JPanel {
         setColorButton = colorButton;
         selected = colors[selectedColorRow][selectedColorColumn];
         menuButton = new StyledButton() {
+            @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(isEnabled() ? Color.black : Color.gray);
@@ -109,9 +110,11 @@ public class ColorPicker extends JPanel {
             }
         }; 
         menuButton.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseEntered(MouseEvent ev) {
                 ColorPicker.this.mouseEntered(true);
             }
+            @Override
             public void mouseExited(MouseEvent ev) { 
                 ColorPicker.this.mouseEntered(false);
             }
@@ -126,6 +129,7 @@ public class ColorPicker extends JPanel {
             for(int i=0; i<colors.length; i++) {
                 for(int j=0; j<colors[i].length; j++) {
                     JButton b = new JButton() {
+                        @Override
                         public void paintComponent(Graphics g) {
                             super.paintComponent(g);
                             if (getModel().isRollover()){
@@ -219,7 +223,7 @@ public class ColorPicker extends JPanel {
     public void addColorSelectionListener(ColorSelectionListener l) {
         listeners.add(l);
     }
-    
+    @Override
     public void setToolTipText(String str) {
         super.setToolTipText(str);
         setToolTipText(this, str);

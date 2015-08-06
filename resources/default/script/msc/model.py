@@ -200,6 +200,14 @@ def event_type(ev):
     $param{ev}{Event}{an event}
     """
     return ev.getType()
+
+def event_line(ev):
+    """$descr{returns the line number of the event in the input file.}
+    $header{Parameters}
+    $param{ev}{Event}{an event}
+    """
+    model = MSCDataModel.getInstance();
+    return ev.getLineIndex()
     
 def event_index(ev):
     """$descr{returns the index of the event in the model.}

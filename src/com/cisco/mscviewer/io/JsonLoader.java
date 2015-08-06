@@ -23,10 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -167,7 +170,7 @@ public class JsonLoader implements Loader {
             }
         } catch (final IndexOutOfBoundsException ex) {
             throw new IllegalArgumentException(fname + ":" + lineNum + ":"
-                    + pos + ":Expecting " + expected + ", found end-of-line.");
+                    + pos + ":Expecting " + expected + ", found end-of-line.", ex);
         }
     }
 
@@ -356,7 +359,7 @@ public class JsonLoader implements Loader {
                                 } catch (final ClassNotFoundException e1) {
                                     throw new IOException(fname + ":" + lineNum
                                             + ":Unable to instantiate class "
-                                            + rendererName + ".", e);
+                                            + rendererName + ".", e1);
                                 }
                             }
                             try {
@@ -421,7 +424,7 @@ public class JsonLoader implements Loader {
                                     MSC_KEY_INTER_ID).toString());
                         } else if (sourceValue instanceof JSonArrayValue) {
                             // this event is source for multiple interactions
-                            final ArrayList<JSonValue> al = ((JSonArrayValue) sourceValue)
+                            final List<JSonValue> al = ((JSonArrayValue) sourceValue)
                                     .value();
                             for (final JSonValue j : al) {
                                 interAttrs.add((JSonObject) j);
@@ -628,6 +631,8 @@ public class JsonLoader implements Loader {
             latch.await();
         } catch (final InterruptedException e) {
             // TODO Auto-generated catch block
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.INFO, "exception while waiting for load completion", e);                        
             e.printStackTrace();
         }
     }
@@ -644,8 +649,6 @@ public class JsonLoader implements Loader {
                 MainFrame.getInstance().setFilename(fname);
             });
         } catch (InvocationTargetException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
     
